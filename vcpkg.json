@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "key-logic-expansion",
+  "version-string": "1.0.0",
+  "port-version": 0,
+  "description": "A SKSE plugin which make key input smooth and modern.",
+  "homepage": "https://www.notexist.com",
+  "license": "GPL-3.0",
+  "dependencies": [
+    "simpleini",
+    "commonlibsse-ng"
+  ]
+}
