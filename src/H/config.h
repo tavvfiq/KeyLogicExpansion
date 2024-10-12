@@ -1,3 +1,4 @@
+#pragma once
 #include "PCH.h"
 #include "SimpleIni.h"
 
@@ -9,18 +10,23 @@ namespace Config {
 
     static std::string path = "Data/MCM/Config/KeyLogicExpansion/settings.ini";
 
-    bool useAltTweenMenu = false;
-    bool useAltTogglePOV = false;
-    bool useAltAttack = false;
-    bool useAltPowerAttack = false;
-    bool useAltBlock = false;
+    static bool disableOriTweenMenu;
+    static bool disableOriTogglePOV;
+    static bool disableOriAttack;
+    static bool disableOriPowerAttack;
+    static bool disableOriBlock;
+    static bool disableOriAutoMove;
+    static bool disableOriToggleRunWalk;
+    static bool disableOriQuickInventory;
+    static bool disableOriQuickMagic;
+    static bool disableOriQuickStats;
+    static bool disableOriQuickMap;
 
-    bool disableOriAutoMove = false;
-    bool disableOriToggleRunWalk = false;
-    bool disableOriQuickInventory = false;
-    bool disableOriQuickMagic = false;
-    bool disableOriQuickStats = false;
-    bool disableOriQuickMap = false;
+    static bool enableAltTweenMenu;
+    static bool enableAltTogglePOV;
+    static bool enableAltAttack;
+    static bool enableAltPowerAttack;
+    static bool enableAltBlock;
 
     bool loadIni();
     bool createDefaultIni();

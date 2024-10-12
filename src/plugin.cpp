@@ -1,4 +1,4 @@
-#include "H/PCH.h"
+#pragma once
 #include "H/hook.h"
 
 using namespace RE::BSScript;
@@ -100,7 +100,9 @@ namespace
         trampoline.create(64);
         log::trace("Trampoline initialized.");
         log::trace("Init Hook.");
-        AltTweenMenu::Hook();
+        if (Config::enableAltTweenMenu || Config::disableOriTweenMenu)
+            AltTweenMenu::Hook();
+
         log::trace("Init Hook completed.");
     }
 
@@ -130,25 +132,41 @@ namespace
                                                        {
             switch (message->type) {
                 // Skyrim lifecycle events.
-                case MessagingInterface::kPostLoad: // Called after all plugins have finished running SKSEPlugin_Load.
+                case MessagingInterface::kPostLoad: 
+                    // Called after all plugins have finished running SKSEPlugin_Load.
                     // It is now safe to do multithreaded operations, or operations against other plugins.
-                case MessagingInterface::kPostPostLoad: // Called after all kPostLoad message handlers have run.
-                case MessagingInterface::kInputLoaded: // Called when all game data has been found.
+                    Config::loadIni();
                     break;
-                case MessagingInterface::kDataLoaded: // All ESM/ESL/ESP plugins have loaded, main menu is now active.
+                case MessagingInterface::kPostPostLoad: 
+                    // Called after all kPostLoad message handlers have run.
+                    break;
+                case MessagingInterface::kInputLoaded: 
+                    // Called when all game data has been found.
+                    break;
+                case MessagingInterface::kDataLoaded: 
+                    // All ESM/ESL/ESP plugins have loaded, main menu is now active.
                     // It is now safe to access form data.
                     InitializeHooking();
                     break;
 
                 // Skyrim game events.
-                case MessagingInterface::kNewGame: // Player starts a new game from main menu.
-                case MessagingInterface::kPreLoadGame: // Player selected a game to load, but it hasn't loaded yet.
+                case MessagingInterface::kNewGame: 
+                    // Player starts a new game from main menu.
+                    break;
+                case MessagingInterface::kPreLoadGame: 
+                    // Player selected a game to load, but it hasn't loaded yet.
                     // Data will be the name of the loaded save.
-                case MessagingInterface::kPostLoadGame: // Player's selected save game has finished loading.
+                    break;
+                case MessagingInterface::kPostLoadGame: 
+                    // Player's selected save game has finished loading.
                     // Data will be a boolean indicating whether the load was successful.
-                case MessagingInterface::kSaveGame: // The player has saved a game.
+                    break;
+                case MessagingInterface::kSaveGame: 
+                    // The player has saved a game.
                     // Data will be the save name.
-                case MessagingInterface::kDeleteGame: // The player deleted a saved game from within the load menu.
+                    break;
+                case MessagingInterface::kDeleteGame: 
+                    // The player deleted a saved game from within the load menu.
                     break;
             } }))
         {
