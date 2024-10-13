@@ -1,6 +1,6 @@
 #pragma once
 #include "SimpleIni.h"
-#include "keymap.h"
+#include "keyCodeMap.h"
 
 using namespace RE;
 using namespace REL;

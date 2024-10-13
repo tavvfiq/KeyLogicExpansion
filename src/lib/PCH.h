@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <format>
 #include <iostream>
-#include <queue>
+#include <deque>
 #include <random>
 #include <string>
 #include <vector>

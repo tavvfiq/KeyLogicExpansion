@@ -3,26 +3,50 @@
 
 using namespace RE;
 using namespace REL;
-using namespace SKSE::log;
 
-namespace AltTweenMenu
-{
-	extern uint32_t oriTweenMenuKey[];
-	extern uint32_t altTweenMenuKey[];
-	class HookMenuOpenHandler
-	{
+class HookAutoMoveHandler {
 	public:
-		typedef bool (HookMenuOpenHandler::*FnCanProcess)(InputEvent *);
-		bool CanProcess(InputEvent *a_event);
+	typedef bool (HookAutoMoveHandler::*FnCanProcess)(InputEvent *);
+	bool CanProcess(InputEvent *a_event);
 
-		typedef bool (HookMenuOpenHandler::*FnProcessButton)(ButtonEvent *);
-		bool ProcessButton(ButtonEvent *a_event);
+	typedef bool (HookAutoMoveHandler::*FnProcessButton)(ButtonEvent *, PlayerControlsData *);
+	bool ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data);
 
-		static void Hook();
+	static void Hook();
 
-	private:
-		static std::unordered_map<uintptr_t, FnCanProcess> fnCP;
-		static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
-	};
-	static void Hook() { HookMenuOpenHandler::Hook(); }
-}
+private:
+	static std::unordered_map<uintptr_t, FnCanProcess> fnCP;
+	static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
+};
+
+class HookAttackBlockHandler {
+public:
+	typedef bool (HookAttackBlockHandler::*FnCanProcess)(InputEvent *);
+	bool CanProcess(InputEvent *a_event);
+
+	typedef bool (HookAttackBlockHandler::*FnProcessButton)(ButtonEvent *);
+	bool ProcessButton(ButtonEvent *a_event);
+
+	static void Hook();
+
+private:
+	static std::unordered_map<uintptr_t, FnCanProcess> fnCP;
+	static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
+};
+
+
+class HookMenuOpenHandler
+{
+public:
+	typedef bool (HookMenuOpenHandler::*FnCanProcess)(InputEvent *);
+	bool CanProcess(InputEvent *a_event);
+
+	typedef bool (HookMenuOpenHandler::*FnProcessButton)(ButtonEvent *);
+	bool ProcessButton(ButtonEvent *a_event);
+
+	static void Hook();
+
+private:
+	static std::unordered_map<uintptr_t, FnCanProcess> fnCP;
+	static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
+};

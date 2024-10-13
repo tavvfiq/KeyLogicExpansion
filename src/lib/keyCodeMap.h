@@ -10,8 +10,8 @@ namespace KeyUtils
 {
     enum INPUT_DEVICE {
         KeyBoard = 0,
-        Gamepad,
         Mouse,
+        //Gamepad,
         Total
     };
 

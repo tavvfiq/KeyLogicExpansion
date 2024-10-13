@@ -102,8 +102,7 @@ namespace
         log::trace("Trampoline initialized.");
         log::trace("Init Hook.");
         if (Config::enableAltTweenMenu || Config::disableOriTweenMenu) {
-            log::trace("Init Hook AltTweenMenu.");
-            AltTweenMenu::Hook();
+            HookAutoMoveHandler::Hook();
         }
         log::trace("Init Hook completed.");
     }
