@@ -1,20 +1,20 @@
 #pragma once
+#include "PCH.h"
+#include "var.h"
 
 using namespace RE;
 using namespace REL;
 using namespace SKSE::log;
 
-namespace Var
-{
-    static RE::PlayerCharacter *p;
-    static PlayerControls *pc;
-    static ControlMap *im;
-    static UserEvents *inputString;
-}
-
 namespace KeyUtils
 {
-    // Enums from SKSE to get DXScanCodes
+    enum INPUT_DEVICE {
+        KeyBoard = 0,
+        Gamepad,
+        Mouse,
+        Total
+    };
+
     enum
     {
         ESC = 1,
@@ -124,30 +124,23 @@ namespace KeyUtils
     enum
     {
         GamepadButtonOffset = 266,
-        GamepadButtonOffset_DPAD_UP = 266,
-        GamepadButtonOffset_DPAD_DOWN,
-        GamepadButtonOffset_DPAD_LEFT,
-        GamepadButtonOffset_DPAD_RIGHT,
-        GamepadButtonOffset_START,
-        GamepadButtonOffset_BACK,
-        GamepadButtonOffset_LEFT_THUMB,
-        GamepadButtonOffset_RIGHT_THUMB,
-        GamepadButtonOffset_LEFT_SHOULDER,
-        GamepadButtonOffset_RIGHT_SHOULDER,
-        GamepadButtonOffset_A,
-        GamepadButtonOffset_B,
-        GamepadButtonOffset_X,
-        GamepadButtonOffset_Y,
-        GamepadButtonOffset_LT,
-        GamepadButtonOffset_RT // 281
+        GamepadButtonDpadUp = 266,
+        GamepadButtonDpadDown,
+        GamepadButtonDpadLfet,
+        GamepadButtonDpadRight,
+        GamepadButtonStart,
+        GamepadButtonBack,
+        GamepadButtonLeftThumb,
+        GamepadButtonRightThumb,
+        GamepadButtonLeftShoulder,
+        GamepadButtonRightShoulder,
+        GamepadButtonA,
+        GamepadButtonB,
+        GamepadButtonX,
+        GamepadButtonY,
+        GamepadButtonLT,
+        GamepadButtonRT // 281
     };
-#ifndef __KEYUTILS_FUNCTION__
-#define __KEYUTILS_FUNCTION__
-    void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput)
-    {
-        keyArr[INPUT_DEVICE::kKeyboard] = Var::im->GetMappedKey(keyInput, INPUT_DEVICE::kKeyboard);
-        keyArr[INPUT_DEVICE::kMouse] = MouseButtonOffset + Var::im->GetMappedKey(keyInput, INPUT_DEVICE::kMouse);
-        keyArr[INPUT_DEVICE::kGamepad] = GamepadButtonOffset + Var::im->GetMappedKey(keyInput, INPUT_DEVICE::kGamepad);
-    }
-#endif
+
+    void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput);
 }

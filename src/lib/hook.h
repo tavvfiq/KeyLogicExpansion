@@ -1,7 +1,5 @@
 #pragma once
-#include "PCH.h"
 #include "config.h"
-#include "utils.h"
 
 using namespace RE;
 using namespace REL;
@@ -9,7 +7,8 @@ using namespace SKSE::log;
 
 namespace AltTweenMenu
 {
-	static uint32_t tweenMenuKey[INPUT_DEVICE::kTotal];
+	extern uint32_t oriTweenMenuKey[];
+	extern uint32_t altTweenMenuKey[];
 	class HookMenuOpenHandler
 	{
 	public:

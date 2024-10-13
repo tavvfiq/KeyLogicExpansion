@@ -1,5 +1,5 @@
 #pragma once
-#include "H/hook.h"
+#include "lib/hook.h"
 
 using namespace RE::BSScript;
 using namespace SKSE;
@@ -95,14 +95,16 @@ namespace
      */
     void InitializeHooking()
     {
+        Var::init();
         log::trace("Initializing trampoline...");
         auto &trampoline = GetTrampoline();
         trampoline.create(64);
         log::trace("Trampoline initialized.");
         log::trace("Init Hook.");
-        if (Config::enableAltTweenMenu || Config::disableOriTweenMenu)
+        if (Config::enableAltTweenMenu || Config::disableOriTweenMenu) {
+            log::trace("Init Hook AltTweenMenu.");
             AltTweenMenu::Hook();
-
+        }
         log::trace("Init Hook completed.");
     }
 
@@ -126,16 +128,13 @@ namespace
      * message, and some messages have no data (<code>dataLen</code> will be zero).
      * </p>
      */
-    void InitializeMessaging()
-    {
-        if (!GetMessagingInterface()->RegisterListener([](MessagingInterface::Message *message)
-                                                       {
+    void InitializeMessaging() {
+        if (!GetMessagingInterface()->RegisterListener([](MessagingInterface::Message* message) {
             switch (message->type) {
                 // Skyrim lifecycle events.
                 case MessagingInterface::kPostLoad: 
                     // Called after all plugins have finished running SKSEPlugin_Load.
                     // It is now safe to do multithreaded operations, or operations against other plugins.
-                    Config::loadIni();
                     break;
                 case MessagingInterface::kPostPostLoad: 
                     // Called after all kPostLoad message handlers have run.
@@ -146,6 +145,7 @@ namespace
                 case MessagingInterface::kDataLoaded: 
                     // All ESM/ESL/ESP plugins have loaded, main menu is now active.
                     // It is now safe to access form data.
+                    
                     InitializeHooking();
                     break;
 
@@ -168,13 +168,12 @@ namespace
                 case MessagingInterface::kDeleteGame: 
                     // The player deleted a saved game from within the load menu.
                     break;
-            } }))
-        {
+            }
+        })) {
             stl::report_and_fail("Unable to register message listener.");
         }
     }
 }
-
 /**
  * This if the main callback for initializing your SKSE plugin, called just before Skyrim runs its main function.
  *
@@ -195,6 +194,7 @@ SKSEPluginLoad(const LoadInterface *skse)
     log::info("{} is loading...", plugin->GetName());
 
     Init(skse);
+    Config::loadInI();
     InitializeMessaging();
     InitializeSerialization();
     InitializePapyrus();

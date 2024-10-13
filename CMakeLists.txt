@@ -7,7 +7,7 @@ project(
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
@@ -17,10 +17,11 @@ include(GNUInstallDirs)
 set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/Steam/mods/KeyLogicOverhaul")
 
 file(GLOB_RECURSE headers 
-    "src/H/*.*"
+    "src/lib/*.h"
 )
 file(GLOB_RECURSE sources 
-    "src/*.*"
+    "src/plugin.cpp"
+    "src/lib/*.cpp"
 )
 
 # Setup your SKSE plugin as an SKSE plugin!
@@ -32,7 +33,7 @@ add_commonlibsse_plugin(${PROJECT_NAME}
     SOURCES ${headers} ${sources}
 )
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE src/H/PCH.h)
+target_precompile_headers(${PROJECT_NAME} PRIVATE src/lib/PCH.h)
 
 if(NOT DEFINED PLUGIN_OUTPUT)
     set(OUTPUT_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}")

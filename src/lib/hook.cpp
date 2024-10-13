@@ -1,15 +1,17 @@
 #pragma once
-#include "H/hook.h"
+#include "hook.h"
 
 using namespace RE;
 using namespace REL;
 
 namespace AltTweenMenu
 {
+    uint32_t oriTweenMenuKey[KeyUtils::INPUT_DEVICE::Total];
+    uint32_t altTweenMenuKey[KeyUtils::INPUT_DEVICE::Total];
     bool HookMenuOpenHandler::CanProcess(InputEvent *a_event)
     {
         FnCanProcess fn = fnCP.at(*(uintptr_t *)this);
-        if (a_event->eventType == INPUT_EVENT_TYPE::kButton)
+        if (Config::enableAltTweenMenu)
             if (a_event->AsButtonEvent()->idCode == 34)
                 return true;
         return (this->*fn)(a_event);
@@ -18,11 +20,12 @@ namespace AltTweenMenu
     bool HookMenuOpenHandler::ProcessButton(ButtonEvent *a_event)
     {
         FnProcessButton fn = fnPB.at(*(uintptr_t *)this);
-        if (Config::disableOriTweenMenu && a_event->idCode == 15)
+        
+        if (Config::disableOriTweenMenu && a_event->idCode == oriTweenMenuKey[(int)a_event->GetDevice()])
             return true;
         else if (Config::enableAltTweenMenu && a_event->idCode == 34)
         {
-            a_event->userEvent = TweenMenu::MENU_NAME;
+            a_event->userEvent = Var::inputString->tweenMenu;
             return (this->*fn)(a_event);
         }
         return (this->*fn)(a_event);
@@ -30,7 +33,7 @@ namespace AltTweenMenu
     inline std::unordered_map<uintptr_t, HookMenuOpenHandler::FnProcessButton> HookMenuOpenHandler::fnPB;
     void HookMenuOpenHandler::Hook()
     {
-        KeyUtils::GetVanillaKeyMap(tweenMenuKey, Var::inputString->tweenMenu);
+        KeyUtils::GetVanillaKeyMap(oriTweenMenuKey, Var::inputString->tweenMenu);
         REL::Relocation<uintptr_t> vtable{VTABLE_MenuOpenHandler[0]};
         fnCP.insert(std::pair<uintptr_t, FnCanProcess>(
             vtable.address(), stl::unrestricted_cast<FnCanProcess>(vtable.write_vfunc(1, &HookMenuOpenHandler::CanProcess))));
