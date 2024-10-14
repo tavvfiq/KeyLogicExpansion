@@ -4,6 +4,7 @@
 using namespace RE;
 using namespace REL;
 
+// using AutoMoveHandler as InputEvent Receiver
 class HookAutoMoveHandler {
 	public:
 	typedef bool (HookAutoMoveHandler::*FnCanProcess)(InputEvent *);

@@ -5,16 +5,16 @@ using namespace REL;
 
 namespace Var
 {
-    RE::PlayerCharacter *p = nullptr;
-    PlayerControls *pc = nullptr;
-    ControlMap *im = nullptr;
-    UserEvents *inputString = nullptr;
+    RE::PlayerCharacter *player = nullptr;
+    PlayerControls *pCtrl = nullptr;
+    ControlMap *ctrlMap = nullptr;
+    UserEvents *userEvent = nullptr;
 
     void init()
     {
-        p = RE::PlayerCharacter::GetSingleton();
-        pc = PlayerControls::GetSingleton();
-        im = ControlMap::GetSingleton();
-        inputString = UserEvents::GetSingleton();
+        player = RE::PlayerCharacter::GetSingleton();
+        pCtrl = PlayerControls::GetSingleton();
+        ctrlMap = ControlMap::GetSingleton();
+        userEvent = UserEvents::GetSingleton();
     }
 }
