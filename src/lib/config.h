@@ -8,25 +8,52 @@ using namespace SKSE::log;
 
 namespace Config
 {   
-    const std::string ini_path = "Data/MCM/Config/KeyLogicExpansion/settings.ini";
+    const std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion/settings.ini";
 
+    // Feature
+    extern bool enableGlobalInput;
+    extern bool enableStances;
+
+    // Menu
     extern bool disableOriTweenMenu;
-    extern bool disableOriTogglePOV;
-    extern bool disableOriAttack;
-    extern bool disableOriPowerAttack;
-    extern bool disableOriBlock;
-    extern bool disableOriAutoMove;
-    extern bool disableOriToggleRunWalk;
-    extern bool disableOriQuickInventory;
-    extern bool disableOriQuickMagic;
-    extern bool disableOriQuickStats;
-    extern bool disableOriQuickMap;
-
     extern bool enableAltTweenMenu;
-    extern bool enableAltTogglePOV;
+
+    extern bool disableOriQuickInventory;
+    extern bool enableAltQuickInventory;
+
+    extern bool disableOriQuickMagic;
+    extern bool enableAltQuickMagic;
+
+    extern bool disableOriQuickStats;
+    extern bool enableAltQuickStats;
+
+    extern bool disableOriQuickMap;
+    extern bool enableAltQuickMap;
+
+    // Combat
+    extern bool disableOriAttack;
     extern bool enableAltAttack;
+
+    extern bool disableOriPowerAttack;
     extern bool enableAltPowerAttack;
+
+    extern bool disableOriBlock;
     extern bool enableAltBlock;
+
+    // Movement
+
+    // Misc
+    extern bool disableOriTogglePOV;
+    extern bool enableAltTogglePOV;
+    
+    extern bool disableOriAutoMove;
+    extern bool enableAltAutoMove;
+
+    extern bool disableOriToggleRun;
+    extern bool enableAltToggleRun;
+
+
+    
 
     bool loadInI();
     bool createDefaultInI();
