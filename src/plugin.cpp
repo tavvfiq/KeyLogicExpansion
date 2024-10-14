@@ -1,4 +1,3 @@
-#pragma once
 #include "lib/hook.h"
 
 using namespace RE::BSScript;
@@ -96,6 +95,7 @@ namespace
     void InitializeHooking()
     {
         Var::init();
+        Config::loadInI();
         log::trace("Initializing trampoline...");
         auto &trampoline = GetTrampoline();
         trampoline.create(64);
@@ -193,7 +193,6 @@ SKSEPluginLoad(const LoadInterface *skse)
     log::info("{} is loading...", plugin->GetName());
 
     Init(skse);
-    Config::loadInI();
     InitializeMessaging();
     InitializeSerialization();
     InitializePapyrus();

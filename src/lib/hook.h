@@ -1,5 +1,6 @@
 #pragma once
 #include "config.h"
+#include "keyInputQueue.h"
 
 using namespace RE;
 using namespace REL;

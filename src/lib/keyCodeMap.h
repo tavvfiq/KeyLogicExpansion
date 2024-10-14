@@ -8,7 +8,8 @@ using namespace SKSE::log;
 
 namespace KeyUtils
 {
-    enum INPUT_DEVICE {
+    enum INPUT_DEVICE
+    {
         KeyBoard = 0,
         Mouse,
         Gamepad,
@@ -143,5 +144,7 @@ namespace KeyUtils
     };
 
     void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput);
-    uint32_t GetEventKeyMap(ButtonEvent* a_event);
+    uint32_t GetEventKeyMap(ButtonEvent *a_event);
+
+    extern std::vector<uint32_t> combineKey;
 }

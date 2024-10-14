@@ -1,4 +1,3 @@
-#pragma once
 #include "config.h"
 
 namespace Config
@@ -10,50 +9,64 @@ namespace Config
     // Menu
     bool disableOriTweenMenu;
     bool enableAltTweenMenu;
+    Var::AltKeyMap AltTweenMenu;
 
     bool disableOriQuickInventory;
     bool enableAltQuickInventory;
+    Var::AltKeyMap AltQuickInventory;
 
     bool disableOriQuickMagic;
     bool enableAltQuickMagic;
+    Var::AltKeyMap AltQuickMagic;
 
     bool disableOriQuickStats;
     bool enableAltQuickStats;
+    Var::AltKeyMap AltQuickStats;
 
     bool disableOriQuickMap;
     bool enableAltQuickMap;
+    Var::AltKeyMap AltQuickMap;
 
     // Combat
     bool disableOriAttack;
     bool enableAltAttack;
+    Var::AltKeyMap AltAttack;
 
     bool enableAltPowerAttack;
     bool disableOriPowerAttack;
+    Var::AltKeyMap AltPowerAttack;
 
     bool enableAltBlock;
     bool disableOriBlock;
+    Var::AltKeyMap AltBlock;
 
     // Movement
 
     // Misc
     bool disableOriTogglePOV;
     bool enableAltTogglePOV;
-    
+    Var::AltKeyMap AltTogglePOV;
+
     bool disableOriAutoMove;
     bool enableAltAutoMove;
+    Var::AltKeyMap AltAutoMove;
 
     bool disableOriToggleRun;
     bool enableAltToggleRun;
+    Var::AltKeyMap AltToggleRun;
 
-
-    static std::string* s = nullptr;
-    char* str(std::string ss) {
-        if (s) {
-            delete(s);
+    static std::string *s = nullptr;
+    char *str(std::string ss)
+    {
+        if (s)
+        {
+            delete (s);
             s = new std::string(ss);
-        } else
+        }
+        else
             s = new std::string(ss);
-        s->at(0) = std::toupper(s->at(0));
+        if (s->at(0) >= 'a')
+            s->at(0) = std::toupper(s->at(0));
         return s->data();
     }
     bool loadInI()
@@ -72,56 +85,115 @@ namespace Config
             return false;
         }
 
-        #ifndef toStr
-        #define toStr(n) str(std::string(#n))
-        #endif;
+#ifndef toStr
+#define toStr(n) str(std::string(#n))
+#endif;
 
         // Feature
-        enableGlobalInput = ini.SetBoolValue("Feature", toStr(enableGlobalInput), true);
-        enableStances = ini.SetBoolValue("Feature", toStr(enableStances), true);
+        enableGlobalInput = ini.GetBoolValue("Feature", toStr(enableGlobalInput), true);
+        enableStances = ini.GetBoolValue("Feature", toStr(enableStances), true);
 
         // Menu
-        disableOriTweenMenu = ini.SetBoolValue("Menu", toStr(disableOriTweenMenu), true);
-        enableAltTweenMenu = ini.SetBoolValue("Menu", toStr(enableAltTweenMenu), false);
+        disableOriTweenMenu = ini.GetBoolValue("Menu", toStr(disableOriTweenMenu), true);
+        enableAltTweenMenu = ini.GetBoolValue("Menu", toStr(enableAltTweenMenu), false);
 
-        disableOriQuickInventory = ini.SetBoolValue("Menu", toStr(disableOriQuickInventory), false);
-        enableAltQuickInventory = ini.SetBoolValue("Menu", toStr(enableAltQuickInventory), false);
+        disableOriQuickInventory = ini.GetBoolValue("Menu", toStr(disableOriQuickInventory), false);
+        enableAltQuickInventory = ini.GetBoolValue("Menu", toStr(enableAltQuickInventory), false);
 
-        disableOriQuickMagic = ini.SetBoolValue("Menu", toStr(disableOriQuickMagic), false);
-        enableAltQuickMagic = ini.SetBoolValue("Menu", toStr(enableAltQuickMagic), false);
+        disableOriQuickMagic = ini.GetBoolValue("Menu", toStr(disableOriQuickMagic), false);
+        enableAltQuickMagic = ini.GetBoolValue("Menu", toStr(enableAltQuickMagic), false);
 
-        disableOriQuickStats = ini.SetBoolValue("Menu", toStr(disableOriQuickStats), false);
-        enableAltQuickStats = ini.SetBoolValue("Menu", toStr(enableAltQuickStats), false);
+        disableOriQuickStats = ini.GetBoolValue("Menu", toStr(disableOriQuickStats), false);
+        enableAltQuickStats = ini.GetBoolValue("Menu", toStr(enableAltQuickStats), false);
 
-        disableOriQuickMap = ini.SetBoolValue("Menu", toStr(disableOriQuickMap), false);
-        enableAltQuickMap = ini.SetBoolValue("Menu", toStr(enableAltQuickMap), false);
+        disableOriQuickMap = ini.GetBoolValue("Menu", toStr(disableOriQuickMap), false);
+        enableAltQuickMap = ini.GetBoolValue("Menu", toStr(enableAltQuickMap), false);
 
         // Combat
-        disableOriAttack = ini.SetBoolValue("Combat", toStr(disableOriAttack), false);
-        enableAltAttack = ini.SetBoolValue("Combat", toStr(enableAltAttack), false);
+        disableOriAttack = ini.GetBoolValue("Combat", toStr(disableOriAttack), false);
+        enableAltAttack = ini.GetBoolValue("Combat", toStr(enableAltAttack), false);
 
-        disableOriPowerAttack = ini.SetBoolValue("Combat", toStr(disableOriPowerAttack), true);
-        enableAltPowerAttack = ini.SetBoolValue("Combat", toStr(enableAltPowerAttack), true);
+        disableOriPowerAttack = ini.GetBoolValue("Combat", toStr(disableOriPowerAttack), true);
+        enableAltPowerAttack = ini.GetBoolValue("Combat", toStr(enableAltPowerAttack), true);
 
-        disableOriBlock = ini.SetBoolValue("Combat", toStr(disableOriBlock), false);
-        enableAltBlock = ini.SetBoolValue("Combat", toStr(enableAltBlock), false);
-
+        disableOriBlock = ini.GetBoolValue("Combat", toStr(disableOriBlock), false);
+        enableAltBlock = ini.GetBoolValue("Combat", toStr(enableAltBlock), false);
 
         // Movement
 
         // Misc
-        disableOriTogglePOV = ini.SetBoolValue("Misc", toStr(disableOriTogglePOV), false);
-        enableAltTogglePOV = ini.SetBoolValue("Misc", toStr(enableAltTogglePOV), false);
+        disableOriTogglePOV = ini.GetBoolValue("Misc", toStr(disableOriTogglePOV), false);
+        enableAltTogglePOV = ini.GetBoolValue("Misc", toStr(enableAltTogglePOV), false);
 
-        disableOriAutoMove = ini.SetBoolValue("Misc", toStr(disableOriAutoMove), false);
-        enableAltAutoMove = ini.SetBoolValue("Misc", toStr(enableAltAutoMove), false);
+        disableOriAutoMove = ini.GetBoolValue("Misc", toStr(disableOriAutoMove), false);
+        enableAltAutoMove = ini.GetBoolValue("Misc", toStr(enableAltAutoMove), false);
 
-        disableOriToggleRun = ini.SetBoolValue("Misc", toStr(disableOriToggleRun), false);
-        enableAltToggleRun = ini.SetBoolValue("Misc", toStr(enableAltToggleRun), false);
+        disableOriToggleRun = ini.GetBoolValue("Misc", toStr(disableOriToggleRun), false);
+        enableAltToggleRun = ini.GetBoolValue("Misc", toStr(enableAltToggleRun), false);
 
-        #ifdef toStr
-        #undef toStr
-        #endif;
+        // AlternativeKey
+        AltTweenMenu.userEvent = ini.GetValue(toStr(AltTweenMenu), "UserEvent", Var::userEvent->tweenMenu.c_str());
+        AltTweenMenu.useShortKey = ini.GetBoolValue(toStr(AltTweenMenu), "UseShortKey", false);
+        AltTweenMenu.firstKey = ini.GetLongValue(toStr(AltTweenMenu), "FirstKey", 0);
+        AltTweenMenu.secondKey = ini.GetLongValue(toStr(AltTweenMenu), "SecondKey", 0);
+        AltTweenMenu.shortKey = ini.GetLongValue(toStr(AltTweenMenu), "ShortKey", 0);
+        AltTweenMenu.priority = ini.GetLongValue(toStr(AltTweenMenu), "Priority", 0);
+
+        AltQuickInventory.userEvent = ini.GetValue(toStr(AltQuickInventory), "UserEvent", Var::userEvent->quickInventory.c_str());
+        AltQuickInventory.useShortKey = ini.GetBoolValue(toStr(AltQuickInventory), "UseShortKey", false);
+        AltQuickInventory.firstKey = ini.GetLongValue(toStr(AltQuickInventory), "FirstKey", 0);
+        AltQuickInventory.secondKey = ini.GetLongValue(toStr(AltQuickInventory), "SecondKey", 0);
+        AltQuickInventory.shortKey = ini.GetLongValue(toStr(AltQuickInventory), "ShortKey", 0);
+        AltQuickInventory.priority = ini.GetLongValue(toStr(AltQuickInventory), "Priority", 0);
+
+        AltQuickMagic.userEvent = ini.GetValue(toStr(AltQuickMagic), "UserEvent", Var::userEvent->quickMagic.c_str());
+        AltQuickMagic.useShortKey = ini.GetBoolValue(toStr(AltQuickMagic), "UseShortKey", false);
+        AltQuickMagic.firstKey = ini.GetLongValue(toStr(AltQuickMagic), "FirstKey", 0);
+        AltQuickMagic.secondKey = ini.GetLongValue(toStr(AltQuickMagic), "SecondKey", 0);
+        AltQuickMagic.shortKey = ini.GetLongValue(toStr(AltQuickMagic), "ShortKey", 0);
+        AltQuickMagic.priority = ini.GetLongValue(toStr(AltQuickMagic), "Priority", 0);
+
+        AltQuickStats.userEvent = ini.GetValue(toStr(AltQuickStats), "UserEvent", Var::userEvent->quickStats.c_str());
+        AltQuickStats.useShortKey = ini.GetBoolValue(toStr(AltQuickStats), "UseShortKey", false);
+        AltQuickStats.firstKey = ini.GetLongValue(toStr(AltQuickStats), "FirstKey", 0);
+        AltQuickStats.secondKey = ini.GetLongValue(toStr(AltQuickStats), "SecondKey", 0);
+        AltQuickStats.useShortKey = ini.GetLongValue(toStr(AltQuickStats), "ShortKey", 0);
+        AltQuickStats.priority = ini.GetLongValue(toStr(AltQuickStats), "Priority", 0);
+
+        AltQuickMap.userEvent = ini.GetValue(toStr(AltQuickMap), "UserEvent", Var::userEvent->quickMap.c_str());
+        AltQuickMap.useShortKey = ini.GetBoolValue(toStr(AltQuickMap), "UseShortKey", false);
+        AltQuickMap.firstKey = ini.GetLongValue(toStr(AltQuickMap), "FirstKey", 0);
+        AltQuickMap.secondKey = ini.GetLongValue(toStr(AltQuickMap), "SecondKey", 0);
+        AltQuickMap.shortKey = ini.GetLongValue(toStr(AltQuickMap), "ShortKey", 0);
+        AltQuickMap.priority = ini.GetLongValue(toStr(AltQuickMap), "Priority", 0);
+
+        AltAttack.userEvent = ini.GetValue(toStr(AltAttack), "UserEvent", Var::userEvent->attackStart.c_str());
+        AltAttack.useShortKey = ini.GetBoolValue(toStr(AltAttack), "UseShortKey", false);
+        AltAttack.firstKey = ini.GetLongValue(toStr(AltAttack), "FirstKey", 0);
+        AltAttack.secondKey = ini.GetLongValue(toStr(AltAttack), "SecondKey", 0);
+        AltAttack.shortKey = ini.GetLongValue(toStr(AltAttack), "ShortKey", 0);
+        AltAttack.priority = ini.GetLongValue(toStr(AltAttack), "Priority", 0);
+
+        AltPowerAttack.userEvent = ini.GetValue(toStr(AltPowerAttack), "UserEvent", Var::userEvent->attackPowerStart.c_str());
+        AltPowerAttack.useShortKey = ini.GetBoolValue(toStr(AltPowerAttack), "UseShortKey", false);
+        AltPowerAttack.firstKey = ini.GetLongValue(toStr(AltPowerAttack), "FirstKey", KeyUtils::MouseButtonRight);
+        AltPowerAttack.secondKey = ini.GetLongValue(toStr(AltPowerAttack), "SecondKey", 0);
+        AltPowerAttack.shortKey = ini.GetLongValue(toStr(AltPowerAttack), "ShortKey", 0);
+        AltPowerAttack.priority = ini.GetLongValue(toStr(AltPowerAttack), "Priority", 0);
+
+        AltBlock.userEvent = ini.GetValue(toStr(AltBlock), "UserEvent", Var::userEvent->blockStart.c_str());
+        AltBlock.useShortKey = ini.GetBoolValue(toStr(AltBlock), "UseShortKey", false);
+        AltBlock.firstKey = ini.GetLongValue(toStr(AltBlock), "FirstKey", KeyUtils::Tab);
+        AltBlock.secondKey = ini.GetLongValue(toStr(AltBlock), "SecondKey", 0);
+        AltBlock.shortKey = ini.GetLongValue(toStr(AltBlock), "ShortKey", 0);
+        AltBlock.priority = ini.GetLongValue(toStr(AltBlock), "Priority", 0);
+
+#ifdef toStr
+#undef toStr
+#endif;
+
+        if (!s)
+            delete s;
 
         logger::trace("ini file load success.");
         return true;
@@ -131,9 +203,9 @@ namespace Config
         CSimpleIniA ini;
         ini.SetUnicode();
 
-        #ifndef toStr
-        #define toStr(n) str(std::string(#n))
-        #endif;
+#ifndef toStr
+#define toStr(n) str(std::string(#n))
+#endif;
 
         // Feature
         ini.SetBoolValue("Feature", toStr(enableGlobalInput), true, ";Enable KLE Process ButtonEvent which has AlternativeKey.\n;If you switch off this AlternativeKey won't work.");
@@ -162,9 +234,8 @@ namespace Config
         ini.SetBoolValue("Combat", toStr(disableOriPowerAttack), true);
         ini.SetBoolValue("Combat", toStr(enableAltPowerAttack), true);
 
-        ini.SetBoolValue("Combat", toStr(disableOriBlock), false);
-        ini.SetBoolValue("Combat", toStr(enableAltBlock), false);
-
+        ini.SetBoolValue("Combat", toStr(disableOriBlock), true);
+        ini.SetBoolValue("Combat", toStr(enableAltBlock), true);
 
         // Movement
 
@@ -178,10 +249,67 @@ namespace Config
         ini.SetBoolValue("Misc", toStr(disableOriToggleRun), false);
         ini.SetBoolValue("Misc", toStr(enableAltToggleRun), false);
 
+        // AlternativeKey
+        ini.SetValue(toStr(AltTweenMenu), "UserEvent", Var::userEvent->tweenMenu.c_str());
+        ini.SetBoolValue(toStr(AltTweenMenu), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltTweenMenu), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltTweenMenu), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltTweenMenu), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltTweenMenu), "Priority", 0);
 
-        #ifdef toStr
-        #undef toStr
-        #endif;
+        ini.SetValue(toStr(AltQuickInventory), "UserEvent", Var::userEvent->quickInventory.c_str());
+        ini.SetBoolValue(toStr(AltQuickInventory), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltQuickInventory), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltQuickInventory), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltQuickInventory), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltQuickInventory), "Priority", 0);
+
+        ini.SetValue(toStr(AltQuickMagic), "UserEvent", Var::userEvent->quickMagic.c_str());
+        ini.SetBoolValue(toStr(AltQuickMagic), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltQuickMagic), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltQuickMagic), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltQuickMagic), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltQuickMagic), "Priority", 0);
+
+        ini.SetValue(toStr(AltQuickStats), "UserEvent", Var::userEvent->quickStats.c_str());
+        ini.SetBoolValue(toStr(AltQuickStats), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltQuickStats), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltQuickStats), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltQuickStats), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltQuickStats), "Priority", 0);
+
+        ini.SetValue(toStr(AltQuickMap), "UserEvent", Var::userEvent->quickMap.c_str());
+        ini.SetBoolValue(toStr(AltQuickMap), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltQuickMap), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltQuickMap), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltQuickMap), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltQuickMap), "Priority", 0);
+
+        ini.SetValue(toStr(AltAttack), "UserEvent", Var::userEvent->attackStart.c_str());
+        ini.SetBoolValue(toStr(AltAttack), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltAttack), "FirstKey", 0);
+        ini.SetLongValue(toStr(AltAttack), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltAttack), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltAttack), "Priority", 0);
+
+        ini.SetValue(toStr(AltPowerAttack), "UserEvent", Var::userEvent->attackPowerStart.c_str());
+        ini.SetBoolValue(toStr(AltPowerAttack), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltPowerAttack), "FirstKey", KeyUtils::MouseButtonRight);
+        ini.SetLongValue(toStr(AltPowerAttack), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltPowerAttack), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltPowerAttack), "Priority", 0);
+
+        ini.SetValue(toStr(AltBlock), "UserEvent", Var::userEvent->blockStart.c_str());
+        ini.SetBoolValue(toStr(AltBlock), "UseShortKey", false);
+        ini.SetLongValue(toStr(AltBlock), "FirstKey", KeyUtils::Tab);
+        ini.SetLongValue(toStr(AltBlock), "SecondKey", 0);
+        ini.SetLongValue(toStr(AltBlock), "ShortKey", 0);
+        ini.SetLongValue(toStr(AltBlock), "Priority", 0);
+
+#ifdef toStr
+#undef toStr
+#endif;
+
         if (!s)
             delete s;
 

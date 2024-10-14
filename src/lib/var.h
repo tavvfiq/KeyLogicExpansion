@@ -16,7 +16,7 @@ namespace Var
         RE::BSFixedString userEvent;
         bool useShortKey;
         uint32_t firstKey;
-        uint32_t SecondKey;
+        uint32_t secondKey;
         uint32_t shortKey;
         uint32_t priority;
     }AltKeyMap;

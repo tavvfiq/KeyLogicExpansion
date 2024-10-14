@@ -4,23 +4,28 @@
 using namespace RE;
 using namespace REL;
 
-namespace keyQueue {
+namespace keyQueue
+{
 
-    enum ActionType {
-        Menu = 0,
-        Combat,
+    enum ActionType
+    {
+        MenuOpen = 0,
+        AttackBlock,
+        AutoMove,
         Misc
     };
 
-    typedef struct {
+    typedef struct
+    {
         uint32_t code;
         float held;
-    }keyInput;
+    } keyInput;
 
-    typedef struct {
+    typedef struct
+    {
         RE::BSFixedString userEvent;
         ActionType type;
-    }Action;
+    } Action;
 
     extern std::deque<keyInput> keyQueue;
     static std::deque<Action> actQueue;
@@ -28,6 +33,6 @@ namespace keyQueue {
 
     void pushInKey(keyInput key);
     void updateKey(keyInput key);
-    void dumpKey(std::unique_lock<std::mutex>&& lock);
+    void dumpKey(std::unique_lock<std::mutex> &&lock);
     void doAction();
 }
