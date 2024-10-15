@@ -145,6 +145,4 @@ namespace KeyUtils
 
     void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput);
     uint32_t GetEventKeyMap(ButtonEvent *a_event);
-
-    extern std::vector<uint32_t> combineKey;
 }

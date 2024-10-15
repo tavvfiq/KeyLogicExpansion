@@ -1,10 +1,11 @@
 #pragma once
 #include "PCH.h"
+#include "config.h"
 
 using namespace RE;
 using namespace REL;
 
-namespace keyQueue
+namespace KeyQueue
 {
 
     enum ActionType
@@ -12,7 +13,9 @@ namespace keyQueue
         MenuOpen = 0,
         AttackBlock,
         AutoMove,
-        Misc
+        Misc,
+
+        End = 65536
     };
 
     typedef struct
@@ -21,18 +24,15 @@ namespace keyQueue
         float held;
     } keyInput;
 
-    typedef struct
-    {
-        RE::BSFixedString userEvent;
-        ActionType type;
-    } Action;
-
     extern std::deque<keyInput> keyQueue;
-    static std::deque<Action> actQueue;
     static std::mutex mtx;
+
+    void buildKeySearchList();
 
     void pushInKey(keyInput key);
     void updateKey(keyInput key);
     void dumpKey(std::unique_lock<std::mutex> &&lock);
-    void doAction();
+    void decodeAction();
+
+
 }

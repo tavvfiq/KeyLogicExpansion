@@ -11,9 +11,9 @@ bool HookAutoMoveHandler::CanProcess(InputEvent *a_event)
     if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton)
     {
         if (a_event->AsButtonEvent()->IsDown())
-            keyQueue::pushInKey(keyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), 0});
+            KeyQueue::pushInKey(KeyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), 0});
         else if (a_event->AsButtonEvent()->IsUp())
-            keyQueue::updateKey(keyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->HeldDuration()});
+            KeyQueue::updateKey(KeyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->HeldDuration()});
     }
     if (Config::disableOriAutoMove)
         return false;

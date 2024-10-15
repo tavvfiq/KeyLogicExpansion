@@ -96,13 +96,16 @@ namespace
     {
         Var::init();
         Config::loadInI();
+        KeyQueue::buildKeySearchList();
+        std::thread inputDecoder(KeyQueue::decodeAction);
+        inputDecoder.detach();
+        HookAutoMoveHandler::Hook();
         log::trace("Initializing trampoline...");
         auto &trampoline = GetTrampoline();
         trampoline.create(64);
         log::trace("Trampoline initialized.");
         log::trace("Init Hook.");
         if (Config::enableAltTweenMenu || Config::disableOriTweenMenu) {
-            HookAutoMoveHandler::Hook();
         }
         log::trace("Init Hook completed.");
     }
