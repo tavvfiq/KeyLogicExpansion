@@ -36,7 +36,7 @@ private:
 	static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
 };
 
-
+extern std::deque<BSFixedString> menuEvent;
 class HookMenuOpenHandler
 {
 public:

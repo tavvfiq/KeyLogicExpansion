@@ -11,13 +11,4 @@ namespace Var
     extern UserEvents *userEvent;
 
     void init();
-
-    typedef struct {
-        RE::BSFixedString userEvent;
-        bool useShortKey;
-        uint32_t firstKey;
-        uint32_t secondKey;
-        uint32_t shortKey;
-        uint32_t priority;
-    }AltKeyMap;
 }

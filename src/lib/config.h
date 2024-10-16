@@ -8,60 +8,72 @@ using namespace SKSE::log;
 
 namespace Config
 {
+    typedef struct
+    {
+        bool useShortKey;
+        uint32_t firstKey;
+        uint32_t secondKey;
+        uint32_t shortKey;
+        uint32_t priority;
+    } AltKeyMap;
+
     const std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion/settings.ini";
 
     // Feature
     extern bool enableGlobalInput;
     extern bool enableStances;
 
+    extern uint32_t clickTime;
+    extern uint32_t longPressTime;
+
     // Menu
     extern bool disableOriTweenMenu;
     extern bool enableAltTweenMenu;
-    extern Var::AltKeyMap AltTweenMenu;
+    extern AltKeyMap AltTweenMenu;
 
     extern bool disableOriQuickInventory;
     extern bool enableAltQuickInventory;
-    extern Var::AltKeyMap AltQuickInventory;
+    extern AltKeyMap AltQuickInventory;
 
     extern bool disableOriQuickMagic;
     extern bool enableAltQuickMagic;
-    extern Var::AltKeyMap AltQuickMagic;
+    extern AltKeyMap AltQuickMagic;
 
     extern bool disableOriQuickStats;
     extern bool enableAltQuickStats;
-    extern Var::AltKeyMap AltQuickStats;
+    extern AltKeyMap AltQuickStats;
 
     extern bool disableOriQuickMap;
     extern bool enableAltQuickMap;
-    extern Var::AltKeyMap AltQuickMap;
+    extern AltKeyMap AltQuickMap;
 
     // Combat
     extern bool disableOriAttack;
     extern bool enableAltAttack;
-    extern Var::AltKeyMap AltAttack;
+    extern AltKeyMap AltAttack;
 
     extern bool enableAltPowerAttack;
     extern bool disableOriPowerAttack;
-    extern Var::AltKeyMap AltPowerAttack;
+    extern AltKeyMap AltPowerAttack;
 
     extern bool enableAltBlock;
     extern bool disableOriBlock;
-    extern Var::AltKeyMap AltBlock;
+    extern AltKeyMap AltBlock;
 
     // Movement
 
     // Misc
     extern bool disableOriTogglePOV;
     extern bool enableAltTogglePOV;
-    extern Var::AltKeyMap AltTogglePOV;
+    extern AltKeyMap AltTogglePOV;
 
     extern bool disableOriAutoMove;
     extern bool enableAltAutoMove;
-    extern Var::AltKeyMap AltAutoMove;
+    extern AltKeyMap AltAutoMove;
 
     extern bool disableOriToggleRun;
     extern bool enableAltToggleRun;
-    extern Var::AltKeyMap AltToggleRun;
+    extern AltKeyMap AltToggleRun;
 
     bool loadInI();
     bool createDefaultInI();

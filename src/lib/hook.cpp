@@ -10,10 +10,8 @@ bool HookAutoMoveHandler::CanProcess(InputEvent *a_event)
 {
     if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton)
     {
-        if (a_event->AsButtonEvent()->IsDown())
-            KeyQueue::pushInKey(KeyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), 0});
-        else if (a_event->AsButtonEvent()->IsUp())
-            KeyQueue::updateKey(KeyQueue::keyInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->HeldDuration()});
+        logger::trace("{} {} {} {} {} {}",(int)a_event, a_event->AsButtonEvent()->idCode, a_event->AsButtonEvent()->heldDownSecs, a_event->AsButtonEvent()->IsHeld(),  a_event->AsButtonEvent()->IsDown(), a_event->AsButtonEvent()->IsUp());
+        KeyQueue::rawQueue.push_back(KeyQueue::RawInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->heldDownSecs, a_event->AsButtonEvent()->value});
     }
     if (Config::disableOriAutoMove)
         return false;
@@ -35,14 +33,18 @@ void HookAutoMoveHandler::Hook()
 }
 
 // HookMenuOpenHandler
+std::deque<BSFixedString> menuEvent = {};
 bool HookMenuOpenHandler::CanProcess(InputEvent *a_event)
 {
+    return !menuEvent.empty();
     FnCanProcess fn = fnCP.at(*(uintptr_t *)this);
     return (this->*fn)(a_event);
 }
 std::unordered_map<uintptr_t, HookMenuOpenHandler::FnCanProcess> HookMenuOpenHandler::fnCP;
 bool HookMenuOpenHandler::ProcessButton(ButtonEvent *a_event)
 {
+    a_event->userEvent = menuEvent.front();
+    menuEvent.pop_front();
     FnProcessButton fn = fnPB.at(*(uintptr_t *)this);
     return (this->*fn)(a_event);
 }

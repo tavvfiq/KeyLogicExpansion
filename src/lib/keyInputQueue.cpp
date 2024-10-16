@@ -2,6 +2,29 @@
 
 namespace KeyQueue
 {
+
+    enum ActionType
+    {
+        MenuOpen = 0,
+        AttackBlock,
+        AutoMove,
+        Misc,
+
+        End = 65536
+    };
+
+    enum PressType {
+        click = 0,
+        hold,
+        release
+    };
+
+    typedef struct
+    {
+        uint32_t code;
+        PressType type;
+    } keyInput;
+    
     typedef struct
     {
         RE::BSFixedString userEvent;
@@ -16,14 +39,18 @@ namespace KeyQueue
         Action action;
     } SearchNode;
 
-    std::deque<keyInput> keyQueue = {};
-    static std::vector<SearchNode> searchList;
-    static std::deque<Action> actQueue = {};
 
-    void insertSearchList(Var::AltKeyMap altKey, RE::BSFixedString userEvent, ActionType aType)
+    std::deque<RawInput> rawQueue = {};
+    static std::mutex mtx;
+    static std::deque<keyInput> keyQueue;
+    static std::deque<Action> actQueue = {};
+    static std::vector<SearchNode> searchList;
+
+    void insertSearchList(Config::AltKeyMap altKey, RE::BSFixedString userEvent, ActionType aType)
     {
-        searchList.push_back(SearchNode{altKey.firstKey, altKey.secondKey, altKey.priority, Action{userEvent, aType}});
-        if (altKey.useShortKey)
+        if (altKey.firstKey)
+            searchList.push_back(SearchNode{altKey.firstKey, altKey.secondKey, altKey.priority, Action{userEvent, aType}});
+        if (altKey.useShortKey && altKey.shortKey)
             searchList.push_back(SearchNode{altKey.shortKey, 0, altKey.priority, Action{userEvent, aType}});
     }
 
@@ -75,9 +102,7 @@ namespace KeyQueue
         if (index == keyQueue.end())
             return;
         else
-        {
             index->held = key.held;
-        }
         dumpKey(std::move(lock));
     }
 
@@ -91,11 +116,9 @@ namespace KeyQueue
                     if (node.second == 0)
                         actQueue.push_back(node.action);
                     else
-                    {
                         for (auto i = index + 1; i < keyQueue.end(); i++)
                             if (index->code == node.second)
                                 actQueue.push_back(node.action);
-                    }
                 }
         for (auto index = keyQueue.begin(); index != keyQueue.end();)
             if (index->held > 0)
@@ -105,7 +128,29 @@ namespace KeyQueue
         lock.unlock();
     }
 
-    void decodeAction()
+    void PressTypeDetect(keyInput& key) {
+    }
+
+    void CombineDetect() {
+
+    }
+
+    void inputDecoder() {
+        while(true) {
+            if (rawQueue.empty())
+                continue;
+            auto raw = rawQueue.front();
+            rawQueue.pop_front();
+            {
+                if (!raw.held && raw.value) {
+                    keyQueue.push_back(keyInput{raw.code, PressType::click});
+                    std::thread(PressTypeDetect, keyQueue.back()).detach();
+                }
+            }
+        }
+    }
+
+    void actionDecoder()
     {
         logger::trace("Action Decoder Start");
         while (true)
@@ -117,9 +162,19 @@ namespace KeyQueue
             }
             Action act = actQueue.front();
             actQueue.pop_front();
+            logger::trace("String: {}   Type: {}", act.userEvent.c_str(), (int)act.type);
             if (act.type == ActionType::End)
                 break;
-            logger::trace("String: {}    Type: {}", act.userEvent.c_str(), (int)act.type);
+            switch (act.type) {
+                case ActionType::MenuOpen:
+                    break;
+                case ActionType::AttackBlock:
+                    break;
+                case ActionType::AutoMove:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
