@@ -9,8 +9,8 @@ namespace Config
     bool enableGlobalInput;
     bool enableStances;
 
-    uint32_t clickTime = 50;
     uint32_t longPressTime = 200;
+    uint32_t deleteTime = 50;
 
     // Menu
     bool disableOriTweenMenu;

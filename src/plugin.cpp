@@ -97,8 +97,7 @@ namespace
         Var::init();
         Config::loadInI();
         KeyQueue::buildKeySearchList();
-        std::thread inputDecoder(KeyQueue::inputDecoder);
-        inputDecoder.detach();
+        std::thread(KeyQueue::inputDecoder).detach();
         log::trace("Initializing trampoline...");
         auto &trampoline = GetTrampoline();
         trampoline.create(64);
