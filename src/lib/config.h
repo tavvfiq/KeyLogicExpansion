@@ -23,8 +23,9 @@ namespace Config
     extern bool enableGlobalInput;
     extern bool enableStances;
 
+    extern uint32_t pressInterval;
+    extern uint32_t clickTime;
     extern uint32_t longPressTime;
-    extern uint32_t deleteTime;
 
     // Menu
     extern bool disableOriTweenMenu;

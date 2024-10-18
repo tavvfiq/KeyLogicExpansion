@@ -15,10 +15,7 @@ namespace KeyQueue
         float value;
     } RawInput;
 
-    extern std::deque<RawInput> rawQueue;
-
+    void RawQueuePusher(RawInput);
     void buildKeySearchList();
-
-    void inputDecoder();
     void actionDecoder();
 }
