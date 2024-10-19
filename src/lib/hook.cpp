@@ -8,7 +8,8 @@ std::unordered_map<uintptr_t, HookAutoMoveHandler::FnCanProcess> HookAutoMoveHan
 std::unordered_map<uintptr_t, HookAutoMoveHandler::FnProcessButton> HookAutoMoveHandler::fnPB;
 bool HookAutoMoveHandler::CanProcess(InputEvent *a_event)
 {
-    if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton) {
+    if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton)
+    {
         std::thread(KeyQueue::RawQueuePusher, KeyQueue::RawInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->heldDownSecs, a_event->AsButtonEvent()->value}).detach();
     }
     if (Config::disableOriAutoMove)

@@ -1,4 +1,4 @@
-#include "KeyInputQueue.h"
+#include "keyDecoder.h"
 
 namespace KeyQueue
 {
@@ -36,7 +36,7 @@ namespace KeyQueue
 
     static std::shared_mutex raw_mtx;
     static std::deque<RawInput> rawQueue = {};
-    static std::unordered_map<uint32_t, std::deque<RawInput>*> rawList;
+    static std::unordered_map<uint32_t, std::deque<RawInput> *> rawList;
 
     static std::shared_mutex key_mtx;
     static std::map<uint64_t, KeyInput> keyQueue = {};
@@ -115,6 +115,10 @@ namespace KeyQueue
         insertSearchList(Config::AltTogglePOV, Var::userEvent->togglePOV, ActionType::Misc);
         insertSearchList(Config::AltAutoMove, Var::userEvent->autoMove, ActionType::AutoMove);
         insertSearchList(Config::AltToggleRun, Var::userEvent->toggleRun, ActionType::Misc);
+
+        for (auto item : searchList)
+            for (auto i : item.second)
+                logger::trace("Key: {} -> Priority: {} -> CombineKey: {} : UserEvent: {}", item.first, i.first, i.second.withCombine, i.second.userEvent.c_str());
     }
     /*
         void dumpKey(std::unique_lock<std::mutex> &&lock)
@@ -145,13 +149,13 @@ namespace KeyQueue
         rawQueue.push_back(raw);
     }
 
-    void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput>*>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key,  bool isCombine)
+    void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput> *>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key, bool isCombine)
     {
         auto prevTime = TimeUtils::GetTime();
         logger::trace("Tracker of {} start", iter_raw->first);
         while (true)
         {
-            if ((TimeUtils::GetTime() - prevTime)/1000.0 > Config::pressInterval)
+            if ((TimeUtils::GetTime() - prevTime) / 1000.0 > Config::pressInterval)
             {
                 logger::trace("Tracker of {} outtime", iter_raw->first);
                 if (isCombine)
@@ -172,13 +176,13 @@ namespace KeyQueue
                 logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
-            if ((TimeUtils::GetTime() - iter_key->first)/1000.0 > Config::clickTime)
+            if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::clickTime)
             {
                 if (isCombine)
                     combineList[iter_raw->first] = true;
                 iter_key->second.type = PressType::click;
             }
-            else if ((TimeUtils::GetTime() - iter_key->first)/1000.0 > Config::longPressTime)
+            else if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::longPressTime)
             {
                 if (isCombine)
                     combineList[iter_raw->first] = true;
@@ -206,17 +210,23 @@ namespace KeyQueue
             rawQueue.pop_front();
             raw_mtx.lock_shared();
             auto res = rawList.find(raw.code);
-            if (res == rawList.end()) {
+            if (res == rawList.end())
+            {
                 logger::trace("New Start");
                 auto ptr = new std::deque<RawInput>;
                 ptr->push_back(raw);
                 auto iter_raw = rawList.insert(std::make_pair(raw.code, ptr)).first;
                 auto iter_key = keyQueue.insert(std::make_pair(TimeUtils::GetTime(), KeyInput{raw.code, PressType::disable})).first;
                 std::thread(KeyTracker, iter_raw, iter_key, isCombine(raw.code)).detach();
-            }else
+            }
+            else
                 res->second->push_back(raw);
             raw_mtx.unlock_shared();
         }
+    }
+
+    void doAction(BSFixedString userEvent, ActionType type) {
+
     }
 
     void actionDecoder()
@@ -226,8 +236,19 @@ namespace KeyQueue
         while (true)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
+            key_mtx.lock_shared();
             if (keyQueue.empty())
                 continue;
+            for (auto key : keyQueue) {
+                auto res = searchList.find(key.second.code);
+                if (res == searchList.end())
+                    continue;
+                for (auto item : res->second) {
+                    if (combineList[item.second.withCombine])
+                        doAction(item.second.userEvent, item.second.type);
+                }
+            }
+            key_mtx.unlock_shared();
         }
     }
 }

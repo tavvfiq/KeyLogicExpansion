@@ -77,7 +77,8 @@ namespace Config
         return s->data();
     }
 
-    void getKey(AltKeyMap& keyMap,char* name , uint32_t firstKey=0, uint32_t secondKey=0, bool useShortKey=false, uint32_t shortKey=0, uint32_t priority=0) {
+    void getKey(AltKeyMap &keyMap, char *name, uint32_t firstKey = 0, uint32_t secondKey = 0, bool useShortKey = false, uint32_t shortKey = 0, uint32_t priority = 0)
+    {
         keyMap.useShortKey = ini.GetBoolValue(name, "UseShortKey", useShortKey);
         keyMap.firstKey = ini.GetLongValue(name, "FirstKey", firstKey);
         keyMap.secondKey = ini.GetLongValue(name, "SecondKey", secondKey);
@@ -85,7 +86,8 @@ namespace Config
         keyMap.priority = ini.GetLongValue(name, "Priority", priority);
     }
 
-    void setKey(AltKeyMap keyMap,char* name , uint32_t firstKey=0, uint32_t secondKey=0, bool useShortKey=false, uint32_t shortKey=0, uint32_t priority=0) {
+    void setKey(AltKeyMap keyMap, char *name, uint32_t firstKey = 0, uint32_t secondKey = 0, bool useShortKey = false, uint32_t shortKey = 0, uint32_t priority = 0)
+    {
         ini.SetBoolValue(name, "UseShortKey", useShortKey);
         ini.SetLongValue(name, "FirstKey", firstKey);
         ini.SetLongValue(name, "SecondKey", secondKey);

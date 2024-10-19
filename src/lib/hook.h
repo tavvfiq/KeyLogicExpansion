@@ -1,13 +1,14 @@
 #pragma once
 #include "config.h"
-#include "keyInputQueue.h"
+#include "keyDecoder.h"
 
 using namespace RE;
 using namespace REL;
 
 // using AutoMoveHandler as InputEvent Receiver
-class HookAutoMoveHandler {
-	public:
+class HookAutoMoveHandler
+{
+public:
 	typedef bool (HookAutoMoveHandler::*FnCanProcess)(InputEvent *);
 	bool CanProcess(InputEvent *a_event);
 
@@ -21,7 +22,8 @@ private:
 	static std::unordered_map<uintptr_t, FnProcessButton> fnPB;
 };
 
-class HookAttackBlockHandler {
+class HookAttackBlockHandler
+{
 public:
 	typedef bool (HookAttackBlockHandler::*FnCanProcess)(InputEvent *);
 	bool CanProcess(InputEvent *a_event);
