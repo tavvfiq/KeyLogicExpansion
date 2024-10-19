@@ -14,7 +14,8 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 include(GNUInstallDirs)
 
 # change this to your output mod folder
-set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/Perfectionism/mods/KLE")
+#set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/Perfectionism/mods/KLE")
+set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/Steam/mods/KeyLogicOverhaul")
 
 file(GLOB_RECURSE headers 
     "src/lib/*.h"

@@ -1,4 +1,4 @@
-#include "keyInputQueue.h"
+#include "KeyInputQueue.h"
 
 namespace KeyQueue
 {
@@ -25,7 +25,7 @@ namespace KeyQueue
     {
         uint32_t code;
         PressType type;
-    } keyInput;
+    } KeyInput;
 
     typedef struct
     {
@@ -36,9 +36,10 @@ namespace KeyQueue
 
     static std::shared_mutex raw_mtx;
     static std::deque<RawInput> rawQueue = {};
+    static std::unordered_map<uint32_t, std::deque<RawInput>*> rawList;
 
     static std::shared_mutex key_mtx;
-    static std::deque<keyInput> keyQueue = {};
+    static std::map<uint64_t, KeyInput> keyQueue = {};
 
     static std::deque<Action> actQueue = {};
 
@@ -141,85 +142,57 @@ namespace KeyQueue
 
     void RawQueuePusher(RawInput raw)
     {
-        raw_mtx.lock();
-        rawQueue.push_front(raw);
-        raw_mtx.unlock();
+        rawQueue.push_back(raw);
     }
 
-    void KeyTracker(keyInput &key, bool isCombine)
+    void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput>*>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key,  bool isCombine)
     {
-        auto pressTime = std::chrono::high_resolution_clock::now();
-        auto prevTime = std::chrono::high_resolution_clock::now();
-        logger::trace("Tracker of {} start", key.code);
+        auto prevTime = TimeUtils::GetTime();
+        logger::trace("Tracker of {} start", iter_raw->first);
         while (true)
         {
-            if (((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - prevTime)).count() > Config::pressInterval)
+            if ((TimeUtils::GetTime() - prevTime)/1000.0 > Config::pressInterval)
             {
-                logger::trace("Tracker of {} outtime", key.code);
+                logger::trace("Tracker of {} outtime", iter_raw->first);
                 if (isCombine)
-                    combineList[key.code] = false;
-                key.type = PressType::release;
+                    combineList[iter_raw->first] = false;
+                iter_key->second.type = PressType::release;
                 break;
             }
-            raw_mtx.lock_shared();
-            if (rawQueue.empty())
-            {
-                raw_mtx.unlock_shared();
+            if (iter_raw->second->empty())
                 continue;
-            }
-            auto raw = rawQueue.front();
-            raw_mtx.unlock_shared();
-            if (raw.code != key.code)
-                continue;
-            else
-            {
-                raw_mtx.lock();
-                if (!rawQueue.empty())
-                    rawQueue.pop_front();
-                raw_mtx.unlock();
-            }
-            prevTime = std::chrono::high_resolution_clock::now();
+            auto raw = iter_raw->second->front();
+            iter_raw->second->pop_front();
+            prevTime = TimeUtils::GetTime();
             if (!raw.value)
             {
                 if (isCombine)
-                    combineList[key.code] = false;
-                key.type = PressType::release;
-                logger::trace("Tracker of {} release", key.code);
+                    combineList[iter_raw->first] = false;
+                iter_key->second.type = PressType::release;
+                logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
-            if (((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - pressTime)).count() > Config::clickTime)
+            if ((TimeUtils::GetTime() - iter_key->first)/1000.0 > Config::clickTime)
             {
                 if (isCombine)
-                    combineList[key.code] = true;
-                key.type = PressType::click;
+                    combineList[iter_raw->first] = true;
+                iter_key->second.type = PressType::click;
             }
-            else if (((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - pressTime)).count() > Config::longPressTime)
+            else if ((TimeUtils::GetTime() - iter_key->first)/1000.0 > Config::longPressTime)
             {
                 if (isCombine)
-                    combineList[key.code] = true;
-                key.type = PressType::hold;
+                    combineList[iter_raw->first] = true;
+                iter_key->second.type = PressType::hold;
             }
         }
-        logger::trace("Tracker of {} end", key.code);
-    }
-
-    bool isNewInput(uint32_t code)
-    {
-        key_mtx.lock_shared();
-        if (keyQueue.empty())
-        {
-            key_mtx.unlock_shared();
-            return true;
-        }
-        auto res = std::find_if(keyQueue.begin(), keyQueue.end(), [code](keyInput &key)
-                                { return code == key.code; });
-        if (res == keyQueue.end())
-        {
-            key_mtx.unlock_shared();
-            return true;
-        }
-        key_mtx.unlock_shared();
-        return false;
+        logger::trace("Tracker of {} end", iter_raw->first);
+        raw_mtx.lock();
+        key_mtx.lock();
+        delete iter_raw->second;
+        rawList.erase(iter_raw);
+        keyQueue.erase(iter_key);
+        key_mtx.unlock();
+        raw_mtx.unlock();
     }
 
     void inputDecoder()
@@ -227,26 +200,22 @@ namespace KeyQueue
         logger::trace("Input Decoder Start");
         while (true)
         {
-            raw_mtx.lock_shared();
             if (rawQueue.empty())
-            {
-                raw_mtx.unlock_shared();
                 continue;
-            }
             auto raw = rawQueue.front();
+            rawQueue.pop_front();
+            raw_mtx.lock_shared();
+            auto res = rawList.find(raw.code);
+            if (res == rawList.end()) {
+                logger::trace("New Start");
+                auto ptr = new std::deque<RawInput>;
+                ptr->push_back(raw);
+                auto iter_raw = rawList.insert(std::make_pair(raw.code, ptr)).first;
+                auto iter_key = keyQueue.insert(std::make_pair(TimeUtils::GetTime(), KeyInput{raw.code, PressType::disable})).first;
+                std::thread(KeyTracker, iter_raw, iter_key, isCombine(raw.code)).detach();
+            }else
+                res->second->push_back(raw);
             raw_mtx.unlock_shared();
-            if (isNewInput(raw.code))
-            {
-                logger::trace("New Input {}", raw.code);
-                raw_mtx.lock();
-                if (!rawQueue.empty())
-                    rawQueue.pop_front();
-                raw_mtx.unlock();
-                key_mtx.lock();
-                keyQueue.push_back(keyInput{raw.code, PressType::disable});
-                std::thread(KeyTracker, std::ref(keyQueue.back()), isCombine(raw.code)).detach();
-                key_mtx.unlock();
-            }
         }
     }
 
@@ -256,17 +225,9 @@ namespace KeyQueue
         logger::trace("Action Decoder Start");
         while (true)
         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             if (keyQueue.empty())
                 continue;
-            key_mtx.lock();
-            keyQueue.erase(std::remove_if(keyQueue.begin(), keyQueue.end(), [](keyInput &key)
-                                          { return key.type == PressType::release; }),
-                           keyQueue.end());
-            key_mtx.unlock();
-            key_mtx.lock_shared();
-            for (auto item : keyQueue)
-                logger::trace("KeyQueue List : {}", item.code);
-            key_mtx.unlock_shared();
         }
     }
 }
