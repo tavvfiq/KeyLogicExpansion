@@ -18,7 +18,8 @@ namespace KeyQueue
         release = 0,
         disable,
         click,
-        hold
+        hold,
+        processed
     };
 
     typedef struct
@@ -116,6 +117,8 @@ namespace KeyQueue
         insertSearchList(Config::AltAutoMove, Var::userEvent->autoMove, ActionType::AutoMove);
         insertSearchList(Config::AltToggleRun, Var::userEvent->toggleRun, ActionType::Misc);
 
+        combineList.insert(std::make_pair(0, true));
+
         for (auto item : searchList)
             for (auto i : item.second)
                 logger::trace("Key: {} -> Priority: {} -> CombineKey: {} : UserEvent: {}", item.first, i.first, i.second.withCombine, i.second.userEvent.c_str());
@@ -147,6 +150,10 @@ namespace KeyQueue
     void RawQueuePusher(RawInput raw)
     {
         rawQueue.push_back(raw);
+        if (raw.code == KeyUtils::G) {
+            auto open = Hook::MenuOpenHandler();
+            open.PB(ButtonEvent::Create(INPUT_DEVICE::kKeyboard, Var::userEvent->tweenMenu, 0, 1, 0));
+        }
     }
 
     void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput> *>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key, bool isCombine)
@@ -176,6 +183,8 @@ namespace KeyQueue
                 logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
+            if (iter_key->second.type == PressType::processed && !isCombine)
+                continue;
             if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::clickTime)
             {
                 if (isCombine)
@@ -225,8 +234,8 @@ namespace KeyQueue
         }
     }
 
-    void doAction(BSFixedString userEvent, ActionType type) {
-
+    void doAction(BSFixedString userEvent, ActionType type)
+    {
     }
 
     void actionDecoder()
@@ -239,13 +248,17 @@ namespace KeyQueue
             key_mtx.lock_shared();
             if (keyQueue.empty())
                 continue;
-            for (auto key : keyQueue) {
+            for (auto key : keyQueue)
+            {
                 auto res = searchList.find(key.second.code);
                 if (res == searchList.end())
                     continue;
-                for (auto item : res->second) {
+                for (auto item : res->second)
+                {
                     if (combineList[item.second.withCombine])
-                        doAction(item.second.userEvent, item.second.type);
+                    {
+                        //doAction();
+                    }
                 }
             }
             key_mtx.unlock_shared();

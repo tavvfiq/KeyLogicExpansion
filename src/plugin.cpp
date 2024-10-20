@@ -103,8 +103,7 @@ namespace
         trampoline.create(64);
         log::trace("Trampoline initialized.");
         log::trace("Init Hook.");
-        HookAutoMoveHandler::Hook();
-        //HookMenuOpenHandler::Hook();
+        Hook::Hook();
         log::trace("Init Hook completed.");
     }
 
