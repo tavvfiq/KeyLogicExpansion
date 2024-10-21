@@ -60,6 +60,8 @@ namespace KeyQueue
 
     void insertSearchList(Config::AltKeyMap altKey, RE::BSFixedString userEvent, ActionType aType)
     {
+        if (!altKey.firstKey && !altKey.shortKey)
+            altKey.firstKey = KeyUtils::GetVanillaKeyMap(userEvent);
         if (altKey.firstKey && altKey.secondKey)
         {
             auto res = searchList.find(altKey.secondKey);
@@ -74,7 +76,7 @@ namespace KeyQueue
             else
                 res->second.insert(std::make_pair(altKey.priority, Action{altKey.firstKey, userEvent, aType}));
         }
-        if ((altKey.useShortKey && altKey.shortKey) || (altKey.firstKey && !altKey.secondKey))
+        if (altKey.shortKey || (altKey.firstKey && !altKey.secondKey))
         {
             if (altKey.shortKey)
             {
@@ -150,16 +152,16 @@ namespace KeyQueue
     void RawQueuePusher(RawInput raw)
     {
         rawQueue.push_back(raw);
-        if (raw.code == KeyUtils::G) {
-            auto open = Hook::MenuOpenHandler();
-            open.PB(ButtonEvent::Create(INPUT_DEVICE::kKeyboard, Var::userEvent->tweenMenu, 0, 1, 0));
-        }
+        // if (raw.code == KeyUtils::G) {
+        //     auto open = Hook::MenuOpenHandler();
+        //     open.PB(ButtonEvent::Create(INPUT_DEVICE::kKeyboard, Var::userEvent->tweenMenu, 0, 1, 0));
+        // }
     }
 
     void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput> *>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key, bool isCombine)
     {
-        auto prevTime = TimeUtils::GetTime();
         logger::trace("Tracker of {} start", iter_raw->first);
+        auto prevTime = TimeUtils::GetTime();
         while (true)
         {
             if ((TimeUtils::GetTime() - prevTime) / 1000.0 > Config::pressInterval)
@@ -198,7 +200,6 @@ namespace KeyQueue
                 iter_key->second.type = PressType::hold;
             }
         }
-        logger::trace("Tracker of {} end", iter_raw->first);
         raw_mtx.lock();
         key_mtx.lock();
         delete iter_raw->second;
@@ -221,7 +222,7 @@ namespace KeyQueue
             auto res = rawList.find(raw.code);
             if (res == rawList.end())
             {
-                logger::trace("New Start");
+                logger::trace("New Start of {}", raw.code);
                 auto ptr = new std::deque<RawInput>;
                 ptr->push_back(raw);
                 auto iter_raw = rawList.insert(std::make_pair(raw.code, ptr)).first;
@@ -246,10 +247,13 @@ namespace KeyQueue
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
             key_mtx.lock_shared();
-            if (keyQueue.empty())
+            if (keyQueue.empty()) {
+                key_mtx.unlock_shared();
                 continue;
+            }
             for (auto key : keyQueue)
             {
+                logger::trace("{}", key.second.code);
                 auto res = searchList.find(key.second.code);
                 if (res == searchList.end())
                     continue;

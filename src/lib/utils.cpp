@@ -2,11 +2,11 @@
 
 namespace KeyUtils
 {
-    void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput)
-    {
-        keyArr[INPUT_DEVICE::KeyBoard] = Var::ctrlMap->GetMappedKey(keyInput, RE::INPUT_DEVICE::kKeyboard);
-        keyArr[INPUT_DEVICE::Mouse] = MouseButtonOffset + Var::ctrlMap->GetMappedKey(keyInput, RE::INPUT_DEVICE::kMouse);
-        // keyArr[INPUT_DEVICE::Gamepad] = GamepadButtonOffset + Var::im->GetMappedKey(keyInput, RE::INPUT_DEVICE::kGamepad);
+    uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent) {
+        auto keyBoard =  Var::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kKeyboard);
+        if (keyBoard <= F12)
+            return keyBoard;
+        return 0;
     }
 
     uint32_t GetEventKeyMap(ButtonEvent *a_event)
@@ -18,7 +18,7 @@ namespace KeyUtils
         case RE::INPUT_DEVICE::kMouse:
             return MouseButtonOffset + a_event->GetIDCode();
         default:
-            return NULL;
+            return 0;
         }
     }
 }

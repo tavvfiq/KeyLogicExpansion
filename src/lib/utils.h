@@ -143,7 +143,7 @@ namespace KeyUtils
         GamepadButtonRT // 281
     };
 
-    void GetVanillaKeyMap(uint32_t *keyArr, RE::BSFixedString keyInput);
+    uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent);
     uint32_t GetEventKeyMap(ButtonEvent *a_event);
 }
 
