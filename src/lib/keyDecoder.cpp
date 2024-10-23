@@ -2,6 +2,7 @@
 
 namespace KeyDecoder
 {
+    using ActionType  = ActionDecoder::ActionType;
 
     enum PressType
     {
@@ -117,29 +118,6 @@ namespace KeyDecoder
             for (auto i : item.second)
                 logger::trace("Key: {} -> Priority: {} -> CombineKey: {} : UserEvent: {}", item.first, i.first, i.second.withCombine, i.second.userEvent.c_str());
     }
-    /*
-        void dumpKey(std::unique_lock<std::mutex> &&lock)
-        {
-            // detect key in keyQueue and sent to decoder
-            for (auto index = keyQueue.begin(); index < keyQueue.end(); index++)
-                for (auto node : searchList)
-                    if (index->code == node.fisrt)
-                    {
-                        if (node.second == 0)
-                            actQueue.push_back(node.action);
-                        else
-                            for (auto i = index + 1; i < keyQueue.end(); i++)
-                                if (index->code == node.second)
-                                    actQueue.push_back(node.action);
-                    }
-            for (auto index = keyQueue.begin(); index != keyQueue.end();)
-                if (index->held > 0)
-                    index = keyQueue.erase(index);
-                else
-                    index++;
-            lock.unlock();
-        }
-    */
 
     void RawQueuePusher(RawInput raw) { rawQueue.push_back(raw); }
 
@@ -242,7 +220,7 @@ namespace KeyDecoder
                 {
                     if (combineList[item.second.withCombine])
                     {
-                        //doAction(item.second.userEvent, item.second.type);
+                        ActionDecoder::ClickAction(item.second.userEvent, item.second.type);
                         key.second.type = PressType::processed;
                         break;
                     }

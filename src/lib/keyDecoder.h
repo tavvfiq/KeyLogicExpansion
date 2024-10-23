@@ -1,5 +1,6 @@
 #pragma once
 #include "PCH.h"
+#include "actionDecoder.h"
 #include "config.h"
 #include "hook.h"
 
@@ -13,16 +14,6 @@ namespace KeyDecoder
         uint32_t code;
         float value;
     } RawInput;
-
-    enum ActionType
-    {
-        MenuOpen = 0,
-        AttackBlock,
-        AutoMove,
-        Misc,
-
-        End = 65536
-    };
 
     void RawQueuePusher(RawInput);
     void buildKeySearchList();
