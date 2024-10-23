@@ -6,16 +6,25 @@
 using namespace RE;
 using namespace REL;
 
-namespace KeyQueue
+namespace KeyDecoder
 {
     typedef struct
     {
         uint32_t code;
-        float held;
         float value;
     } RawInput;
 
+    enum ActionType
+    {
+        MenuOpen = 0,
+        AttackBlock,
+        AutoMove,
+        Misc,
+
+        End = 65536
+    };
+
     void RawQueuePusher(RawInput);
     void buildKeySearchList();
-    void actionDecoder();
+    void actionDistributor();
 }

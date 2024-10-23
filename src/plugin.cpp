@@ -96,8 +96,8 @@ namespace
     {
         Var::init();
         Config::loadInI();
-        KeyQueue::buildKeySearchList();
-        std::thread(KeyQueue::actionDecoder).detach();
+        KeyDecoder::buildKeySearchList();
+        std::thread(KeyDecoder::actionDistributor).detach();
         log::trace("Initializing trampoline...");
         auto &trampoline = GetTrampoline();
         trampoline.create(64);

@@ -9,6 +9,7 @@ namespace Var
     extern PlayerControls *pCtrl;
     extern ControlMap *ctrlMap;
     extern UserEvents *userEvent;
+    extern UI* ui;
 
     void init();
 }

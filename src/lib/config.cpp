@@ -73,7 +73,7 @@ namespace Config
         SI_Error rc = ini.LoadFile(ini_path.c_str());
         if (rc < 0)
         {
-            logger::error("Cannot load  = ini.");
+            logger::error("Cannot load ini.");
             return false;
         }
 

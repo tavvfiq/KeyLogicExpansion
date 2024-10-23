@@ -1,17 +1,7 @@
 #include "keyDecoder.h"
 
-namespace KeyQueue
+namespace KeyDecoder
 {
-
-    enum ActionType
-    {
-        MenuOpen = 0,
-        AttackBlock,
-        AutoMove,
-        Misc,
-
-        End = 65536
-    };
 
     enum PressType
     {
@@ -60,8 +50,10 @@ namespace KeyQueue
 
     void insertSearchList(Config::AltKeyMap altKey, RE::BSFixedString userEvent, ActionType aType)
     {
-        if (!altKey.firstKey && !altKey.shortKey)
-            altKey.firstKey = KeyUtils::GetVanillaKeyMap(userEvent);
+        if (!altKey.firstKey && !altKey.shortKey) {
+            altKey.firstKey = 42;
+            altKey.secondKey = KeyUtils::GetVanillaKeyMap(userEvent);
+        }
         if (altKey.firstKey && altKey.secondKey)
         {
             auto res = searchList.find(altKey.secondKey);
@@ -112,9 +104,9 @@ namespace KeyQueue
         insertSearchList(Config::AltQuickMagic, Var::userEvent->quickMagic, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickStats, Var::userEvent->quickStats, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickMap, Var::userEvent->quickMap, ActionType::MenuOpen);
-        insertSearchList(Config::AltAttack, Var::userEvent->attackStart, ActionType::AttackBlock);
+        insertSearchList(Config::AltAttack, Var::userEvent->rightAttack, ActionType::AttackBlock);
         insertSearchList(Config::AltPowerAttack, Var::userEvent->attackPowerStart, ActionType::AttackBlock);
-        insertSearchList(Config::AltBlock, Var::userEvent->blockStart, ActionType::AttackBlock);
+        insertSearchList(Config::AltBlock, Var::userEvent->leftAttack, ActionType::AttackBlock);
         insertSearchList(Config::AltTogglePOV, Var::userEvent->togglePOV, ActionType::Misc);
         insertSearchList(Config::AltAutoMove, Var::userEvent->autoMove, ActionType::AutoMove);
         insertSearchList(Config::AltToggleRun, Var::userEvent->toggleRun, ActionType::Misc);
@@ -149,14 +141,7 @@ namespace KeyQueue
         }
     */
 
-    void RawQueuePusher(RawInput raw)
-    {
-        rawQueue.push_back(raw);
-        // if (raw.code == KeyUtils::G) {
-        //     auto open = Hook::MenuOpenHandler();
-        //     open.PB(ButtonEvent::Create(INPUT_DEVICE::kKeyboard, Var::userEvent->tweenMenu, 0, 1, 0));
-        // }
-    }
+    void RawQueuePusher(RawInput raw) { rawQueue.push_back(raw); }
 
     void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput> *>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key, bool isCombine)
     {
@@ -185,8 +170,6 @@ namespace KeyQueue
                 logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
-            if (iter_key->second.type == PressType::processed && !isCombine)
-                continue;
             if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::clickTime)
             {
                 if (isCombine)
@@ -235,11 +218,7 @@ namespace KeyQueue
         }
     }
 
-    void doAction(BSFixedString userEvent, ActionType type)
-    {
-    }
-
-    void actionDecoder()
+    void actionDistributor()
     {
         std::thread(inputDecoder).detach();
         logger::trace("Action Decoder Start");
@@ -247,13 +226,15 @@ namespace KeyQueue
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
             key_mtx.lock_shared();
-            if (keyQueue.empty()) {
+            if (keyQueue.empty())
+            {
                 key_mtx.unlock_shared();
                 continue;
             }
-            for (auto key : keyQueue)
+            for (auto& key : keyQueue)
             {
-                logger::trace("{}", key.second.code);
+                if (key.second.type == PressType::processed)
+                    continue;
                 auto res = searchList.find(key.second.code);
                 if (res == searchList.end())
                     continue;
@@ -261,7 +242,9 @@ namespace KeyQueue
                 {
                     if (combineList[item.second.withCombine])
                     {
-                        //doAction();
+                        //doAction(item.second.userEvent, item.second.type);
+                        key.second.type = PressType::processed;
+                        break;
                     }
                 }
             }

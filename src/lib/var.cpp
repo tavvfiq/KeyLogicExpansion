@@ -9,6 +9,7 @@ namespace Var
     PlayerControls *pCtrl = nullptr;
     ControlMap *ctrlMap = nullptr;
     UserEvents *userEvent = nullptr;
+    UI *ui = nullptr;
 
     void init()
     {
@@ -16,5 +17,6 @@ namespace Var
         pCtrl = PlayerControls::GetSingleton();
         ctrlMap = ControlMap::GetSingleton();
         userEvent = UserEvents::GetSingleton();
+        ui = UI::GetSingleton();
     }
 }

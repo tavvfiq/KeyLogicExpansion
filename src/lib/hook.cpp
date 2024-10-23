@@ -54,7 +54,7 @@ namespace Hook
     AttackBlockHandler::FnProcessButton AttackBlockHandler::FnPB;
     bool AttackBlockHandler::CanProcess(InputEvent *a_event)
     {
-        return (this->*FnCP)(a_event);
+        return false;
     }
     bool AttackBlockHandler::CP(InputEvent *a_event) { return (that->*FnCP)(a_event); }
     bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
@@ -78,9 +78,9 @@ namespace Hook
     {
         if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton)
         {
-            std::thread(KeyQueue::RawQueuePusher, KeyQueue::RawInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->heldDownSecs, a_event->AsButtonEvent()->value}).detach();
+            KeyDecoder::RawQueuePusher(KeyDecoder::RawInput{KeyUtils::GetEventKeyMap(a_event->AsButtonEvent()), a_event->AsButtonEvent()->value});
         }
-        return (this->*FnCP)(a_event);
+        return false;
     }
     bool MenuOpenHandler::CP(InputEvent *a_event) { return (that->*FnCP)(a_event); }
     bool MenuOpenHandler::ProcessButton(ButtonEvent *a_event)

@@ -4,8 +4,11 @@ namespace KeyUtils
 {
     uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent) {
         auto keyBoard =  Var::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kKeyboard);
-        if (keyBoard <= F12)
+        auto mouse = Var::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kMouse);
+        if (keyBoard != 255)
             return keyBoard;
+        if (mouse != 255)
+            return mouse + MouseButtonOffset;
         return 0;
     }
 
