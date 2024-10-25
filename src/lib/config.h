@@ -8,14 +8,8 @@ using namespace SKSE::log;
 
 namespace Config
 {
-    typedef struct
-    {
-        uint32_t firstKey;
-        uint32_t secondKey;
-        uint32_t shortKey;
-        uint32_t priority;
-    } AltKeyMap;
-
+    using AltKeyMap = Var::AltKeyMap;
+    
     const std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion.ini";
 
     // Feature

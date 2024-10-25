@@ -12,7 +12,7 @@ namespace Hook
     AutoMoveHandler::FnProcessButton AutoMoveHandler::FnPB;
     bool AutoMoveHandler::CanProcess(InputEvent *a_event)
     {
-        return (this->*FnCP)(a_event);
+        return false;
     }
     bool AutoMoveHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
     {

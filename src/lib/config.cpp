@@ -2,7 +2,8 @@
 
 namespace Config
 {
-
+    using AltKeyMap = Var::AltKeyMap;
+    
     CSimpleIniA ini;
 
     // Feature
@@ -10,7 +11,7 @@ namespace Config
 
     uint32_t pressInterval = 20;
     uint32_t clickTime = 20;
-    uint32_t longPressTime = 200;
+    uint32_t longPressTime = 100;
 
     // Menu
     AltKeyMap AltTweenMenu;
@@ -46,16 +47,18 @@ namespace Config
         return s->data();
     }
 
-    void getKey(AltKeyMap &keyMap, char *name, uint32_t firstKey = 0, uint32_t secondKey = 0, uint32_t shortKey = 0, uint32_t priority = 0)
+    void getKey(AltKeyMap &keyMap, char *name, uint32_t chargeable=0, uint32_t firstKey = 0, uint32_t secondKey = 0, uint32_t shortKey = 0, uint32_t priority = 0)
     {
+        keyMap.chargeable = chargeable;
         keyMap.firstKey = ini.GetLongValue(name, "FirstKey", firstKey);
         keyMap.secondKey = ini.GetLongValue(name, "SecondKey", secondKey);
         keyMap.shortKey = ini.GetLongValue(name, "ShortKey", shortKey);
         keyMap.priority = ini.GetLongValue(name, "Priority", priority);
     }
 
-    void setKey(AltKeyMap &keyMap, char *name, uint32_t firstKey = 0, uint32_t secondKey = 0, uint32_t shortKey = 0, uint32_t priority = 0)
+    void setKey(AltKeyMap &keyMap, char *name, uint32_t chargeable=0, uint32_t firstKey = 0, uint32_t secondKey = 0, uint32_t shortKey = 0, uint32_t priority = 0)
     {
+        keyMap.chargeable = chargeable;
         ini.SetLongValue(name, "FirstKey", firstKey);
         ini.SetLongValue(name, "SecondKey", secondKey);
         ini.SetLongValue(name, "ShortKey", shortKey);
@@ -86,14 +89,14 @@ namespace Config
         enableStances = ini.GetBoolValue("Feature", toStr(enableStances), true);
 
         // AlternativeKey
-        getKey(AltTweenMenu, toStr(AltTweenMenu), KeyUtils::G);
+        getKey(AltTweenMenu, toStr(AltTweenMenu), 0, KeyUtils::G);
         getKey(AltQuickInventory, toStr(AltQuickInventory));
         getKey(AltQuickMagic, toStr(AltQuickMagic));
         getKey(AltQuickStats, toStr(AltQuickStats));
         getKey(AltQuickMap, toStr(AltQuickMap));
-        getKey(AltAttack, toStr(AltAttack));
-        getKey(AltPowerAttack, toStr(AltPowerAttack), KeyUtils::MouseButtonRight);
-        getKey(AltBlock, toStr(AltBlock), KeyUtils::Tab);
+        getKey(AltAttack, toStr(AltAttack), 1);
+        getKey(AltPowerAttack, toStr(AltPowerAttack), 1, KeyUtils::MouseButtonRight);
+        getKey(AltBlock, toStr(AltBlock), 1, KeyUtils::Tab);
         getKey(AltTogglePOV, toStr(AltTogglePOV));
         getKey(AltAutoMove, toStr(AltAutoMove));
         getKey(AltToggleRun, toStr(AltToggleRun));
@@ -119,14 +122,14 @@ namespace Config
         ini.SetBoolValue("Feature", toStr(enableStances), true, ";Enable Stances Supported by KLE.\n;Contain 4 types of stance: High, Mid, Low, and Sheathe.");
 
         // AlternativeKey
-        setKey(AltTweenMenu, toStr(AltTweenMenu), KeyUtils::G);
+        setKey(AltTweenMenu, toStr(AltTweenMenu), 0, KeyUtils::G);
         setKey(AltQuickInventory, toStr(AltQuickInventory));
         setKey(AltQuickMagic, toStr(AltQuickMagic));
         setKey(AltQuickStats, toStr(AltQuickStats));
         setKey(AltQuickMap, toStr(AltQuickMap));
-        setKey(AltAttack, toStr(AltAttack));
-        setKey(AltPowerAttack, toStr(AltPowerAttack), KeyUtils::MouseButtonRight);
-        setKey(AltBlock, toStr(AltBlock), KeyUtils::Tab);
+        setKey(AltAttack, toStr(AltAttack), 1);
+        setKey(AltPowerAttack, toStr(AltPowerAttack), 1, KeyUtils::MouseButtonRight);
+        setKey(AltBlock, toStr(AltBlock), 1, KeyUtils::Tab);
         setKey(AltTogglePOV, toStr(AltTogglePOV));
         setKey(AltAutoMove, toStr(AltAutoMove));
         setKey(AltToggleRun, toStr(AltToggleRun));

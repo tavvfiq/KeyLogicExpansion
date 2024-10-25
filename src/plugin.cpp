@@ -98,11 +98,6 @@ namespace
         Config::loadInI();
         KeyDecoder::buildKeySearchList();
         std::thread(KeyDecoder::actionDistributor).detach();
-        log::trace("Initializing trampoline...");
-        auto &trampoline = GetTrampoline();
-        trampoline.create(64);
-        log::trace("Trampoline initialized.");
-        log::trace("Init Hook.");
         Hook::Hook();
         log::trace("Init Hook completed.");
     }

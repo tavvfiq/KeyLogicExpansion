@@ -2,28 +2,22 @@
 
 namespace KeyDecoder
 {
-    using ActionType  = ActionDecoder::ActionType;
-
-    enum PressType
-    {
-        release = 0,
-        disable,
-        click,
-        hold,
-        processed
-    };
+    using RawInput = Var::RawInput;
+    using PressType = Var::PressType;
+    using ActionType = Var::ActionType;
 
     typedef struct
     {
         uint32_t code;
-        PressType type;
+        PressType press;
     } KeyInput;
 
     typedef struct
     {
         uint32_t withCombine;
+        uint32_t chargeable;
         RE::BSFixedString userEvent;
-        ActionType type;
+        ActionType action;
     } Action;
 
     static std::shared_mutex raw_mtx;
@@ -45,13 +39,13 @@ namespace KeyDecoder
         auto res = combineList.find(code);
         if (res == combineList.end())
             return false;
-        logger::trace("Is Combine {}", code);
         return true;
     }
 
     void insertSearchList(Config::AltKeyMap altKey, RE::BSFixedString userEvent, ActionType aType)
     {
-        if (!altKey.firstKey && !altKey.shortKey) {
+        if (!altKey.firstKey && !altKey.shortKey)
+        {
             altKey.firstKey = 42;
             altKey.secondKey = KeyUtils::GetVanillaKeyMap(userEvent);
         }
@@ -63,11 +57,11 @@ namespace KeyDecoder
                 if (!isCombine(altKey.firstKey))
                     combineList.insert(std::make_pair(altKey.firstKey, false));
                 std::map<uint32_t, Action, std::greater<uint32_t>> tmp;
-                tmp.insert(std::make_pair(altKey.priority, Action{altKey.firstKey, userEvent, aType}));
+                tmp.insert(std::make_pair(altKey.priority, Action{altKey.firstKey, altKey.chargeable, userEvent, aType}));
                 searchList.insert(std::make_pair(altKey.secondKey, tmp));
             }
             else
-                res->second.insert(std::make_pair(altKey.priority, Action{altKey.firstKey, userEvent, aType}));
+                res->second.insert(std::make_pair(altKey.priority, Action{altKey.firstKey, altKey.chargeable, userEvent, aType}));
         }
         if (altKey.shortKey || (altKey.firstKey && !altKey.secondKey))
         {
@@ -77,11 +71,11 @@ namespace KeyDecoder
                 if (res == searchList.end())
                 {
                     std::map<uint32_t, Action, std::greater<uint32_t>> tmp;
-                    tmp.insert(std::make_pair(altKey.priority, Action{0, userEvent, aType}));
+                    tmp.insert(std::make_pair(altKey.priority, Action{0, altKey.chargeable, userEvent, aType}));
                     searchList.insert(std::make_pair(altKey.shortKey, tmp));
                 }
                 else
-                    res->second.insert(std::make_pair(altKey.priority, Action{0, userEvent, aType}));
+                    res->second.insert(std::make_pair(altKey.priority, Action{0, altKey.chargeable, userEvent, aType}));
             }
             if (altKey.firstKey)
             {
@@ -89,11 +83,11 @@ namespace KeyDecoder
                 if (res == searchList.end())
                 {
                     std::map<uint32_t, Action, std::greater<uint32_t>> tmp;
-                    tmp.insert(std::make_pair(altKey.priority, Action{0, userEvent, aType}));
+                    tmp.insert(std::make_pair(altKey.priority, Action{0, altKey.chargeable, userEvent, aType}));
                     searchList.insert(std::make_pair(altKey.firstKey, tmp));
                 }
                 else
-                    res->second.insert(std::make_pair(altKey.priority, Action{0, userEvent, aType}));
+                    res->second.insert(std::make_pair(altKey.priority, Action{0, altKey.chargeable, userEvent, aType}));
             }
         }
     }
@@ -105,9 +99,9 @@ namespace KeyDecoder
         insertSearchList(Config::AltQuickMagic, Var::userEvent->quickMagic, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickStats, Var::userEvent->quickStats, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickMap, Var::userEvent->quickMap, ActionType::MenuOpen);
-        insertSearchList(Config::AltAttack, Var::userEvent->rightAttack, ActionType::AttackBlock);
-        insertSearchList(Config::AltPowerAttack, Var::userEvent->attackPowerStart, ActionType::AttackBlock);
-        insertSearchList(Config::AltBlock, Var::userEvent->leftAttack, ActionType::AttackBlock);
+        insertSearchList(Config::AltAttack, Var::userEvent->rightAttack, ActionType::Attack);
+        insertSearchList(Config::AltPowerAttack, Var::userEvent->attackPowerStart, ActionType::Attack);
+        insertSearchList(Config::AltBlock, Var::userEvent->leftAttack, ActionType::Block);
         insertSearchList(Config::AltTogglePOV, Var::userEvent->togglePOV, ActionType::Misc);
         insertSearchList(Config::AltAutoMove, Var::userEvent->autoMove, ActionType::AutoMove);
         insertSearchList(Config::AltToggleRun, Var::userEvent->toggleRun, ActionType::Misc);
@@ -132,7 +126,7 @@ namespace KeyDecoder
                 logger::trace("Tracker of {} outtime", iter_raw->first);
                 if (isCombine)
                     combineList[iter_raw->first] = false;
-                iter_key->second.type = PressType::release;
+                iter_key->second.press = PressType::release;
                 break;
             }
             if (iter_raw->second->empty())
@@ -144,7 +138,7 @@ namespace KeyDecoder
             {
                 if (isCombine)
                     combineList[iter_raw->first] = false;
-                iter_key->second.type = PressType::release;
+                iter_key->second.press = PressType::release;
                 logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
@@ -152,15 +146,16 @@ namespace KeyDecoder
             {
                 if (isCombine)
                     combineList[iter_raw->first] = true;
-                iter_key->second.type = PressType::click;
+                iter_key->second.press = PressType::click;
             }
             else if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::longPressTime)
             {
                 if (isCombine)
                     combineList[iter_raw->first] = true;
-                iter_key->second.type = PressType::hold;
+                iter_key->second.press = PressType::hold;
             }
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
         raw_mtx.lock();
         key_mtx.lock();
         delete iter_raw->second;
@@ -209,19 +204,30 @@ namespace KeyDecoder
                 key_mtx.unlock_shared();
                 continue;
             }
-            for (auto& key : keyQueue)
+            for (auto &key : keyQueue)
             {
-                if (key.second.type == PressType::processed)
+                if (key.second.press == PressType::processed)
                     continue;
                 auto res = searchList.find(key.second.code);
                 if (res == searchList.end())
                     continue;
-                for (auto item : res->second)
+                for (auto &item : res->second)
                 {
                     if (combineList[item.second.withCombine])
                     {
-                        ActionDecoder::ClickAction(item.second.userEvent, item.second.type);
-                        key.second.type = PressType::processed;
+                        if (item.second.chargeable == 2)
+                            break;
+                        if (item.second.chargeable == 1)
+                        {
+                            ActionDecoder::ChargeAction(item.second.userEvent, item.second.action, std::ref(key.second.press), std::ref(item.second.chargeable));
+                            item.second.chargeable = 2;
+                            break;
+                        }
+                        if (key.second.press == PressType::click)
+                            ActionDecoder::ClickAction(item.second.userEvent, item.second.action);
+                        else if (key.second.press == PressType::hold)
+                            ActionDecoder::HoldAction(item.second.userEvent, item.second.action);
+                        key.second.press = PressType::processed;
                         break;
                     }
                 }

@@ -7,15 +7,10 @@ using namespace REL;
 
 namespace ActionDecoder
 {
-    enum ActionType
-    {
-        MenuOpen = 0,
-        AttackBlock,
-        AutoMove,
-        Misc,
-
-        End = 65536
-    };
+    using PressType = Var::PressType;
+    using ActionType = Var::ActionType;
 
     void ClickAction(BSFixedString userEvent, ActionType type);
+    void HoldAction(BSFixedString userEvent, ActionType type);
+    void ChargeAction(BSFixedString userEvent, ActionType type, PressType& press, uint32_t& chargeable);
 }

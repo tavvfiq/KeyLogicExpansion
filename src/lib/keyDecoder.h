@@ -9,12 +9,10 @@ using namespace REL;
 
 namespace KeyDecoder
 {
-    typedef struct
-    {
-        uint32_t code;
-        float value;
-    } RawInput;
-
+    using RawInput = Var::RawInput;
+    using PressType = Var::PressType;
+    using ActionType = Var::ActionType;
+    
     void RawQueuePusher(RawInput);
     void buildKeySearchList();
     void actionDistributor();
