@@ -5,12 +5,13 @@ using namespace RE;
 using namespace REL;
 using namespace SKSE::log;
 
-namespace VarUtils {
+namespace VarUtils
+{
     extern RE::PlayerCharacter *player;
     extern PlayerControls *pCtrl;
     extern ControlMap *ctrlMap;
     extern UserEvents *userEvent;
-    extern UI* ui;
+    extern UI *ui;
 
     void init();
 }
@@ -156,6 +157,7 @@ namespace KeyUtils
     uint32_t GetEventKeyMap(ButtonEvent *a_event);
 }
 
-namespace TimeUtils {
+namespace TimeUtils
+{
     uint64_t GetTime();
 }

@@ -1,6 +1,7 @@
 #include "utils.h"
 
-namespace VarUtils {
+namespace VarUtils
+{
     RE::PlayerCharacter *player = nullptr;
     PlayerControls *pCtrl = nullptr;
     ControlMap *ctrlMap = nullptr;
@@ -19,12 +20,13 @@ namespace VarUtils {
 
 namespace KeyUtils
 {
-    uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent) {
-        auto keyBoard =  Var::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kKeyboard);
-        auto mouse = Var::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kMouse);
-        if (keyBoard != 255)
+    uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent)
+    {
+        auto keyBoard = VarUtils::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kKeyboard);
+        auto mouse = VarUtils::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kMouse);
+        if (keyBoard != 0xFF)
             return keyBoard;
-        if (mouse != 255)
+        if (mouse != 0xFF)
             return mouse + Mouse::MouseButtonOffset;
         return 0;
     }

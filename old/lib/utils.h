@@ -8,13 +8,13 @@ using namespace SKSE::log;
 
 namespace KeyUtils
 {
-    enum INPUT_DEVICE
+    typedef enum
     {
         KeyBoard = 0,
         Mouse,
         Gamepad,
         Total
-    };
+    }INPUT_DEVICE;
 
     enum
     {

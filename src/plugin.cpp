@@ -1,4 +1,4 @@
-#include "lib/PCH.h"
+#include "lib/hook.h"
 
 using namespace RE::BSScript;
 using namespace SKSE;
@@ -37,10 +37,15 @@ namespace
 
     void InitializeHooking()
     {
+        VarUtils::init();
+        Config::loadInI();
+        Hook::Hook();
     }
 
-    void InitializeMessaging() {
-        if (!GetMessagingInterface()->RegisterListener([](MessagingInterface::Message* message) {
+    void InitializeMessaging()
+    {
+        if (!GetMessagingInterface()->RegisterListener([](MessagingInterface::Message *message)
+                                                       {
             switch (message->type) {
                 case MessagingInterface::kPostLoad: 
                     break;
@@ -62,8 +67,8 @@ namespace
                     break;
                 case MessagingInterface::kDeleteGame: 
                     break;
-            }
-        })) {
+            } }))
+        {
             stl::report_and_fail("Unable to register message listener.");
         }
     }
