@@ -46,8 +46,7 @@ namespace KeyDecoder
     {
         if (!altKey.firstKey && !altKey.shortKey)
         {
-            altKey.firstKey = 42;
-            altKey.secondKey = KeyUtils::GetVanillaKeyMap(userEvent);
+            altKey.firstKey = KeyUtils::GetVanillaKeyMap(userEvent);
         }
         if (altKey.firstKey && altKey.secondKey)
         {
@@ -94,14 +93,18 @@ namespace KeyDecoder
 
     void buildKeySearchList()
     {
+        insertSearchList(Config::AltPauseMenu, Var::userEvent->pause, ActionType::MenuOpen);
         insertSearchList(Config::AltTweenMenu, Var::userEvent->tweenMenu, ActionType::MenuOpen);
+        insertSearchList(Config::AltJournalMenu, Var::userEvent->journal, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickInventory, Var::userEvent->quickInventory, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickMagic, Var::userEvent->quickMagic, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickStats, Var::userEvent->quickStats, ActionType::MenuOpen);
         insertSearchList(Config::AltQuickMap, Var::userEvent->quickMap, ActionType::MenuOpen);
+
         insertSearchList(Config::AltAttack, Var::userEvent->rightAttack, ActionType::Attack);
-        insertSearchList(Config::AltPowerAttack, Var::userEvent->attackPowerStart, ActionType::Attack);
-        insertSearchList(Config::AltBlock, Var::userEvent->leftAttack, ActionType::Block);
+        insertSearchList(Config::AltPowerAttack, Var::userEvent->leftAttack, ActionType::Attack);
+        insertSearchList(Config::AltBlock, Var::userEvent->blockStart, ActionType::Block);
+
         insertSearchList(Config::AltTogglePOV, Var::userEvent->togglePOV, ActionType::Misc);
         insertSearchList(Config::AltAutoMove, Var::userEvent->autoMove, ActionType::AutoMove);
         insertSearchList(Config::AltToggleRun, Var::userEvent->toggleRun, ActionType::Misc);
@@ -117,13 +120,12 @@ namespace KeyDecoder
 
     void KeyTracker(std::unordered_map<uint32_t, std::deque<RawInput> *>::iterator iter_raw, std::map<uint64_t, KeyInput>::iterator iter_key, bool isCombine)
     {
-        logger::trace("Tracker of {} start", iter_raw->first);
+        logger::trace("{} start", iter_raw->first);
         auto prevTime = TimeUtils::GetTime();
         while (true)
         {
             if ((TimeUtils::GetTime() - prevTime) / 1000.0 > Config::pressInterval)
             {
-                logger::trace("Tracker of {} outtime", iter_raw->first);
                 if (isCombine)
                     combineList[iter_raw->first] = false;
                 iter_key->second.press = PressType::release;
@@ -139,7 +141,6 @@ namespace KeyDecoder
                 if (isCombine)
                     combineList[iter_raw->first] = false;
                 iter_key->second.press = PressType::release;
-                logger::trace("Tracker of {} release", iter_raw->first);
                 break;
             }
             if ((TimeUtils::GetTime() - iter_key->first) / 1000.0 > Config::clickTime)
@@ -155,7 +156,8 @@ namespace KeyDecoder
                 iter_key->second.press = PressType::hold;
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        logger::trace("{} end", iter_raw->first);
         raw_mtx.lock();
         key_mtx.lock();
         delete iter_raw->second;
@@ -178,7 +180,6 @@ namespace KeyDecoder
             auto res = rawList.find(raw.code);
             if (res == rawList.end())
             {
-                logger::trace("New Start of {}", raw.code);
                 auto ptr = new std::deque<RawInput>;
                 ptr->push_back(raw);
                 auto iter_raw = rawList.insert(std::make_pair(raw.code, ptr)).first;
@@ -206,7 +207,7 @@ namespace KeyDecoder
             }
             for (auto &key : keyQueue)
             {
-                if (key.second.press == PressType::processed)
+                if (key.second.press == PressType::processed || key.second.press == PressType::release)
                     continue;
                 auto res = searchList.find(key.second.code);
                 if (res == searchList.end())
@@ -219,8 +220,8 @@ namespace KeyDecoder
                             break;
                         if (item.second.chargeable == 1)
                         {
-                            ActionDecoder::ChargeAction(item.second.userEvent, item.second.action, std::ref(key.second.press), std::ref(item.second.chargeable));
                             item.second.chargeable = 2;
+                            ActionDecoder::ChargeAction(item.second.userEvent, item.second.action, std::ref(key.second.press), std::ref(item.second.chargeable));
                             break;
                         }
                         if (key.second.press == PressType::click)

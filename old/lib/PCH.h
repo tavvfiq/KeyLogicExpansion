@@ -26,3 +26,7 @@ using namespace std::literals;
 using namespace REL::literals;
 
 namespace logger = SKSE::log;
+
+namespace util {
+    using SKSE::stl::report_and_fail;
+}

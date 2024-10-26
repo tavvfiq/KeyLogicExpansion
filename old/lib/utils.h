@@ -1,19 +1,10 @@
 #pragma once
 #include "PCH.h"
+#include "var.h"
 
 using namespace RE;
 using namespace REL;
 using namespace SKSE::log;
-
-namespace VarUtils {
-    extern RE::PlayerCharacter *player;
-    extern PlayerControls *pCtrl;
-    extern ControlMap *ctrlMap;
-    extern UserEvents *userEvent;
-    extern UI* ui;
-
-    void init();
-}
 
 namespace KeyUtils
 {
@@ -25,7 +16,7 @@ namespace KeyUtils
         Total
     };
 
-    enum KeyBoard
+    enum
     {
         ESC = 1,
         MAIN1,
@@ -115,7 +106,7 @@ namespace KeyUtils
         F12
     };
 
-    enum Mouse
+    enum
     {
         // first 256 for keyboard, then 8 mouse buttons, then mouse wheel up, wheel down, then 16 gamepad buttons
         MouseButtonOffset = 256,
@@ -131,7 +122,7 @@ namespace KeyUtils
         MouseWheelDown, // 265
     };
 
-    enum GamePad
+    enum
     {
         GamepadButtonOffset = 266,
         GamepadButtonDpadUp = 266,

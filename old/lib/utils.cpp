@@ -1,22 +1,5 @@
 #include "utils.h"
 
-namespace VarUtils {
-    RE::PlayerCharacter *player = nullptr;
-    PlayerControls *pCtrl = nullptr;
-    ControlMap *ctrlMap = nullptr;
-    UserEvents *userEvent = nullptr;
-    UI *ui = nullptr;
-
-    void init()
-    {
-        player = RE::PlayerCharacter::GetSingleton();
-        pCtrl = PlayerControls::GetSingleton();
-        ctrlMap = ControlMap::GetSingleton();
-        userEvent = UserEvents::GetSingleton();
-        ui = UI::GetSingleton();
-    }
-}
-
 namespace KeyUtils
 {
     uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent) {
@@ -25,7 +8,7 @@ namespace KeyUtils
         if (keyBoard != 255)
             return keyBoard;
         if (mouse != 255)
-            return mouse + Mouse::MouseButtonOffset;
+            return mouse + MouseButtonOffset;
         return 0;
     }
 
