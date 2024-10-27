@@ -9,6 +9,8 @@ namespace Config
     // Features
     bool enableStances;
     bool enableCustomInput;
+    bool enableHoldToSprint;
+    bool enableHoldToSneak;
     bool enableSheatheAttack;
     bool enableReverseHorseAttack;
 
@@ -56,8 +58,10 @@ namespace Config
         // Features
         enableStances = ini.GetBoolValue("Features", NameToStr(enableStances), true);
         enableCustomInput = ini.GetBoolValue("Features", NameToStr(enableCustomInput), true);
+        enableHoldToSprint = ini.GetBoolValue("Features", NameToStr(enableHoldToSprint), false);
+        enableHoldToSneak = ini.GetBoolValue("Features", NameToStr(enableHoldToSneak), false);
         enableSheatheAttack = ini.GetBoolValue("Features", NameToStr(enableSheatheAttack), false);
-        enableReverseHorseAttack = ini.GetBoolValue("Features", NameToStr(enableReverseHorseAttack), true);
+        enableReverseHorseAttack = ini.GetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
 
         // Vanilla Input
         normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
@@ -115,8 +119,10 @@ namespace Config
         // Features
         ini.SetBoolValue("Features", NameToStr(enableStances), true);
         ini.SetBoolValue("Features", NameToStr(enableCustomInput), true);
+        ini.SetBoolValue("Features", NameToStr(enableHoldToSprint), false);
+        ini.SetBoolValue("Features", NameToStr(enableHoldToSneak), false);
         ini.SetBoolValue("Features", NameToStr(enableSheatheAttack), false);
-        ini.SetBoolValue("Features", NameToStr(enableReverseHorseAttack), true);
+        ini.SetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
 
         // Vanilla Input
         ini.SetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
@@ -127,12 +133,12 @@ namespace Config
         ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 
         // Expand Input
-        ini.GetLongValue("Expand", NameToStr(warAsh), 0);
-        ini.GetLongValue("Expand", NameToStr(warAshModifier), 0);
+        ini.SetLongValue("Expand", NameToStr(warAsh), 0);
+        ini.SetLongValue("Expand", NameToStr(warAshModifier), 0);
 
-        ini.GetLongValue("Expand", NameToStr(altZoomIn), 0);
-        ini.GetLongValue("Expand", NameToStr(altZoomOut), 0);
-        ini.GetLongValue("Expand", NameToStr(zoomModifier), 0);
+        ini.SetLongValue("Expand", NameToStr(altZoomIn), 0);
+        ini.SetLongValue("Expand", NameToStr(altZoomOut), 0);
+        ini.SetLongValue("Expand", NameToStr(zoomModifier), 0);
 
         // Modifier Input
         ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0);

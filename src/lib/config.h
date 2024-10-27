@@ -27,6 +27,8 @@ namespace Config
     // Features
     extern bool enableStances;
     extern bool enableCustomInput;
+    extern bool enableHoldToSprint;
+    extern bool enableHoldToSneak;
     extern bool enableSheatheAttack;
     extern bool enableReverseHorseAttack;
 
