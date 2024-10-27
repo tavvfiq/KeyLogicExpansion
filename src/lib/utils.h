@@ -153,6 +153,10 @@ namespace KeyUtils
         GamepadButtonRT // 281
     };
 
+    extern uint32_t deleteTime;
+    bool GetKeyState(uint32_t code);
+    void TrackKeyState(uint32_t code, std::function<void ()> func);
+
     uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent);
     uint32_t GetEventKeyMap(ButtonEvent *a_event);
 }

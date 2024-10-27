@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <version>
+#include <unordered_set>
 
 #include <RE/Skyrim.h>
 #include <SKSE/SKSE.h>

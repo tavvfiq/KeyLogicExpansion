@@ -34,6 +34,7 @@ namespace Config
     extern uint32_t normalAttack;
     extern uint32_t powerAttack;
     extern uint32_t block;
+
     extern uint32_t altTweenMenu;
     extern uint32_t altTogglePOV;
 
@@ -47,6 +48,8 @@ namespace Config
 
     // Modifier Input
     extern std::unordered_map<uint32_t, uint32_t> needModifier;
+    extern std::unordered_set<uint32_t> listModifier;
+    bool isModifier(uint32_t code);
 
     // Custom Input
     extern std::vector<CustomInput> custom;

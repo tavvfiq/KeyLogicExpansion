@@ -6,10 +6,6 @@ namespace Config
     const static std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion.ini";
     const static std::string custom_dir = "Data/SKSE/Plugins/KeyLogicExpansion/";
 
-    uint32_t pressInterval = 20;
-    uint32_t clickTime = 20;
-    uint32_t longPressTime = 100;
-
     // Features
     bool enableStances;
     bool enableCustomInput;
@@ -20,6 +16,7 @@ namespace Config
     uint32_t normalAttack;
     uint32_t powerAttack;
     uint32_t block;
+
     uint32_t altTweenMenu;
     uint32_t altTogglePOV;
 
@@ -33,6 +30,8 @@ namespace Config
 
     // Modifier Input
     std::unordered_map<uint32_t, uint32_t> needModifier;
+    std::unordered_set<uint32_t> listModifier;
+    bool isModifier(uint32_t code) { return listModifier.find(code) == listModifier.end(); }
 
     // Custom Input
     std::vector<CustomInput> custom;
@@ -65,7 +64,7 @@ namespace Config
         powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
         block = ini.GetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
 
-        altTweenMenu = ini.GetLongValue("Vanilla", NameToStr(altTweenMenu), 0);
+        altTweenMenu = ini.GetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
         altTogglePOV = ini.GetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 
         // Expand Input
@@ -83,6 +82,7 @@ namespace Config
         {
             auto trigger = KeyUtils::GetVanillaKeyMap(item.pItem);
             auto modifier = ini.GetLongValue("Modifier", item.pItem, 0);
+            listModifier.insert(modifier);
             if (item.pItem == VarUtils::userEvent->tweenMenu && altTweenMenu)
                 trigger = altTweenMenu;
             else if (item.pItem == VarUtils::userEvent->togglePOV && altTogglePOV)
@@ -91,19 +91,17 @@ namespace Config
             if (trigger)
                 needModifier.insert(std::make_pair(trigger, modifier));
         }
-        if (warAshModifier)
-            needModifier.insert(std::make_pair(warAsh, warAshModifier));
-        if (zoomModifier)
-        {
-            if (altZoomIn)
-                needModifier.insert(std::make_pair(altZoomIn, zoomModifier));
-            else
-                needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelUp, zoomModifier));
-            if (altZoomOut)
-                needModifier.insert(std::make_pair(altZoomOut, zoomModifier));
-            else
-                needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelDown, zoomModifier));
-        }
+        needModifier.insert(std::make_pair(warAsh, warAshModifier));
+        listModifier.insert(warAshModifier);
+        if (altZoomIn)
+            needModifier.insert(std::make_pair(altZoomIn, zoomModifier));
+        else
+            needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelUp, zoomModifier));
+        if (altZoomOut)
+            needModifier.insert(std::make_pair(altZoomOut, zoomModifier));
+        else
+            needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelDown, zoomModifier));
+        listModifier.insert(zoomModifier);
 
         // Custom Input
 
