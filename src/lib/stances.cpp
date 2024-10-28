@@ -1,5 +1,6 @@
 #include "stances.h"
 
-namespace Stances {
-    
+namespace Stances
+{
+
 }

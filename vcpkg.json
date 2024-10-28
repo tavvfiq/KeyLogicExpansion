@@ -7,7 +7,7 @@
   "homepage": "https://www.notexist.com",
   "license": "GPL-3.0",
   "dependencies": [
-    "commonlibsse-ng",
+    "commonlibsse-ng-flatrim",
     "simpleini",
     "imgui"
   ]

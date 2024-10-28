@@ -1,19 +1,19 @@
 #pragma once
 
 #include <algorithm>
+#include <deque>
 #include <format>
 #include <iostream>
-#include <deque>
 #include <random>
 #include <shared_mutex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <version>
-#include <unordered_set>
 
 #include <RE/Skyrim.h>
-#include <SKSE/SKSE.h>
 #include <REL/Relocation.h>
+#include <SKSE/SKSE.h>
 
 #undef cdecl // Workaround for Clang 14 CMake configure error.
 
