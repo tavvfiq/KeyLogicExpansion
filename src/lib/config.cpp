@@ -6,12 +6,17 @@ CSimpleIniA ini;
 const static std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion.ini";
 
 // Features
-bool enableCustomInput = std::ref(Custom::enableCustomInput);
-bool enableStances = std::ref(Stances::enableStances);
+bool &enableCustomInput = std::ref(Custom::enableCustomInput);
+bool &enableStances = std::ref(Stances::enableStances);
 bool enableHoldSprint;
 bool enableHoldSneak;
 uint32_t enableSheatheAttack;
 bool enableReverseHorseAttack;
+
+// Stances
+uint32_t &ChangeToLow = std::ref(Stances::ChangeToLow);
+uint32_t &ChangeToMid = std::ref(Stances::ChangeToMid);
+uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
 
 // Vanilla Input
 uint32_t normalAttack;
@@ -31,11 +36,6 @@ uint32_t zoomModifier;
 
 // Modifier Input
 std::unordered_map<uint32_t, uint32_t> needModifier;
-std::unordered_set<uint32_t> listModifier;
-bool isModifier(uint32_t code)
-{
-    return listModifier.find(code) == listModifier.end();
-}
 
 static std::string *s = nullptr;
 char *str(std::string ss)
@@ -62,6 +62,24 @@ void setVar()
     enableSheatheAttack = ini.GetLongValue("Features", NameToStr(enableSheatheAttack), 0);
     enableReverseHorseAttack = ini.GetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
 
+    // Stances
+    if (enableStances)
+    {
+        Stances::StancesList.push_back(
+            FormUtils::GetForm((ini.GetValue("Stances", "Low", "Stances - Dynamic Weapon Movesets SE.esp|0x4251A"))));
+        Stances::StancesList.push_back(
+            FormUtils::GetForm((ini.GetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519"))));
+        Stances::StancesList.push_back(
+            FormUtils::GetForm((ini.GetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518"))));
+        auto modfier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift);
+        ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
+        ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
+        ChangeToHigh = ini.GetLongValue("Stances", "ChangeToHigh", KeyUtils::Mouse::MouseWheelUp);
+        needModifier.insert(std::make_pair(ChangeToLow, modfier));
+        needModifier.insert(std::make_pair(ChangeToMid, modfier));
+        needModifier.insert(std::make_pair(ChangeToHigh, modfier));
+    }
+
     // Vanilla Input
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
@@ -85,7 +103,6 @@ void setVar()
     {
         auto trigger = KeyUtils::GetVanillaKeyMap(item.pItem);
         auto modifier = ini.GetLongValue("Modifier", item.pItem, 0);
-        listModifier.insert(modifier);
         if (item.pItem == VarUtils::userEvent->tweenMenu && altTweenMenu)
             trigger = altTweenMenu;
         else if (item.pItem == VarUtils::userEvent->togglePOV && altTogglePOV)
@@ -95,7 +112,6 @@ void setVar()
             needModifier.insert(std::make_pair(trigger, modifier));
     }
     needModifier.insert(std::make_pair(warAsh, warAshModifier));
-    listModifier.insert(warAshModifier);
     if (altZoomIn)
         needModifier.insert(std::make_pair(altZoomIn, zoomModifier));
     else
@@ -104,7 +120,6 @@ void setVar()
         needModifier.insert(std::make_pair(altZoomOut, zoomModifier));
     else
         needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelDown, zoomModifier));
-    listModifier.insert(zoomModifier);
 
     // Custom Input
     if (enableCustomInput)
@@ -121,8 +136,8 @@ void createInI()
     ini.SetBoolValue("Features", NameToStr(enableCustomInput), true,
                      ";Enable custom Input, maybe this is the reason you install this mod.");
     ini.SetBoolValue("Features", NameToStr(enableStances), true,
-                     ";Enable Stances Supported by KLE, need EnableCustomInput = true or won't work.\n;Contain 4 types "
-                     "of stance: High, Mid, Low, and Sheathe.");
+                     ";Enable Stances Supported by KLE\n;Contain 3 types "
+                     "of stance: High, Mid, Low.");
     ini.SetBoolValue("Features", NameToStr(enableHoldSprint), false, ";Change enable sprint when you hold sprint key");
     ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false,
                      ";Same as EnableHoldSprint, Change enable sneak when you hold sneak key");
@@ -135,6 +150,17 @@ void createInI()
     ini.SetBoolValue(
         "Features", NameToStr(enableReverseHorseAttack), false,
         ";Reverse your HorseAttack diretion, if enable this, left key attack left, right key attack right");
+
+    // Stances
+    ini.SetValue("Stances", "Sheathe", "", ";Set this according to your stances mod");
+    ini.SetValue("Stances", "Low", "Stances - Dynamic Weapon Movesets SE.esp|0x4251A");
+    ini.SetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519");
+    ini.SetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518");
+    ini.SetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift,
+                     ";Set change stance key, modifier = 0 means disable\n");
+    ini.SetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
+    ini.SetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
+    ini.SetLongValue("Stances", "ChangeToHigh", KeyUtils::Mouse::MouseWheelUp);
 
     // Vanilla Input
     ini.SetLongValue(

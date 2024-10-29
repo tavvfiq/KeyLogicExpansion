@@ -4,13 +4,15 @@
 namespace Stances
 {
 extern bool enableStances;
+extern uint32_t ChangeToLow;
+extern uint32_t ChangeToMid;
+extern uint32_t ChangeToHigh;
 
-extern std::vector<RE::FormID> StancesList;
+extern std::vector<RE::TESForm *> StancesList;
 
 enum Stances
 {
-    Sheathe = 0,
-    Low,
+    Low = 0,
     Mid,
     High
 };

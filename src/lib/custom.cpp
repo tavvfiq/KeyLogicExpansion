@@ -71,9 +71,6 @@ void LoadCustom()
             {
                 if (entry.path().filename() == "example.ini")
                     continue;
-                if (entry.path().filename() == "stances.ini")
-                    if (!Stances::enableStances)
-                        continue;
                 ini.LoadFile(entry.path().c_str());
                 std::list<CSimpleIniA::Entry> sections;
                 ini.GetAllSections(std::ref(sections));

@@ -211,7 +211,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         // Attack
         if (code == Config::normalAttack)
         {
-            // return (this->*FnPB)(a_event, a_data);
+            a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || IsBashing())
             {
                 if (!IsBashing())
@@ -222,11 +222,11 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
             else
                 NormalAttack();
-            return true;
+            return (this->*FnPB)(a_event, a_data);
         }
         if (code == Config::powerAttack)
         {
-            // return (this->*FnPB)(a_event, a_data);
+            a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || IsBashing())
             {
                 if (!IsBashing())
@@ -241,11 +241,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
             else
                 PowerAttack();
-            return true;
+            return (this->*FnPB)(a_event, a_data);
         }
         // Block
         if (code == Config::block)
         {
+            a_event->userEvent = "";
             if (!VarUtils::player->IsBlocking() && !IsBashing())
             {
                 VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
@@ -258,7 +259,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                         });
                 });
             }
-            return true;
+            (this->*FnPB)(a_event, a_data);
         }
         // SheatheAttack
         if (Config::enableSheatheAttack)
@@ -394,6 +395,56 @@ void TogglePOVHandler::Hook()
     that = stl::unrestricted_cast<TogglePOVHandler *>(vtable.address());
     FnCP = stl::unrestricted_cast<FnCanProcess>(vtable.write_vfunc(1, &TogglePOVHandler::CanProcess));
     FnPB = stl::unrestricted_cast<FnProcessButton>(vtable.write_vfunc(4, &TogglePOVHandler::ProcessButton));
+}
+
+//
+// MovementHandler
+//
+MovementHandler *MovementHandler::that;
+MovementHandler::FnCanProcess MovementHandler::FnCP;
+MovementHandler::FnProcessButton MovementHandler::FnPB;
+bool MovementHandler::CanProcess(InputEvent *a_event)
+{
+    return (this->*FnCP)(a_event);
+}
+bool MovementHandler::CP(InputEvent *a_event)
+{
+    return (that->*FnCP)(a_event);
+}
+bool MovementHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
+{
+    auto code = KeyUtils::GetEventKeyMap(a_event);
+    if (Config::needModifier[code])
+        if (!KeyUtils::GetKeyState(Config::needModifier[code]))
+            return false;
+    if (!IsSprinting())
+    {
+        auto sprint = KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->sprint);
+        if (!KeyUtils::GetKeyState(sprint))
+            return (this->*FnPB)(a_event, a_data);
+        if (Config::needModifier[sprint])
+            if (!KeyUtils::GetKeyState(Config::needModifier[sprint]))
+                return (this->*FnPB)(a_event, a_data);
+        VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting = true;
+        KeyUtils::TrackKeyState(sprint, []() {
+            SKSE::GetTaskInterface()->AddTask([]() {
+                if (IsSprinting())
+                    VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting = false;
+            });
+        });
+    }
+    return (this->*FnPB)(a_event, a_data);
+}
+bool MovementHandler::PB(ButtonEvent *a_event, PlayerControlsData *a_data)
+{
+    return (that->*FnPB)(a_event, a_data);
+}
+void MovementHandler::Hook()
+{
+    REL::Relocation<uintptr_t> vtable{VTABLE_MovementHandler[0]};
+    that = stl::unrestricted_cast<MovementHandler *>(vtable.address());
+    FnCP = stl::unrestricted_cast<FnCanProcess>(vtable.write_vfunc(1, &MovementHandler::CanProcess));
+    FnPB = stl::unrestricted_cast<FnProcessButton>(vtable.write_vfunc(4, &MovementHandler::ProcessButton));
 }
 
 //
@@ -550,6 +601,7 @@ void Hook()
     AttackBlockHandler::Hook();
     SprintHandler::Hook();
     TogglePOVHandler::Hook();
+    MovementHandler::Hook();
     ReadyWeaponHandler::Hook();
     SneakHandler::Hook();
     ThirdPersonState::Hook();

@@ -30,8 +30,6 @@ extern uint32_t zoomModifier;
 
 // Modifier Input
 extern std::unordered_map<uint32_t, uint32_t> needModifier;
-extern std::unordered_set<uint32_t> listModifier;
-bool isModifier(uint32_t code);
 
 char *str(std::string ss);
 void loadInI();

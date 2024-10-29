@@ -58,10 +58,14 @@ void InitializeMessaging()
                 break;
 
             case MessagingInterface::kNewGame:
+                if (Stances::enableStances)
+                    Stances::init();
                 break;
             case MessagingInterface::kPreLoadGame:
                 break;
             case MessagingInterface::kPostLoadGame:
+                if (Stances::enableStances)
+                    Stances::init();
                 break;
             case MessagingInterface::kSaveGame:
                 break;
