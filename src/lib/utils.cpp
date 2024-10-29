@@ -24,6 +24,7 @@ uint32_t GetWinKeyMap(uint32_t code)
 {
     switch (code)
     {
+    // KeyBoard
     case KeyBoard::ESC:
         return SKSE::WinAPI::VK_ESCAPE;
     case KeyBoard::MAIN1:
@@ -226,6 +227,40 @@ uint32_t GetWinKeyMap(uint32_t code)
         return SKSE::WinAPI::VK_INSERT;
     case KeyBoard::Delete:
         return SKSE::WinAPI::VK_DELETE;
+
+    // Mouse
+    case Mouse::MouseButtonLeft:
+        return SKSE::WinAPI::VK_LBUTTON;
+    case Mouse::MouseButtonRight:
+        return SKSE::WinAPI::VK_RBUTTON;
+    case Mouse::MouseButtonMiddle:
+        return SKSE::WinAPI::VK_MBUTTON;
+    case Mouse::MouseButton3:
+        return SKSE::WinAPI::VK_XBUTTON1;
+    case Mouse::MouseButton4:
+        return SKSE::WinAPI::VK_XBUTTON2;
+    case Mouse::MouseButton5:
+        return 0;
+    case Mouse::MouseButton6:
+        return 0;
+    case Mouse::MouseButton7:
+        return 0;
+    case Mouse::MouseWheelUp:
+        return 0;
+    case Mouse::MouseWheelDown:
+        return 0;
+
+        // GamePad
+        /*
+        case GamePad::GamepadButtonDpadUp:
+            return SKSE::WinAPI::VK_DELETE;
+        case GamePad::GamepadButtonDpadDown:
+            return SKSE::WinAPI::VK_DELETE;
+        case GamePad::GamepadButtonDpadLfet:
+            return SKSE::WinAPI::VK_DELETE;
+        case GamePad::GamepadButtonDpadRight:
+            return SKSE::WinAPI::VK_DELETE;
+        */
     }
     return 0;
 }
@@ -286,3 +321,68 @@ uint64_t GetTime()
     return time;
 }
 } // namespace TimeUtils
+
+namespace FormUtils
+{
+TESForm *GetForm(FormID FormId)
+{
+    return TESForm::LookupByID(FormId);
+}
+TESForm *GetForm(std::string modForm)
+{
+    std::string modName;
+    FormID formId;
+
+    auto delimiterPos = modForm.find('|');
+    if (delimiterPos == std::string::npos)
+    {
+        logger::error("Error: Unable to resolve FormID: {}\t\tReason: Can't find sysbol '|' ", modForm.c_str());
+        return nullptr;
+    }
+    modName = modForm.substr(0, delimiterPos);
+    std::string formid_str = modForm.substr(delimiterPos + 1);
+    try
+    {
+        std::stringstream hexStream;
+        hexStream << std::hex << formid_str;
+        hexStream >> formId;
+    }
+    catch (std::exception e)
+    {
+        logger::error("Error:{}\t\tUnable to resolve FormID: {}\t\tReason: Can't transform {} to hex\t\t", e.what(),
+                      modForm.c_str(), formid_str.c_str());
+        return nullptr;
+    }
+    TESDataHandler *dataHandler = TESDataHandler::GetSingleton();
+    TESFile *modFile = nullptr;
+    for (auto it = dataHandler->files.begin(); it != dataHandler->files.end(); it++)
+    {
+        TESFile *f = *it;
+        if (strcmp(f->fileName, modName.c_str()) == 0)
+        {
+            modFile = f;
+            break;
+        }
+    }
+    if (!modFile)
+    {
+        logger::error("Error: mod {} not exist", modName.c_str());
+        return nullptr;
+    }
+    uint8_t modIndex = modFile->compileIndex;
+    if (modIndex < 0xFE)
+    {
+        formId |= ((uint32_t)modIndex) << 24;
+    }
+    else
+    {
+        uint16_t lightModIndex = modFile->smallFileCompileIndex;
+        if (lightModIndex != 0xFFFF)
+        {
+            formId |= 0xFE000000 | (uint32_t(lightModIndex) << 12);
+        }
+    }
+    logger::trace("resolve formID:{} success, result:{}", modForm.c_str(), formId);
+    return TESForm::LookupByID(formId);
+}
+} // namespace FormUtils

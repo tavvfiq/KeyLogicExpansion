@@ -2,8 +2,17 @@
 
 namespace Hook
 {
-typedef bool doAction_t(RE::TESActionData *);
-REL::Relocation<doAction_t> doAction{RELOCATION_ID(40551, 41557)};
+typedef bool _doAction_t(RE::TESActionData *);
+REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
+void doAction(BGSAction *action)
+{
+    SKSE::GetTaskInterface()->AddTask([action]() {
+        std::unique_ptr<TESActionData> data(TESActionData::Create());
+        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
+        data->action = action;
+        _doAction(data.get());
+    });
+}
 bool CanDo()
 {
     return true;
@@ -14,6 +23,12 @@ bool IsAttackReady()
     VarUtils::player->GetGraphVariableBool("IsAttackReady", std::ref(res));
     return res;
 }
+bool IsBashing()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("IsBashing", std::ref(res));
+    return res;
+}
 bool IsSprinting()
 {
     return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
@@ -22,23 +37,13 @@ void NormalAttack()
 {
     BGSAction *RightAttack = (BGSAction *)TESForm::LookupByID(0x13005);
     auto action = RightAttack;
-    SKSE::GetTaskInterface()->AddTask([action]() {
-        std::unique_ptr<TESActionData> data(TESActionData::Create());
-        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
-        data->action = action;
-        doAction(data.get());
-    });
+    doAction(action);
 }
 void PowerAttack()
 {
     BGSAction *RightPowerAttack = (BGSAction *)TESForm::LookupByID(0x13383);
     auto action = RightPowerAttack;
-    SKSE::GetTaskInterface()->AddTask([action]() {
-        std::unique_ptr<TESActionData> data(TESActionData::Create());
-        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
-        data->action = action;
-        doAction(data.get());
-    });
+    doAction(action);
 }
 void SheatheAttack()
 {
@@ -188,7 +193,7 @@ bool AttackBlockHandler::CanProcess(InputEvent *a_event)
     {
         auto evn = a_event->AsButtonEvent();
         auto code = KeyUtils::GetEventKeyMap(evn);
-        if (code == Config::normalAttack || code == Config::powerAttack ||
+        if (code == Config::normalAttack || code == Config::powerAttack || code == Config::block ||
             code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
             return true;
     }
@@ -203,6 +208,55 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
     auto code = KeyUtils::GetEventKeyMap(a_event);
     if (CanDo())
     {
+        // Attack
+        if (code == Config::normalAttack)
+        {
+            // return (this->*FnPB)(a_event, a_data);
+            if (VarUtils::player->IsBlocking() || IsBashing())
+            {
+                if (!IsBashing())
+                {
+                    VarUtils::player->NotifyAnimationGraph("bashStart");
+                    VarUtils::player->NotifyAnimationGraph("bashRelease");
+                }
+            }
+            else
+                NormalAttack();
+            return true;
+        }
+        if (code == Config::powerAttack)
+        {
+            // return (this->*FnPB)(a_event, a_data);
+            if (VarUtils::player->IsBlocking() || IsBashing())
+            {
+                if (!IsBashing())
+                {
+                    VarUtils::player->NotifyAnimationGraph("bashStart");
+                    KeyUtils::TrackKeyState(code, []() {
+                        if (VarUtils::player->IsBlocking())
+                            SKSE::GetTaskInterface()->AddTask(
+                                []() { VarUtils::player->NotifyAnimationGraph("bashRelease"); });
+                    });
+                }
+            }
+            else
+                PowerAttack();
+            return true;
+        }
+        // Block
+        if (code == Config::block)
+        {
+            if (!VarUtils::player->IsBlocking() && !IsBashing())
+            {
+                VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
+                KeyUtils::TrackKeyState(code, []() {
+                    if (VarUtils::player->IsBlocking())
+                        SKSE::GetTaskInterface()->AddTask(
+                            []() { VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop); });
+                });
+            }
+            return true;
+        }
         // SheatheAttack
         if (Config::enableSheatheAttack)
             if (KeyUtils::GetKeyState(Config::enableSheatheAttack))
@@ -210,6 +264,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 if (!IsAttackReady())
                 {
                     ReadyWeaponHandler::PB(a_event, a_data);
+                    doAction((BGSAction *)TESForm::LookupByID(0x18BA8));
                     SKSE::GetTaskInterface()->AddTask(
                         []() { VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->forceRelease); });
                     if (code == Config::normalAttack)

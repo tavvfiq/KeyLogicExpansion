@@ -4,11 +4,10 @@ namespace Config
 {
 CSimpleIniA ini;
 const static std::string ini_path = "Data/SKSE/Plugins/KeyLogicExpansion.ini";
-const static std::string custom_dir = "Data/SKSE/Plugins/KeyLogicExpansion/";
 
 // Features
-bool enableStances;
-bool enableCustomInput;
+bool enableCustomInput = std::ref(Custom::enableCustomInput);
+bool enableStances = std::ref(Stances::enableStances);
 bool enableHoldSprint;
 bool enableHoldSneak;
 uint32_t enableSheatheAttack;
@@ -38,9 +37,6 @@ bool isModifier(uint32_t code)
     return listModifier.find(code) == listModifier.end();
 }
 
-// Custom Input
-std::vector<CustomInput> custom;
-
 static std::string *s = nullptr;
 char *str(std::string ss)
 {
@@ -59,8 +55,8 @@ char *str(std::string ss)
 void setVar()
 {
     // Features
-    enableStances = ini.GetBoolValue("Features", NameToStr(enableStances), true);
     enableCustomInput = ini.GetBoolValue("Features", NameToStr(enableCustomInput), true);
+    enableStances = ini.GetBoolValue("Features", NameToStr(enableStances), true);
     enableHoldSprint = ini.GetBoolValue("Features", NameToStr(enableHoldSprint), false);
     enableHoldSneak = ini.GetBoolValue("Features", NameToStr(enableHoldSneak), false);
     enableSheatheAttack = ini.GetLongValue("Features", NameToStr(enableSheatheAttack), 0);
@@ -111,6 +107,8 @@ void setVar()
     listModifier.insert(zoomModifier);
 
     // Custom Input
+    if (enableCustomInput)
+        Custom::LoadCustom();
 
     if (s)
         delete s;
@@ -120,31 +118,49 @@ void setVar()
 void createInI()
 {
     // Features
-    ini.SetBoolValue("Features", NameToStr(enableStances), true);
-    ini.SetBoolValue("Features", NameToStr(enableCustomInput), true);
-    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), false);
-    ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false);
-    ini.SetLongValue("Features", NameToStr(enableSheatheAttack), 0);
-    ini.SetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
+    ini.SetBoolValue("Features", NameToStr(enableCustomInput), true,
+                     ";Enable custom Input, maybe this is the reason you install this mod.");
+    ini.SetBoolValue("Features", NameToStr(enableStances), true,
+                     ";Enable Stances Supported by KLE, need EnableCustomInput = true or won't work.\n;Contain 4 types "
+                     "of stance: High, Mid, Low, and Sheathe.");
+    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), false, ";Change enable sprint when you hold sprint key");
+    ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false,
+                     ";Same as EnableHoldSprint, Change enable sneak when you hold sneak key");
+    ini.SetLongValue(
+        "Features", NameToStr(enableSheatheAttack), 0,
+        ";Make you can attack when you press this key, NOT completed.\n;0 means disable, other number means a "
+        "keycode\n;"
+        "when you press the key and Attack or PowerAttack or even Sheathe Key, you will do a SheatheAttack\n;Note: "
+        "Press with Sheathe Key can do SheatheAttack when you are NOT in Sheathe status.");
+    ini.SetBoolValue(
+        "Features", NameToStr(enableReverseHorseAttack), false,
+        ";Reverse your HorseAttack diretion, if enable this, left key attack left, right key attack right");
 
     // Vanilla Input
-    ini.SetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
+    ini.SetLongValue(
+        "Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft,
+        ";separete block key from Attack, still have some problems, don't use blockbash, it is overpowered");
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
 
-    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), 0);
+    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), 0,
+                     ";instead Vanilla Key, just All Alt* option do the same thing.");
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 
     // Expand Input
-    ini.SetLongValue("Expand", NameToStr(warAsh), 0);
+    ini.SetLongValue("Expand", NameToStr(warAsh), 0, ";EldenRim WarAsh support, press this to use WarAsh.");
     ini.SetLongValue("Expand", NameToStr(warAshModifier), 0);
 
-    ini.SetLongValue("Expand", NameToStr(altZoomIn), 0);
+    ini.SetLongValue("Expand", NameToStr(altZoomIn), 0,
+                     ";set it to Non 0 can instead default ZoomIn and ZoomOut \n;you don't konw what it mean? just "
+                     "Vanilla MouseWheelUp and MouseWheelDwon");
     ini.SetLongValue("Expand", NameToStr(altZoomOut), 0);
     ini.SetLongValue("Expand", NameToStr(zoomModifier), 0);
 
     // Modifier Input
-    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0);
+    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0,
+                     ";Add a Modifier to Vanilla Key, if you want a key to work, you need press modifier key "
+                     "first.\n;set it 0 to disable, other means a keycode");
     ini.SetLongValue("Modifier", VarUtils::userEvent->strafeLeft.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->back.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->strafeRight.c_str(), 0);

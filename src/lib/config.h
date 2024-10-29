@@ -1,32 +1,12 @@
 #pragma once
-#include "SimpleIni.h"
-#include "utils.h"
+#include "custom.h"
 
 namespace Config
 {
 
 #define NameToStr(n) str(std::string(#n))
 
-enum CustomEvent
-{
-    None = 0,
-    Spell,
-    Perk,
-    Command
-};
-
-typedef struct
-{
-    uint32_t trigger;
-    uint32_t modifier;
-    uint32_t priority;
-    CustomEvent event;
-    std::string content;
-} CustomInput;
-
 // Features
-extern bool enableStances;
-extern bool enableCustomInput;
 extern bool enableHoldSprint;
 extern bool enableHoldSneak;
 extern uint32_t enableSheatheAttack;
@@ -52,9 +32,6 @@ extern uint32_t zoomModifier;
 extern std::unordered_map<uint32_t, uint32_t> needModifier;
 extern std::unordered_set<uint32_t> listModifier;
 bool isModifier(uint32_t code);
-
-// Custom Input
-extern std::vector<CustomInput> custom;
 
 char *str(std::string ss);
 void loadInI();

@@ -189,3 +189,9 @@ namespace TimeUtils
 {
 uint64_t GetTime();
 }
+
+namespace FormUtils
+{
+TESForm *GetForm(FormID FormId);
+TESForm *GetForm(std::string modForm);
+} // namespace FormUtils
