@@ -5,28 +5,30 @@
 
 namespace Custom
 {
-extern bool enableCustomInput;
 
 enum CustomEvent
 {
-    None = 0,
-    Spell,
-    Perk,
-    Command
+    AddPerk,
+    RemovePerk,
+    UseItem,
+    ChangeActorValue,
+    SendGraphEvent
 };
 
 typedef struct
 {
-    bool enable;
-    uint32_t trigger;
     uint32_t modifier;
-    uint32_t priority;
-    CustomEvent event;
-    std::string content;
-} CustomInput;
+    std::vector<CustomEvent> downEvent;
+    std::vector<CustomEvent> upEvent;
+    std::vector<std::variant<std::string, RE::TESForm *>> downContent;
+    std::vector<std::variant<std::string, RE::TESForm *>> upContent;
+} CustomAction;
 
 // Custom Input
-extern std::vector<CustomInput> custom;
+extern bool enableCustomInput;
+extern std::unordered_map<uint32_t, std::map<uint32_t, CustomAction, std::greater<uint32_t>>> customSearchList;
 
 void LoadCustom();
+
+void doCustomAction(CustomEvent event, std::string content);
 } // namespace Custom

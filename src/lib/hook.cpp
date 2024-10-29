@@ -248,11 +248,14 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (!VarUtils::player->IsBlocking() && !IsBashing())
             {
+                VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
                 VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
                 KeyUtils::TrackKeyState(code, []() {
                     if (VarUtils::player->IsBlocking())
-                        SKSE::GetTaskInterface()->AddTask(
-                            []() { VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop); });
+                        SKSE::GetTaskInterface()->AddTask([]() {
+                            VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
+                            VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
+                        });
                 });
             }
             return true;
