@@ -1,11 +1,18 @@
 #pragma once
-#include "stances.h"
+#include "compatibility.h"
 
 using namespace RE;
 using namespace REL;
 
 namespace Hook
 {
+
+//
+// AnimationGraphEventSink
+//
+class AnimationGraphEventSink
+{
+};
 //
 // MenuOpenHandler
 //

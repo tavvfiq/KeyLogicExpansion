@@ -2,6 +2,8 @@
 
 namespace Hook
 {
+BGSAction *wantAction;
+
 typedef bool _doAction_t(RE::TESActionData *);
 REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
 void doAction(BGSAction *action)
@@ -15,7 +17,15 @@ void doAction(BGSAction *action)
 }
 bool CanDo()
 {
+    if (VarUtils::ui->IsMenuOpen("Dialogue Menu"))
+        return false;
     return true;
+}
+bool IsAttacking()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("IsAttacking", std::ref(res));
+    return res;
 }
 bool IsAttackReady()
 {
@@ -37,12 +47,24 @@ void NormalAttack()
 {
     BGSAction *RightAttack = (BGSAction *)TESForm::LookupByID(0x13005);
     auto action = RightAttack;
+    if (Compatibility::BFCO || Compatibility::MCO)
+        if (!Compatibility::CanNormalAttack())
+        {
+            wantAction = action;
+            return;
+        }
     doAction(action);
 }
 void PowerAttack()
 {
     BGSAction *RightPowerAttack = (BGSAction *)TESForm::LookupByID(0x13383);
     auto action = RightPowerAttack;
+    if (Compatibility::BFCO || Compatibility::MCO)
+        if (!Compatibility::CanNormalAttack())
+        {
+            wantAction = action;
+            return;
+        }
     doAction(action);
 }
 void SheatheAttack()
@@ -463,6 +485,16 @@ bool ReadyWeaponHandler::CP(InputEvent *a_event)
 }
 bool ReadyWeaponHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
 {
+    if (IsAttacking())
+    {
+        if (Compatibility::BFCO || Compatibility::MCO)
+        {
+            if (Compatibility::CanRecover())
+                return (this->*FnCP)(a_event);
+            else
+                return false;
+        }
+    }
     auto code = KeyUtils::GetEventKeyMap(a_event);
     if (Config::needModifier[code])
         if (!KeyUtils::GetKeyState(Config::needModifier[code]))
@@ -595,6 +627,7 @@ void ThirdPersonState::Hook()
 
 void Hook()
 {
+    RE::BSInputDeviceManager::GetSingleton();
     MenuOpenHandler::Hook();
     AutoMoveHandler::Hook();
     FirstPersonState::Hook();

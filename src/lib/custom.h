@@ -1,7 +1,6 @@
 #pragma once
 #include "SimpleIni.h"
 #include "stances.h"
-#include "utils.h"
 
 namespace Custom
 {
