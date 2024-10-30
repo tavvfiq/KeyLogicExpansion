@@ -4,6 +4,7 @@
 namespace Stances
 {
 extern bool enableStances;
+extern uint32_t StancesModfier;
 extern uint32_t ChangeToLow;
 extern uint32_t ChangeToMid;
 extern uint32_t ChangeToHigh;

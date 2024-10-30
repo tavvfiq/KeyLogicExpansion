@@ -14,6 +14,7 @@ uint32_t enableSheatheAttack;
 bool enableReverseHorseAttack;
 
 // Stances
+uint32_t &StancesModfier = std::ref(Stances::StancesModfier);
 uint32_t &ChangeToLow = std::ref(Stances::ChangeToLow);
 uint32_t &ChangeToMid = std::ref(Stances::ChangeToMid);
 uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
@@ -71,13 +72,10 @@ void setVar()
             FormUtils::GetForm((ini.GetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519"))));
         Stances::StancesList.push_back(
             FormUtils::GetForm((ini.GetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518"))));
-        auto modfier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift);
+        StancesModfier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift);
         ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
         ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
         ChangeToHigh = ini.GetLongValue("Stances", "ChangeToHigh", KeyUtils::Mouse::MouseWheelUp);
-        needModifier.insert(std::make_pair(ChangeToLow, modfier));
-        needModifier.insert(std::make_pair(ChangeToMid, modfier));
-        needModifier.insert(std::make_pair(ChangeToHigh, modfier));
     }
 
     // Vanilla Input
@@ -152,8 +150,8 @@ void createInI()
         ";Reverse your HorseAttack diretion, if enable this, left key attack left, right key attack right");
 
     // Stances
-    ini.SetValue("Stances", "Sheathe", "", ";Set this according to your stances mod");
-    ini.SetValue("Stances", "Low", "Stances - Dynamic Weapon Movesets SE.esp|0x4251A");
+    ini.SetValue("Stances", "Low", "Stances - Dynamic Weapon Movesets SE.esp|0x4251A",
+                 ";Set this according to your stances mod");
     ini.SetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519");
     ini.SetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518");
     ini.SetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift,

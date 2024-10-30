@@ -7,6 +7,7 @@ using namespace SKSE::log;
 
 namespace VarUtils
 {
+extern const SKSE::SerializationInterface *cosave;
 extern RE::PlayerCharacter *player;
 extern PlayerControls *pCtrl;
 extern ControlMap *ctrlMap;

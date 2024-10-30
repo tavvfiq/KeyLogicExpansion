@@ -22,14 +22,6 @@ void InitializeLogging()
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] [%t] [%s:%#] %v");
 }
 
-void InitializeSerialization()
-{
-    log::trace("Initializing cosave serialization...");
-    auto *serde = GetSerializationInterface();
-    serde->SetUniqueID(_byteswap_ulong('SMPL'));
-    log::trace("Cosave serialization initialized.");
-}
-
 void InitializePapyrus()
 {
     log::trace("Initializing Papyrus binding...");
@@ -59,12 +51,14 @@ void InitializeMessaging()
                 break;
 
             case MessagingInterface::kNewGame:
+                Hook::AnimationGraphEventSink::Install();
                 if (Stances::enableStances)
                     Stances::init();
                 break;
             case MessagingInterface::kPreLoadGame:
                 break;
             case MessagingInterface::kPostLoadGame:
+                Hook::AnimationGraphEventSink::Install();
                 if (Stances::enableStances)
                     Stances::init();
                 break;
@@ -90,7 +84,6 @@ SKSEPluginLoad(const LoadInterface *skse)
 
     Init(skse);
     InitializeMessaging();
-    InitializeSerialization();
     InitializePapyrus();
 
     log::info("{} has finished loading.", plugin->GetName());

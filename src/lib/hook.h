@@ -6,12 +6,18 @@ using namespace REL;
 
 namespace Hook
 {
-
 //
 // AnimationGraphEventSink
 //
-class AnimationGraphEventSink
+class AnimationGraphEventSink : public RE::BSTEventSink<RE::BSAnimationGraphEvent>
 {
+  public:
+    static inline AnimationGraphEventSink *GetSingleton();
+    static void Install();
+
+  private:
+    RE::BSEventNotifyControl ProcessEvent(const RE::BSAnimationGraphEvent *a_event,
+                                          RE::BSTEventSource<RE::BSAnimationGraphEvent> *a_eventSource) override;
 };
 //
 // MenuOpenHandler

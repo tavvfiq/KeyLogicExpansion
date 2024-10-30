@@ -3,42 +3,33 @@
 namespace Stances
 {
 bool enableStances;
+uint32_t StancesModfier;
 uint32_t ChangeToLow;
 uint32_t ChangeToMid;
 uint32_t ChangeToHigh;
 
+static RE::BGSPerk *currentStance;
 std::vector<RE::TESForm *> StancesList;
 
 void ChangeStanceTo(Stances stance)
 {
-    for (auto item : StancesList)
-    {
-        if (!item)
-            continue;
-        if (VarUtils::player->HasPerk((RE::BGSPerk *)item))
-            VarUtils::player->RemovePerk((RE::BGSPerk *)item);
-    }
     auto target = (RE::BGSPerk *)StancesList[stance];
+    if (currentStance)
+        VarUtils::player->RemoveTemporaryPerk(currentStance);
     if (target)
-        VarUtils::player->AddPerk(target);
+        VarUtils::player->ApplyTemporaryPerk(target);
+    currentStance = target;
 }
 
 void init()
 {
     bool inited = false;
-    for (auto item : StancesList)
-    {
-        if (!item)
-            continue;
-        if (VarUtils::player->HasPerk((RE::BGSPerk *)item))
-            inited = true;
-    }
     if (!inited)
     {
-        RE::BGSPerk *target;
-        target = (RE::BGSPerk *)StancesList[Stances::Mid];
+        RE::BGSPerk *target = (RE::BGSPerk *)StancesList[Stances::Mid];
+        currentStance = target;
         if (target)
-            VarUtils::player->AddPerk(target);
+            VarUtils::player->ApplyTemporaryPerk(target);
     }
 }
 } // namespace Stances

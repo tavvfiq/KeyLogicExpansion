@@ -2,6 +2,7 @@
 
 namespace VarUtils
 {
+const SKSE::SerializationInterface *cosave;
 RE::PlayerCharacter *player = nullptr;
 PlayerControls *pCtrl = nullptr;
 ControlMap *ctrlMap = nullptr;
@@ -10,6 +11,11 @@ UI *ui = nullptr;
 
 void init()
 {
+    logger::trace("Initializing cosave serialization...");
+    cosave = SKSE::GetSerializationInterface();
+    cosave->SetUniqueID(_byteswap_ulong('AKLE'));
+    logger::trace("Cosave serialization initialized.");
+
     player = RE::PlayerCharacter::GetSingleton();
     pCtrl = PlayerControls::GetSingleton();
     ctrlMap = ControlMap::GetSingleton();

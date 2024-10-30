@@ -2,25 +2,23 @@
 
 namespace Hook
 {
-BGSAction *wantAction;
+enum class AttackType : std::uint8_t
+{
+    Null = 0,
+    Right = 1,
+    Left = 2,
+    Dual = 3
+};
+typedef struct
+{
+    BGSAction *wantAction;
+    uint64_t time;
+    AttackType type;
+} ActionQueue;
+AttackType currentType;
+bool leftMagic;
+bool rightMagic;
 
-typedef bool _doAction_t(RE::TESActionData *);
-REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
-void doAction(BGSAction *action)
-{
-    SKSE::GetTaskInterface()->AddTask([action]() {
-        std::unique_ptr<TESActionData> data(TESActionData::Create());
-        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
-        data->action = action;
-        _doAction(data.get());
-    });
-}
-bool CanDo()
-{
-    if (VarUtils::ui->IsMenuOpen("Dialogue Menu"))
-        return false;
-    return true;
-}
 bool IsAttacking()
 {
     bool res;
@@ -43,14 +41,149 @@ bool IsSprinting()
 {
     return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
 }
+bool IsRiding()
+{
+    return (VarUtils::player->AsActorState()->actorState1.sitSleepState == SIT_SLEEP_STATE::kRidingMount);
+}
+typedef bool _doAction_t(RE::TESActionData *);
+REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
+void doAction(BGSAction *action)
+{
+    SKSE::GetTaskInterface()->AddTask([action]() {
+        std::unique_ptr<TESActionData> data(TESActionData::Create());
+        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
+        data->action = action;
+        _doAction(data.get());
+    });
+}
+bool CanDo()
+{
+    if (VarUtils::ui->IsMenuOpen("Dialogue Menu"))
+        return false;
+    if (IsRiding())
+        return false;
+    AttackType type = AttackType::Null;
+    bool _leftMagic = false;
+    bool _rightMagic = false;
+    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
+    RE::TESForm *lHand = nullptr;
+    RE::TESForm *rHand = nullptr;
+    RE::MagicItem *lMagic = nullptr;
+    if (!shield)
+        lMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kLeftHand];
+    if (lMagic)
+        _leftMagic = true;
+    if (!shield && !lMagic)
+    {
+        lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+        if (lHand)
+        {
+            if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
+                lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow)
+                return false;
+            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
+                     lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
+            {
+                currentType = AttackType::Right;
+                leftMagic = false;
+                rightMagic = false;
+                return true;
+            }
+            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+                _leftMagic = true;
+            else
+                type = AttackType::Left;
+        }
+    }
+    auto rMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kRightHand];
+    if (rMagic)
+        _rightMagic = true;
+    if (!rMagic)
+    {
+        rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+        if (rHand)
+        {
+            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+                _rightMagic = true;
+            else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+            {
+                if (type == AttackType::Left)
+                    type = AttackType::Dual;
+                else
+                    type = AttackType::Right;
+            }
+        }
+    }
+    leftMagic = _leftMagic;
+    rightMagic = _rightMagic;
+    if (leftMagic || rightMagic)
+        return true;
+    if (!lHand && !rHand)
+    {
+        if (shield)
+            type = AttackType::Right;
+        else
+            type = AttackType::Dual;
+    }
+    if (type == AttackType::Null)
+        return false;
+    currentType = type;
+    return true;
+}
+bool CanBash()
+{
+    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
+    if (shield)
+        return true;
+    auto lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+    if (lHand)
+    {
+        if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
+            lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
+            return true;
+        else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+            return false;
+    }
+    else
+    {
+        auto rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+        if (rHand)
+        {
+            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+                return false;
+            else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+                return true;
+        }
+    }
+    return false;
+}
 void NormalAttack()
 {
     BGSAction *RightAttack = (BGSAction *)TESForm::LookupByID(0x13005);
-    auto action = RightAttack;
+    BGSAction *LeftAttack = (BGSAction *)TESForm::LookupByID(0x13004);
+    BGSAction *DualAttack = (BGSAction *)TESForm::LookupByID(0x50C96);
+    BGSAction *action;
+    switch (currentType)
+    {
+    case AttackType::Right:
+        action = RightAttack;
+        break;
+    case AttackType::Left:
+        action = LeftAttack;
+        break;
+    case AttackType::Dual:
+        action = DualAttack;
+        break;
+    }
     if (Compatibility::BFCO || Compatibility::MCO)
         if (!Compatibility::CanNormalAttack())
         {
-            wantAction = action;
             return;
         }
     doAction(action);
@@ -58,11 +191,24 @@ void NormalAttack()
 void PowerAttack()
 {
     BGSAction *RightPowerAttack = (BGSAction *)TESForm::LookupByID(0x13383);
-    auto action = RightPowerAttack;
+    BGSAction *LeftPowerAttack = (BGSAction *)TESForm::LookupByID(0x2E2F6);
+    BGSAction *DualPowerAttack = (BGSAction *)TESForm::LookupByID(0x2E2F7);
+    BGSAction *action;
+    switch (currentType)
+    {
+    case AttackType::Right:
+        action = RightPowerAttack;
+        break;
+    case AttackType::Left:
+        action = LeftPowerAttack;
+        break;
+    case AttackType::Dual:
+        action = DualPowerAttack;
+        break;
+    }
     if (Compatibility::BFCO || Compatibility::MCO)
         if (!Compatibility::CanNormalAttack())
         {
-            wantAction = action;
             return;
         }
     doAction(action);
@@ -71,6 +217,44 @@ void SheatheAttack()
 {
     NormalAttack();
 }
+
+//
+// AnimationGraphEventSink
+//
+AnimationGraphEventSink *AnimationGraphEventSink::GetSingleton()
+{
+    static AnimationGraphEventSink singleton;
+    return &singleton;
+}
+void AnimationGraphEventSink::Install()
+{
+    VarUtils::player->AddAnimationGraphEventSink(AnimationGraphEventSink::GetSingleton());
+}
+RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
+    const RE::BSAnimationGraphEvent *a_event, RE::BSTEventSource<RE::BSAnimationGraphEvent> *a_eventSource)
+{
+    if (!a_event || !a_eventSource)
+    {
+        return RE::BSEventNotifyControl::kContinue;
+    }
+
+    if (a_event->tag == "MCO_WinOpen" || a_event->tag == "BFCO_NextWinStart")
+        Compatibility::normalAttackWin = true;
+    else if (a_event->tag == "MCO_PowerWinOpen" || a_event->tag == "BFCO_NextPowerWinStart")
+        Compatibility::powerAttackWin = true;
+    else if (a_event->tag == "MCO_WinClose")
+        Compatibility::normalAttackWin = false;
+    else if (a_event->tag == "MCO_PowerWinClose")
+        Compatibility::powerAttackWin = false;
+    else if (a_event->tag == "BFCO_DIY_EndLoop")
+    {
+        Compatibility::normalAttackWin = false;
+        Compatibility::powerAttackWin = false;
+    }
+
+    return RE::BSEventNotifyControl::kContinue;
+}
+
 //
 // MenuOpenHandler
 //
@@ -83,6 +267,20 @@ bool MenuOpenHandler::CanProcess(InputEvent *a_event)
     {
         auto evn = a_event->AsButtonEvent();
         auto code = KeyUtils::GetEventKeyMap(evn); // altTweenMenu
+        if (Stances::enableStances)
+            while (true)
+            {
+                if (Stances::StancesModfier)
+                    if (!KeyUtils::GetKeyState(Stances::StancesModfier))
+                        break;
+                if (code == Stances::ChangeToLow)
+                    Stances::ChangeStanceTo(Stances::Stances::Low);
+                else if (code == Stances::ChangeToMid)
+                    Stances::ChangeStanceTo(Stances::Stances::Mid);
+                else if (code == Stances::ChangeToHigh)
+                    Stances::ChangeStanceTo(Stances::Stances::High);
+                break;
+            }
         if (Config::altTweenMenu && code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->tweenMenu))
             return false;
         if (code == Config::altTweenMenu)
@@ -233,36 +431,42 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         // Attack
         if (code == Config::normalAttack)
         {
+            if (leftMagic || rightMagic)
+            {
+                a_event->userEvent = VarUtils::userEvent->rightAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
             a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || IsBashing())
             {
-                if (!IsBashing())
+                if (CanBash())
                 {
-                    VarUtils::player->NotifyAnimationGraph("bashStart");
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    (this->*FnPB)(a_event, a_data);
                     VarUtils::player->NotifyAnimationGraph("bashRelease");
+                    return true;
                 }
             }
-            else
-                NormalAttack();
+            NormalAttack();
             return (this->*FnPB)(a_event, a_data);
         }
         if (code == Config::powerAttack)
         {
+            if (leftMagic || rightMagic)
+            {
+                a_event->userEvent = VarUtils::userEvent->leftAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
             a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || IsBashing())
             {
-                if (!IsBashing())
+                if (CanBash())
                 {
-                    VarUtils::player->NotifyAnimationGraph("bashStart");
-                    KeyUtils::TrackKeyState(code, []() {
-                        if (VarUtils::player->IsBlocking())
-                            SKSE::GetTaskInterface()->AddTask(
-                                []() { VarUtils::player->NotifyAnimationGraph("bashRelease"); });
-                    });
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
                 }
             }
-            else
-                PowerAttack();
+            PowerAttack();
             return (this->*FnPB)(a_event, a_data);
         }
         // Block
@@ -274,13 +478,27 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
                 VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
                 KeyUtils::TrackKeyState(code, []() {
-                    if (VarUtils::player->IsBlocking())
+                    while (VarUtils::player->IsBlocking() || IsBashing())
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
                         SKSE::GetTaskInterface()->AddTask([]() {
                             VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
                             VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
                         });
+                    }
                 });
             }
+            if (VarUtils::player->IsBlocking())
+                KeyUtils::TrackKeyState(code, []() {
+                    while (VarUtils::player->IsBlocking() || IsBashing())
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                        SKSE::GetTaskInterface()->AddTask([]() {
+                            VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
+                            VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
+                        });
+                    }
+                });
             (this->*FnPB)(a_event, a_data);
         }
         // SheatheAttack
@@ -310,6 +528,13 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 return true;
             }
+    }
+    if (IsRiding() && Config::enableReverseHorseAttack)
+    {
+        if (code == Config::normalAttack || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack))
+            a_event->userEvent = VarUtils::userEvent->leftAttack;
+        else if (code == Config::powerAttack || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack))
+            a_event->userEvent = VarUtils::userEvent->rightAttack;
     }
     return (this->*FnPB)(a_event, a_data);
 }
@@ -489,7 +714,7 @@ bool ReadyWeaponHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
     {
         if (Compatibility::BFCO || Compatibility::MCO)
         {
-            if (Compatibility::CanRecover())
+            if (Compatibility::CanRecovery())
                 return (this->*FnCP)(a_event);
             else
                 return false;
@@ -627,7 +852,6 @@ void ThirdPersonState::Hook()
 
 void Hook()
 {
-    RE::BSInputDeviceManager::GetSingleton();
     MenuOpenHandler::Hook();
     AutoMoveHandler::Hook();
     FirstPersonState::Hook();
