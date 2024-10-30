@@ -15,6 +15,9 @@ typedef struct
     uint64_t time;
     AttackType type;
 } ActionQueue;
+static ActionQueue queue;
+uint32_t isInQueue = false;
+
 AttackType currentType;
 bool leftMagic;
 bool rightMagic;
@@ -163,6 +166,28 @@ bool CanBash()
     }
     return false;
 }
+void ActionPreInput(ActionQueue queue)
+{
+    while (KeyUtils::GetKeyState(Config::normalAttack) || KeyUtils::GetKeyState(Config::powerAttack))
+    {
+        if ((TimeUtils::GetTime() - queue.time) / 1000.0 > 200)
+        {
+            isInQueue = 0;
+            break;
+        }
+        if (isInQueue == 1 && Compatibility::CanNormalAttack())
+        {
+            if (queue.type == currentType)
+                doAction(queue.wantAction);
+        }
+        else if (isInQueue == 2 && Compatibility::CanPowerAttack())
+        {
+            if (queue.type == currentType)
+                doAction(queue.wantAction);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+}
 void NormalAttack()
 {
     BGSAction *RightAttack = (BGSAction *)TESForm::LookupByID(0x13005);
@@ -178,14 +203,19 @@ void NormalAttack()
         action = LeftAttack;
         break;
     case AttackType::Dual:
-        action = DualAttack;
+        if (Compatibility::BFCO || Compatibility::MCO)
+            action = RightAttack;
+        else
+            action = DualAttack;
         break;
     }
     if (Compatibility::BFCO || Compatibility::MCO)
-        if (!Compatibility::CanNormalAttack())
+    {
+        if (IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            return;
+            // return;
         }
+    }
     doAction(action);
 }
 void PowerAttack()
@@ -203,14 +233,19 @@ void PowerAttack()
         action = LeftPowerAttack;
         break;
     case AttackType::Dual:
-        action = DualPowerAttack;
+        if (Compatibility::BFCO || Compatibility::MCO)
+            action = RightPowerAttack;
+        else
+            action = DualPowerAttack;
         break;
     }
     if (Compatibility::BFCO || Compatibility::MCO)
-        if (!Compatibility::CanNormalAttack())
+    {
+        if (IsAttacking() && !Compatibility::CanPowerAttack())
         {
-            return;
+            // return;
         }
+    }
     doAction(action);
 }
 void SheatheAttack()
@@ -251,6 +286,8 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
         Compatibility::normalAttackWin = false;
         Compatibility::powerAttackWin = false;
     }
+
+    logger::trace("{}", a_event->tag == "MCO_WinOpen");
 
     return RE::BSEventNotifyControl::kContinue;
 }

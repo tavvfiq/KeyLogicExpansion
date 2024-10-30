@@ -57,8 +57,8 @@ void setVar()
 {
     // Features
     enableCustomInput = ini.GetBoolValue("Features", NameToStr(enableCustomInput), true);
-    enableStances = ini.GetBoolValue("Features", NameToStr(enableStances), true);
-    enableHoldSprint = ini.GetBoolValue("Features", NameToStr(enableHoldSprint), false);
+    enableStances = ini.GetBoolValue("Features", NameToStr(enableStances), false);
+    enableHoldSprint = ini.GetBoolValue("Features", NameToStr(enableHoldSprint), true);
     enableHoldSneak = ini.GetBoolValue("Features", NameToStr(enableHoldSneak), false);
     enableSheatheAttack = ini.GetLongValue("Features", NameToStr(enableSheatheAttack), 0);
     enableReverseHorseAttack = ini.GetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
@@ -133,10 +133,10 @@ void createInI()
     // Features
     ini.SetBoolValue("Features", NameToStr(enableCustomInput), true,
                      ";Enable custom Input, maybe this is the reason you install this mod.");
-    ini.SetBoolValue("Features", NameToStr(enableStances), true,
+    ini.SetBoolValue("Features", NameToStr(enableStances), false,
                      ";Enable Stances Supported by KLE\n;Contain 3 types "
                      "of stance: High, Mid, Low.");
-    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), false, ";Change enable sprint when you hold sprint key");
+    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), true, ";Change enable sprint when you hold sprint key");
     ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false,
                      ";Same as EnableHoldSprint, Change enable sneak when you hold sneak key");
     ini.SetLongValue(
@@ -167,7 +167,7 @@ void createInI()
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
 
-    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), 0,
+    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G,
                      ";instead Vanilla Key, just All Alt* option do the same thing.");
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 

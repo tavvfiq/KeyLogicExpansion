@@ -66,6 +66,17 @@ void LoadCustom()
     ini.SetUnicode(true);
     try
     {
+        if (!std::filesystem::exists(custom_dir))
+        {
+            logger::warn("Can't find custom ini dir:{}, will generate a new one.", custom_dir.c_str());
+            if (std::filesystem::create_directory(custom_dir))
+                logger::trace("Generate dir success.");
+            else
+            {
+                logger::error("Error: Can't generate dir.");
+                return;
+            }
+        }
         for (const auto &entry : std::filesystem::directory_iterator(custom_dir))
             if (entry.path().extension() == ".ini")
             {

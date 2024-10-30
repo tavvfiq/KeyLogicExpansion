@@ -47,8 +47,12 @@ void init()
 {
     // BFCO: SCSI-ACTbfco-Main.esp
     BFCO = ModExist(std::string("SCSI-ACTbfco-Main.esp"));
+    if (BFCO)
+        logger::trace("Detecting BFCO installed, compatibility with BFCO.");
     // MCO: Attack_DXP.esp
     MCO = ModExist(std::string("Attack_DXP.esp"));
+    if (MCO)
+        logger::trace("Detecting MCO installed, compatibility with MCO.");
     if (BFCO && MCO)
         logger::trace("Why you install BFCO and MCO at the same time?");
 }
