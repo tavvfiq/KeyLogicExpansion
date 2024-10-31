@@ -24,6 +24,12 @@ void ChangeStanceTo(Stances stance)
 void init()
 {
     bool inited = false;
+    for (auto i : StancesList)
+        if (VarUtils::player->HasPerk((RE::BGSPerk *)i))
+        {
+            inited = true;
+            currentStance = (RE::BGSPerk *)i;
+        }
     if (!inited)
     {
         RE::BGSPerk *target = (RE::BGSPerk *)StancesList[Stances::Mid];

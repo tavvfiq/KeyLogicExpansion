@@ -273,6 +273,8 @@ uint32_t GetWinKeyMap(uint32_t code)
 
 bool GetKeyState(uint32_t code)
 {
+    if (!code)
+        return false;
     auto vKey = GetWinKeyMap(code);
     if (vKey)
         return SKSE::WinAPI::GetKeyState(vKey) & 0x8000;

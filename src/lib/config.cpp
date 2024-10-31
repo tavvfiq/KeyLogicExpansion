@@ -23,6 +23,8 @@ uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
 uint32_t normalAttack;
 uint32_t powerAttack;
 uint32_t block;
+uint32_t BFCO_SpecialAttackModifier;
+uint32_t BFCO_ComboAttack;
 
 uint32_t altTweenMenu;
 uint32_t altTogglePOV;
@@ -72,7 +74,7 @@ void setVar()
             FormUtils::GetForm((ini.GetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519"))));
         Stances::StancesList.push_back(
             FormUtils::GetForm((ini.GetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518"))));
-        StancesModfier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift);
+        StancesModfier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::KeyBoard::LeftShift);
         ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
         ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
         ChangeToHigh = ini.GetLongValue("Stances", "ChangeToHigh", KeyUtils::Mouse::MouseWheelUp);
@@ -82,6 +84,9 @@ void setVar()
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     block = ini.GetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
+    BFCO_SpecialAttackModifier =
+        ini.GetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
+    BFCO_ComboAttack = ini.GetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     altTweenMenu = ini.GetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
     altTogglePOV = ini.GetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
@@ -109,7 +114,6 @@ void setVar()
         if (trigger)
             needModifier.insert(std::make_pair(trigger, modifier));
     }
-    needModifier.insert(std::make_pair(warAsh, warAshModifier));
     if (altZoomIn)
         needModifier.insert(std::make_pair(altZoomIn, zoomModifier));
     else
@@ -154,7 +158,7 @@ void createInI()
                  ";Set this according to your stances mod");
     ini.SetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519");
     ini.SetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518");
-    ini.SetLongValue("Stances", "StancesModifier", KeyUtils::LeftShift,
+    ini.SetLongValue("Stances", "StancesModifier", KeyUtils::KeyBoard::LeftShift,
                      ";Set change stance key, modifier = 0 means disable\n");
     ini.SetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
     ini.SetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
@@ -166,6 +170,8 @@ void createInI()
         ";separete block key from Attack, still have some problems, don't use blockbash, it is overpowered");
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
+    ini.SetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
+    ini.SetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G,
                      ";instead Vanilla Key, just All Alt* option do the same thing.");

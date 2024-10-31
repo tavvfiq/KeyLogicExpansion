@@ -5,6 +5,9 @@ namespace Compatibility
 bool BFCO;
 bool MCO;
 
+bool ELDEN;
+std::vector<TESForm *> warAshList;
+
 bool normalAttackWin;
 bool powerAttackWin;
 bool recoverWin;
@@ -22,6 +25,13 @@ bool CanRecovery()
     bool BFCO_Recovery;
     bool MCO_Recovery;
 
+    return true;
+}
+bool IsWarAsh(RE::FormID formId)
+{
+    auto res = std::find_if(warAshList.begin(), warAshList.end(), [formId](TESForm *i) { return formId == i->formID; });
+    if (res == warAshList.end())
+        return false;
     return true;
 }
 
@@ -53,7 +63,20 @@ void init()
     MCO = ModExist(std::string("Attack_DXP.esp"));
     if (MCO)
         logger::trace("Detecting MCO installed, compatibility with MCO.");
+
     if (BFCO && MCO)
         logger::trace("Why you install BFCO and MCO at the same time?");
+
+    // EldenRim: EldenSkyrim_RimSkills.esp
+    ELDEN = ModExist("EldenSkyrim_RimSkills.esp");
+    if (ELDEN)
+    {
+        logger::trace("Detecting EldenSkyrim installed, can enable WarAsh Now.");
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x0087E"));
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x0087F"));
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00880"));
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00881"));
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00FC8"));
+    }
 }
 } // namespace Compatibility
