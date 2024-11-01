@@ -23,6 +23,7 @@ uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
 uint32_t normalAttack;
 uint32_t powerAttack;
 uint32_t block;
+uint32_t MagicModifier;
 uint32_t BFCO_SpecialAttackModifier;
 uint32_t BFCO_ComboAttack;
 
@@ -84,6 +85,7 @@ void setVar()
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     block = ini.GetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
+    MagicModifier = ini.GetLongValue("Vanilla", NameToStr(MagicModifier), KeyUtils::KeyBoard::E);
     BFCO_SpecialAttackModifier =
         ini.GetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
     BFCO_ComboAttack = ini.GetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
@@ -170,6 +172,7 @@ void createInI()
         ";separete block key from Attack, still have some problems, don't use blockbash, it is overpowered");
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
+    ini.SetLongValue("Vanilla", NameToStr(MagicModifier), KeyUtils::KeyBoard::E);
     ini.SetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
     ini.SetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 

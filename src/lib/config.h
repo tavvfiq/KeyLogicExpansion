@@ -16,6 +16,7 @@ extern bool enableReverseHorseAttack;
 extern uint32_t normalAttack;
 extern uint32_t powerAttack;
 extern uint32_t block;
+extern uint32_t MagicModifier;
 extern uint32_t BFCO_SpecialAttackModifier;
 extern uint32_t BFCO_ComboAttack;
 

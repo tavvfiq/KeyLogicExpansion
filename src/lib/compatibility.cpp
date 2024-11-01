@@ -6,6 +6,7 @@ bool BFCO;
 bool MCO;
 
 bool ELDEN;
+bool CanUseWarAsh = false;
 std::vector<TESForm *> warAshList;
 
 bool normalAttackWin;
@@ -27,9 +28,9 @@ bool CanRecovery()
 
     return true;
 }
-bool IsWarAsh(RE::FormID formId)
+bool IsWarAsh(TESForm *form)
 {
-    auto res = std::find_if(warAshList.begin(), warAshList.end(), [formId](TESForm *i) { return formId == i->formID; });
+    auto res = std::find_if(warAshList.begin(), warAshList.end(), [form](TESForm *i) { return form == i; });
     if (res == warAshList.end())
         return false;
     return true;
@@ -72,11 +73,17 @@ void init()
     if (ELDEN)
     {
         logger::trace("Detecting EldenSkyrim installed, can enable WarAsh Now.");
-        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x0087E"));
-        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x0087F"));
-        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00880"));
-        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00881"));
-        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x00FC8"));
+        CanUseWarAsh = true;
+        // Ash of War - Strength
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x01023"));
+        // Ash of War - Dexterity
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x01025"));
+        // Ash of War - Arcane
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x01026"));
+        // Ash of War - Mystery
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x01027"));
+        // Ash of War - Fortune
+        warAshList.push_back(FormUtils::GetForm("EldenSkyrim_RimSkills.esp|0x01028"));
     }
 }
 } // namespace Compatibility
