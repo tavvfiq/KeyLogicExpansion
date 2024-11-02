@@ -1,4 +1,3 @@
-以下是修正了语法错误并美化后的Markdown文档：
 # KeyLogicExpansion
 A SKSE plugin that makes key input smooth and modern.
 
