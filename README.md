@@ -1,58 +1,66 @@
+以下是修正了语法错误并美化后的Markdown文档：
 # KeyLogicExpansion
-A SKSE plugin which make key input smooth and modern.
+A SKSE plugin that makes key input smooth and modern.
 
 ---
 
-## For Mod User
-### What Can KLE do
-Separeate leftAttack, RightAttack Key To Three Key: NormalAttack PowerAttack, Block. And this Won't affect euqip item or spell in Menu.
-To Enable this Please Make Sure NormalAttack, PowerAttack, Block Key NOT zero.Default MouseLeft, MouseRight, Tab, Same as Nioh.
+## For Mod Users
 
-Separate Open TweenMenu Key and It's function of Close Menu.
-To Enable this Please Make Sure AltTweenMenu Key NOT zero.
+### What Can KLE Do?
 
-Separate TogglePOV Key and It's function of Mark As Favorite.
-To Enable this Please Make Sure AltTogglePOV Key NOT zero.
+- **Separate Left Attack and Right Attack Keys** into three keys: Normal Attack, Power Attack, and Block. This won't affect equipping items or spells in the menu.
+  - To enable this, please ensure that the Normal Attack, Power Attack, and Block keys are not set to zero. The default keys are Mouse Left, Mouse Right, and Tab, similar to Nioh.
 
-Seprate ZoomIn and ZoomOut and their function Of Scroll in Menu.
-To Enable this Please Make Sure AltZoomIn or AltZoomOut Key NOT zero.
+- **Separate Open TweenMenu Key** and its function to close the menu.
+  - To enable this, please ensure that the AltTweenMenu key is not set to zero.
 
-Change sprint or sneak by holding sprint or sneak Key.
-To Enable this Please Make Sure EnableHoldSprint or EnableHoldSneak True.
+- **Separate Toggle POV Key** and its function to mark an item as favorite.
+  - To enable this, please ensure that the AltTogglePOV key is not set to zero.
 
-Allow you press sprint when you stop moving and spring will start when you start moving, Vanilla Can't do that.
+- **Separate Zoom In and Zoom Out** and their function for scrolling in the menu.
+  - To enable this, please ensure that the AltZoomIn or AltZoomOut key is not set to zero.
 
-Allow you Reverse HorseAttack.When Riding in Vanilla Game, Press LeftAttack Will Attack Right, Press RightAttack Will Attack Left, enable this will make Press LeftAttack Will Attack Left, Press RightAttack Will Attack Right.
+- Change sprint or sneak by holding the sprint or sneak key.
+  - To enable this, please ensure that EnableHoldSprint or EnableHoldSneak is set to true.
 
-Compatible with MCO, BFCO, Elden Parry about NormalAttack, PowerAttack, Block, BlockBash. And SpecialAttack ComboAttack Sprint and jumpAttack(Not Test, if succeed please tell me) for BFCO.
-Add a Pre Input where the target action can be changed and regretted.
-Add a Special Control Mod When lefthand is staff/magic and righthand is weapen/fist. In this Situation You can only use magic/staff by pressing MagicModifier Key and PowerAttack.
+- Allow you to press sprint when you stop moving, and it will start when you begin moving again. Vanilla Skyrim cannot do this.
 
-Add a Modifier to Every(Actually Not, If you find a modifer not work please tell me) Separate Vanilla Key.If you set A Key's Modifier , you can only activate it by pressing Modifier first.
-You can Set it a very big number to disable Vanilla key, such as 10000.
+- Allow you to reverse horse attacks. In the vanilla game, pressing Left Attack will attack right, and pressing Right Attack will attack left. Enable this to make pressing Left Attack attack left and pressing Right Attack attack right.
 
-Load Custom Input from other Mod Author.
+- Compatible with MCO, BFCO, and Elden Parry for Normal Attack, Power Attack, Block, and Block Bash. Also compatible with Special Attack, Combo Attack, Sprint, and Jump Attack (not tested; if successful, please let me know) for BFCO.
 
-## For Mod Author
+- Add a pre-input where the target action can be changed and regretted.
 
-### Trigger, Modifier and Priority 
-Trigger means when press this key, KLE will check Custom Input about it.
-Modifier not zero means KLE will cheak whether Modifier pressed first.
-Priority means when A trigger has many conditions and events, which event will be process(When condition is true).
-Another Word, KLE will process the event which condition result is True and has Biggest Priority.
+- Add a special control mod when the left hand is a staff/magic and the right hand is a weapon/fist. In this situation, you can only use magic/staff by pressing the Magic Modifier key and Power Attack.
+
+- Add a modifier to every separate vanilla key. If you set a modifier for a key, you can only activate it by pressing the modifier first. You can set it to a very high number to disable the vanilla key, such as 10000.
+
+- Load custom input from other mod authors.
+
+
+## For Mod Authors
+
+### Trigger, Modifier, and Priority
+
+- **Trigger** means that when this key is pressed, KLE will check for custom input related to it.
+- **Modifier** means that if it is not zero, KLE will check whether the modifier key is pressed first.
+- **Priority** means that when a trigger has many conditions and events, it determines which event will be processed first (when the condition is true). In other words, KLE will process the event with the highest priority whose condition is true.
 
 ### How to Add a Custom Input
-You can write a ini file, and this is a example in "SKSE/Plugins/KeyLogicExpansion".You can copy something from it.
+You can write an INI file. Here is an example located in "SKSE/Plugins/KeyLogicExpansion". You can copy and modify it as needed.
 
-ATTENTION: LowerCase and UpperCase Sensitive in Custom Input.
+> **Attention:** Custom input is case-sensitive.
 
-### Input Mode
-There is 3 Input Mode Supported by KLE.
-Click, DoubleClick, Hold.
-Click means when you press this key, KLE will try to do something according conditon,
-DoubleClick means when you press this key double in a time setted by KLE Config File.
-Hold means when you press this key at least for a time setted by KLE Config File.
+### Input Modes
+KLE supports three input modes:
+- Click: When you press this key, KLE will try to perform an action based on the condition.
+- Double Click: When you double-click this key within a set time frame specified in the KLE Config File.
+- Hold: When you press and hold this key for a duration specified in the KLE Config File.
 
 ### Condition
+(TODO: Add conditions section)
 
 ### Event
+(TODO: Add events section)
+
+---
