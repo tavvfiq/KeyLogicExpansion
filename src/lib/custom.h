@@ -5,29 +5,55 @@
 namespace Custom
 {
 
+typedef struct
+{
+    uint32_t code;
+    uint64_t time;
+} NewInput;
+
+enum CustomInputMode
+{
+    Click,
+    DoubleClick,
+    Hold
+};
+
+enum CustomCondition
+{
+    ModExist,
+    PlayerStatus,
+    ActorValueRange,
+    ModValueRange
+};
+
 enum CustomEvent
 {
     AddPerk,
     RemovePerk,
-    UseItem,
+    ApplySpellEffect,
+    RemoveSpellEffect,
+    CastSpell,
     ChangeActorValue,
+    ChangeGraphValue,
+    ChangeModValue,
     SendGraphEvent
 };
 
 typedef struct
 {
     uint32_t modifier;
-    std::vector<CustomEvent> downEvent;
-    std::vector<CustomEvent> upEvent;
-    std::vector<std::variant<std::string, RE::TESForm *>> downContent;
-    std::vector<std::variant<std::string, RE::TESForm *>> upContent;
+    CustomInputMode inputMode;
+    std::vector<std::vector<std::any>> conditon;
+    std::vector<std::vector<std::any>> event;
 } CustomAction;
 
 // Custom Input
 extern bool enableCustomInput;
-extern std::unordered_map<uint32_t, std::map<uint32_t, CustomAction, std::greater<uint32_t>>> customSearchList;
+extern std::unordered_map<uint32_t, std::map<uint32_t, std::vector<CustomAction>, std::greater<uint32_t>>>
+    customSearchList;
+extern std::deque<NewInput> inputQueue;
 
 void LoadCustom();
 
-void doCustomAction(CustomEvent event, std::string content);
+void CustomEventDecoder();
 } // namespace Custom

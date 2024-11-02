@@ -394,3 +394,72 @@ TESForm *GetForm(std::string modForm)
     return TESForm::LookupByID(formId);
 }
 } // namespace FormUtils
+
+namespace PlayerStatus
+{
+bool IsAttacking()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("IsAttacking", std::ref(res));
+    return res;
+}
+bool IsAttackReady()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("IsAttackReady", std::ref(res));
+    return res;
+}
+bool IsBashing()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("IsBashing", std::ref(res));
+    return res;
+}
+bool IsSprinting()
+{
+    return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
+}
+bool IsJumping()
+{
+    bool res;
+    VarUtils::player->GetGraphVariableBool("bInJumpState", std::ref(res));
+    return res;
+}
+bool IsRiding()
+{
+    return (VarUtils::player->AsActorState()->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kRidingMount);
+}
+bool IsInKillmove()
+{
+    return VarUtils::player->GetActorRuntimeData().boolFlags.all(RE::Actor::BOOL_FLAGS::kIsInKillMove);
+}
+} // namespace PlayerStatus
+
+namespace ModSupport
+{
+bool ModExist(std::string modName)
+{
+    TESDataHandler *dataHandler = TESDataHandler::GetSingleton();
+    TESFile *modFile = nullptr;
+    for (auto it = dataHandler->files.begin(); it != dataHandler->files.end(); it++)
+    {
+        TESFile *f = *it;
+        if (strcmp(f->fileName, modName.c_str()) == 0)
+        {
+            modFile = f;
+            break;
+        }
+    }
+    if (!modFile)
+        return false;
+    return true;
+}
+bool DLLExist(std::string DLLName)
+{
+    const std::string dll_dir = "Data/SKSE/Plugins/";
+    for (auto entry : std::filesystem::directory_iterator(dll_dir))
+        if (entry.is_regular_file() && entry.path().filename() == DLLName)
+            return true;
+    return false;
+}
+} // namespace ModSupport

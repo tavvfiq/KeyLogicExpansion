@@ -2,16 +2,16 @@
 
 namespace Compatibility
 {
-bool BFCO;
-bool MCO;
+bool BFCO = false;
+bool MCO = false;
 
-bool ELDEN;
+bool ELDEN = false;
 bool CanUseWarAsh = false;
 std::vector<TESForm *> warAshList;
 
-bool normalAttackWin;
-bool powerAttackWin;
-bool recoverWin;
+bool normalAttackWin = false;
+bool powerAttackWin = false;
+bool recoverWin = false;
 
 bool CanNormalAttack()
 {
@@ -36,32 +36,14 @@ bool IsWarAsh(TESForm *form)
     return true;
 }
 
-bool ModExist(std::string modName)
-{
-    TESDataHandler *dataHandler = TESDataHandler::GetSingleton();
-    TESFile *modFile = nullptr;
-    for (auto it = dataHandler->files.begin(); it != dataHandler->files.end(); it++)
-    {
-        TESFile *f = *it;
-        if (strcmp(f->fileName, modName.c_str()) == 0)
-        {
-            modFile = f;
-            break;
-        }
-    }
-    if (!modFile)
-        return false;
-    return true;
-}
-
 void init()
 {
     // BFCO: SCSI-ACTbfco-Main.esp
-    BFCO = ModExist(std::string("SCSI-ACTbfco-Main.esp"));
+    BFCO = ModSupport::ModExist(std::string("SCSI-ACTbfco-Main.esp"));
     if (BFCO)
         logger::trace("Detecting BFCO installed, compatibility with BFCO.");
     // MCO: Attack_DXP.esp
-    MCO = ModExist(std::string("Attack_DXP.esp"));
+    MCO = ModSupport::ModExist(std::string("Attack_DXP.esp"));
     if (MCO)
         logger::trace("Detecting MCO installed, compatibility with MCO.");
 
@@ -69,7 +51,7 @@ void init()
         logger::trace("Why you install BFCO and MCO at the same time?");
 
     // EldenRim: EldenSkyrim_RimSkills.esp
-    ELDEN = ModExist("EldenSkyrim_RimSkills.esp");
+    ELDEN = ModSupport::ModExist("EldenSkyrim_RimSkills.esp");
     if (ELDEN)
     {
         logger::trace("Detecting EldenSkyrim installed, can enable WarAsh Now.");

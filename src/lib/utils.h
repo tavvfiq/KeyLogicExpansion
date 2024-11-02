@@ -196,3 +196,20 @@ namespace FormUtils
 TESForm *GetForm(FormID FormId);
 TESForm *GetForm(std::string modForm);
 } // namespace FormUtils
+
+namespace PlayerStatus
+{
+bool IsAttacking();
+bool IsAttackReady();
+bool IsBashing();
+bool IsSprinting();
+bool IsJumping();
+bool IsRiding();
+bool IsInKillmove();
+} // namespace PlayerStatus
+
+namespace ModSupport
+{
+bool ModExist(std::string modName);
+bool DLLExist(std::string DLLName);
+} // namespace ModSupport

@@ -25,42 +25,6 @@ static uint8_t leftMagic = 0;
 static uint8_t rightMagic = 0;
 static bool canComboAttack = true;
 
-bool IsAttacking()
-{
-    bool res;
-    VarUtils::player->GetGraphVariableBool("IsAttacking", std::ref(res));
-    return res;
-}
-bool IsAttackReady()
-{
-    bool res;
-    VarUtils::player->GetGraphVariableBool("IsAttackReady", std::ref(res));
-    return res;
-}
-bool IsBashing()
-{
-    bool res;
-    VarUtils::player->GetGraphVariableBool("IsBashing", std::ref(res));
-    return res;
-}
-bool IsSprinting()
-{
-    return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
-}
-bool IsJumping()
-{
-    bool res;
-    VarUtils::player->GetGraphVariableBool("bInJumpState", std::ref(res));
-    return res;
-}
-bool IsRiding()
-{
-    return (VarUtils::player->AsActorState()->actorState1.sitSleepState == SIT_SLEEP_STATE::kRidingMount);
-}
-bool IsInKillmove()
-{
-    return VarUtils::player->GetActorRuntimeData().boolFlags.all(Actor::BOOL_FLAGS::kIsInKillMove);
-}
 typedef bool _doAction_t(RE::TESActionData *);
 REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
 void doAction(BGSAction *action)
@@ -83,7 +47,8 @@ void doAction(RE::BSFixedString event)
 
 bool CanDo()
 {
-    if (VarUtils::ui->numPausesGame > 0 || IsInKillmove() || IsRiding() || VarUtils::ui->IsMenuOpen("Dialogue Menu") ||
+    if (VarUtils::ui->numPausesGame > 0 || PlayerStatus::IsInKillmove() || PlayerStatus::IsRiding() ||
+        VarUtils::ui->IsMenuOpen("Dialogue Menu") ||
         VarUtils::player->AsActorState()->actorState1.sitSleepState != SIT_SLEEP_STATE::kNormal ||
         (VarUtils::ctrlMap->enabledControls.underlying() &
          ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking)) !=
@@ -301,7 +266,7 @@ void NormalAttack()
         }
     else
         action = RightAttack;
-    if ((Compatibility::MCO || Compatibility::BFCO) && IsAttacking())
+    if ((Compatibility::MCO || Compatibility::BFCO) && PlayerStatus::IsAttacking())
     {
         if (!Compatibility::CanNormalAttack())
         {
@@ -345,7 +310,7 @@ void PowerAttack()
         }
     else
         action = RightPowerAttack;
-    if ((Compatibility::MCO || Compatibility::BFCO) && IsAttacking())
+    if ((Compatibility::MCO || Compatibility::BFCO) && PlayerStatus::IsAttacking())
     {
         if (!Compatibility::CanPowerAttack())
         {
@@ -420,6 +385,8 @@ bool MenuOpenHandler::CanProcess(InputEvent *a_event)
     {
         auto evn = a_event->AsButtonEvent();
         auto code = KeyUtils::GetEventKeyMap(evn); // altTweenMenu
+        if (Custom::enableCustomInput && evn->IsDown())
+            Custom::inputQueue.push_back(Custom::NewInput{code, TimeUtils::GetTime()});
         while (Stances::enableStances)
         {
             if (Stances::StancesModfier)
@@ -589,6 +556,9 @@ bool AttackBlockHandler::CanProcess(InputEvent *a_event)
         if (code == Config::normalAttack || code == Config::powerAttack || code == Config::block ||
             code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
             return true;
+        if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack) ||
+            code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack))
+            return false;
         if (Compatibility::BFCO || code == Config::BFCO_ComboAttack)
             return true;
     }
@@ -601,14 +571,14 @@ bool AttackBlockHandler::CP(InputEvent *a_event)
 bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
 {
     auto code = KeyUtils::GetEventKeyMap(a_event);
-    if (CanDo())
+    if (CanDo() && Config::normalAttack && Config::powerAttack && Config::block)
     {
         // Attack
         if (code == Config::normalAttack)
         {
             if (Compatibility::BFCO)
             {
-                if (IsSprinting() || IsJumping())
+                if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
                 {
                     VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
                                                                              RE::ActorValue::kStamina, 0);
@@ -617,15 +587,15 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 else if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
                 {
-                    if (!IsAttacking() ||
-                        (IsAttacking() && Compatibility::CanNormalAttack() &&
-                         VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10))
+                    if ((!PlayerStatus::IsAttacking() ||
+                         (PlayerStatus::IsAttacking() && Compatibility::CanNormalAttack())) &&
+                        VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
                     {
                         if (VarUtils::player->NotifyAnimationGraph("attackStartDualWield"))
                             VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
                                                                                      RE::ActorValue::kStamina, -60);
                     }
-                    else if (IsAttacking() && !Compatibility::CanNormalAttack() &&
+                    else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack() &&
                              VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
                     {
                         queue.time = TimeUtils::GetTime();
@@ -660,7 +630,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
             }
             a_event->userEvent = "";
-            if (VarUtils::player->IsBlocking() || IsBashing())
+            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
             {
                 if (CanBash())
                 {
@@ -680,24 +650,23 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (Compatibility::BFCO)
             {
-                if (IsSprinting() || IsJumping())
+                if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
                 {
                     VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
                                                                              RE::ActorValue::kStamina, 0);
-
                     if (VarUtils::player->NotifyAnimationGraph("attackPowerStart_Sprint"))
                         return true;
                 }
                 else if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
                 {
-                    if (!IsAttacking() ||
-                        (IsAttacking() && Compatibility::CanPowerAttack() &&
-                         VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10))
+                    if ((!PlayerStatus::IsAttacking() ||
+                         (PlayerStatus::IsAttacking() && Compatibility::CanPowerAttack())) &&
+                        VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
                     {
                         if (VarUtils::player->NotifyAnimationGraph("attackPowerStartDualWield"))
                             VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
                                                                                      RE::ActorValue::kStamina, -80);
-                        else if (IsAttacking() && !Compatibility::CanPowerAttack() &&
+                        else if (PlayerStatus::IsAttacking() && !Compatibility::CanPowerAttack() &&
                                  VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
                         {
                             queue.time = TimeUtils::GetTime();
@@ -751,7 +720,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
             }
             a_event->userEvent = "";
-            if (VarUtils::player->IsBlocking() || IsBashing())
+            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
             {
                 if (CanBash())
                 {
@@ -768,12 +737,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         if (code == Config::block)
         {
             a_event->userEvent = "";
-            if (!VarUtils::player->IsBlocking() && !IsBashing())
+            if (!VarUtils::player->IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
             {
                 VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
                 VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
                 KeyUtils::TrackKeyState(code, []() {
-                    while (VarUtils::player->IsBlocking() || IsBashing())
+                    while (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
                     {
                         std::this_thread::sleep_for(std::chrono::milliseconds(20));
                         SKSE::GetTaskInterface()->AddTask([]() {
@@ -785,7 +754,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
             if (VarUtils::player->IsBlocking())
                 KeyUtils::TrackKeyState(code, []() {
-                    while (VarUtils::player->IsBlocking() || IsBashing())
+                    while (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
                     {
                         std::this_thread::sleep_for(std::chrono::milliseconds(20));
                         SKSE::GetTaskInterface()->AddTask([]() {
@@ -800,7 +769,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         if (Config::enableSheatheAttack)
             if (KeyUtils::GetKeyState(Config::enableSheatheAttack))
             {
-                if (!IsAttackReady())
+                if (!PlayerStatus::IsAttackReady())
                 {
                     ReadyWeaponHandler::PB(a_event, a_data);
                     doAction((BGSAction *)TESForm::LookupByID(0x18BA8));
@@ -824,7 +793,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 return true;
             }
         // BFCO ComboAttack
-        if (code == Config::BFCO_ComboAttack && IsAttacking() && canComboAttack &&
+        if (Compatibility::BFCO && code == Config::BFCO_ComboAttack && PlayerStatus::IsAttacking() && canComboAttack &&
             VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
         {
             if (Compatibility::CanPowerAttack())
@@ -856,7 +825,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
         }
     }
-    if (IsRiding() && Config::enableReverseHorseAttack)
+    if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
     {
         if (code == Config::normalAttack || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack))
             a_event->userEvent = VarUtils::userEvent->leftAttack;
@@ -902,10 +871,10 @@ bool SprintHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_da
     if (Config::needModifier[code])
         if (!KeyUtils::GetKeyState(Config::needModifier[code]))
             return false;
-    if (Config::enableHoldSprint && IsSprinting())
+    if (Config::enableHoldSprint && PlayerStatus::IsSprinting())
         KeyUtils::TrackKeyState(code, []() {
             SKSE::GetTaskInterface()->AddTask([]() {
-                if (IsSprinting())
+                if (PlayerStatus::IsSprinting())
                     VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting = false;
             });
         });
@@ -991,7 +960,7 @@ bool MovementHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_
     if (Config::needModifier[code])
         if (!KeyUtils::GetKeyState(Config::needModifier[code]))
             return false;
-    if (!IsSprinting())
+    if (!PlayerStatus::IsSprinting())
     {
         auto sprint = KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->sprint);
         if (!KeyUtils::GetKeyState(sprint))
@@ -1002,7 +971,7 @@ bool MovementHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_
         VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting = true;
         KeyUtils::TrackKeyState(sprint, []() {
             SKSE::GetTaskInterface()->AddTask([]() {
-                if (IsSprinting())
+                if (PlayerStatus::IsSprinting())
                     VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting = false;
             });
         });
@@ -1037,7 +1006,7 @@ bool ReadyWeaponHandler::CP(InputEvent *a_event)
 }
 bool ReadyWeaponHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
 {
-    if (IsAttacking())
+    if (PlayerStatus::IsAttacking())
     {
         if (Compatibility::BFCO || Compatibility::MCO)
         {
