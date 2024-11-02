@@ -57,10 +57,110 @@ KLE supports three input modes:
 - Double Click: When you double-click this key within a set time frame specified in the KLE Config File.
 - Hold: When you press and hold this key for a duration specified in the KLE Config File.
 
-### Condition
-(TODO: Add conditions section)
+### Conditions
 
-### Event
-(TODO: Add events section)
+#### ModExist
+- **Format**: `ModType|ModName`
+- **Description**: If a mod does not exist, KLE will not load the corresponding key.
+##### ModType
+| Option        | Description |
+|---------------|-------------|
+| Mod           | Specifies that the file is a `.esp`, `.esl`, or `.esm` mod file. |
+| DLL           | Specifies that the file is a SKSE plugin.         |
+##### ModName
+| Option        | Description |
+|---------------|-------------|
+| ModName       | The name of the mod including its file extension. |
 
----
+#### PlayerStatus
+- **Format**: `Status|Logic`
+- **Description**: Each condition requires a logic operator, including the first one.
+##### Status
+| Option        | Description |
+|---------------|-------------|
+| Attacking     | Player is attacking. |
+| Blocking      | Player is blocking an attack. |
+| BlockBashing  | Player is block bashing. |
+| AttackReady   | Player is ready to attack,meaning unsheathed. |
+| Sprinting     | Player is sprinting. |
+| Sneaking      | Player is sneaking. |
+| Jumping       | Player is jumping. |
+| Riding        | Player is riding a horse or a dragon. |
+| InKillMove    | Player is performing a kill move. |
+##### Logic
+| Option        | Description |
+|---------------|-------------|
+| AND           | This condition must be true. |
+| OR            | If other donditions' result are true, this condition can be false. |
+| AND_NOT       | This condition must be false. |
+| OR_NOT        | If other donditions' result are true, this condition can be true. |
+
+#### Has_Is
+- **Format**: `Target|FormID|Logic`
+- **Description**: A `Logic` operator is required.
+##### Target
+| Option        | Description |
+|---------------|-------------|
+| Keyword       | Player has the keyword. |
+| Perk          | Player has the perk. |
+| Spell         | Player has the spell. |
+| Race          | Player is of the specified race. |
+##### FormID
+| Option        | Description |
+|---------------|-------------|
+| FormID        | The identifier for the target in the format ModName|Offset, like Mod.esp|0x12345. |
+##### Logic
+| Option        | Description |
+|---------------|-------------|
+| AND           | This condition must be true. |
+| OR            | If other donditions' result are true, this condition can be false. |
+| AND_NOT       | This condition must be false. |
+| OR_NOT        | If other donditions' result are true, this condition can be true. |
+
+#### ActorValueRange
+- **Format**: `ActorValue|Min|Max`
+##### ActorValue
+| Option        | Description |
+|---------------|-------------|
+| Health        | Player's health value. |
+| Magicka       | Player's magicka value. |
+| Stamina       | Player's stamina value. |
+| CarryWeight   | Player's current carry weight. |
+| CarryWeightPercent | Player's current carry weight as a percentage of the maximum carry weight. |
+| OneHanded     | Player's One-Handed skill level. |
+| TwoHanded     | Player's Two-Handed skill level. |
+| Archery       | Player's Archery skill level. |
+| Block         | Player's Block skill level. |
+| Smithing      | Player's Smithing skill level. |
+| HeavyArmor    | Player's Heavy Armor skill level. |
+| LightArmor    | Player's Light Armor skill level. |
+| Pickpocket    | Player's Pickpocket skill level. |
+| Lockpicking   | Player's Lockpicking skill level. |
+| Sneak         | Player's Sneak skill level. |
+| Alchemy       | Player's Alchemy skill level. |
+| Speech        | Player's Speech skill level. |
+| Alteration    | Player's Alteration skill level. |
+| Conjuration   | Player's Conjuration skill level. |
+| Destruction   | Player's Destruction skill level. |
+| Illusion      | Player's Illusion skill level. |
+| Restoration   | Player's Restoration skill level. |
+| Enchanting    | Player's Enchanting skill level. |
+##### Min
+| Option        | Description |
+|---------------|-------------|
+| Min           | The minimum value for Player's attribute range, inclusive. |
+##### Max
+| Option        | Description |
+|---------------|-------------|
+| Max           | The maximum value for Player's attribute range, inclusive. |
+
+### Events
+#### Addperk
+#### RemovePerk
+#### ApplySpellEffect
+#### RemoveSpellEffect
+#### CastSpell
+#### ChangeActorValue
+#### ChangeGraphValue
+#### ChangeModValue
+#### SendGraphEven

@@ -200,9 +200,11 @@ TESForm *GetForm(std::string modForm);
 namespace PlayerStatus
 {
 bool IsAttacking();
+bool IsBlocking();
 bool IsAttackReady();
 bool IsBashing();
 bool IsSprinting();
+bool IsSneaking();
 bool IsJumping();
 bool IsRiding();
 bool IsInKillmove();

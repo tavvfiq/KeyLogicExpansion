@@ -22,6 +22,7 @@ enum CustomCondition
 {
     ModExist,
     PlayerStatus,
+    Has,
     ActorValueRange,
     ModValueRange
 };
@@ -41,10 +42,29 @@ enum CustomEvent
 
 typedef struct
 {
+    char logic;
+    CustomCondition condition;
+    std::any func;
+    std::any arg0;
+    std::any arg1;
+    std::any arg2;
+} Condition;
+
+typedef struct
+{
+    CustomEvent event;
+    std::any func;
+    std::any arg0;
+    std::any arg1;
+    std::any arg2;
+} Event;
+
+typedef struct
+{
     uint32_t modifier;
     CustomInputMode inputMode;
-    std::vector<std::vector<std::any>> conditon;
-    std::vector<std::vector<std::any>> event;
+    std::vector<Condition> conditon;
+    std::vector<Event> event;
 } CustomAction;
 
 // Custom Input

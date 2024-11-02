@@ -55,8 +55,7 @@ bool DecodeInputMode(std::string inputMode_str, CustomInputMode &inputMode)
         return false;
 }
 
-bool DecodeConditon(std::string condition_str, std::string content_str,
-                    std::vector<std::vector<std::any>> &conditon_ouput)
+bool DecodeConditon(std::string condition_str, std::string content_str, std::vector<Condition> &conditon_ouput)
 {
     auto spit_conditon = SplitString(condition_str, ',');
     auto spit_content = SplitString(content_str, ',');
@@ -88,7 +87,7 @@ bool DecodeConditon(std::string condition_str, std::string content_str,
     return true;
 }
 
-bool DecodeEvent(std::string event_str, std::string content_str, std::vector<std::vector<std::any>> &event_ouput)
+bool DecodeEvent(std::string event_str, std::string content_str, std::vector<Event> &event_ouput)
 {
     auto spit_event = SplitString(event_str, ',');
     auto spit_content = SplitString(content_str, ',');
@@ -145,8 +144,8 @@ void LoadCustom()
                     std::string eventContent_str = ini.GetValue(section.pItem, "EventContent");
 
                     CustomInputMode inputMode;
-                    std::vector<std::vector<std::any>> conditon;
-                    std::vector<std::vector<std::any>> event;
+                    std::vector<Condition> conditon;
+                    std::vector<Event> event;
                     if (!DecodeInputMode(inputMode_str, std::ref(inputMode)) ||
                         !DecodeConditon(condition_str, conditionContent_str, std::ref(conditon)) ||
                         !DecodeEvent(event_str, eventContent_str, std::ref(event)))

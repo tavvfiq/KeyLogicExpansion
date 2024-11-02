@@ -403,6 +403,10 @@ bool IsAttacking()
     VarUtils::player->GetGraphVariableBool("IsAttacking", std::ref(res));
     return res;
 }
+bool IsBlocking()
+{
+    return VarUtils::player->IsBlocking();
+}
 bool IsAttackReady()
 {
     bool res;
@@ -418,6 +422,10 @@ bool IsBashing()
 bool IsSprinting()
 {
     return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
+}
+bool IsSneaking()
+{
+    return VarUtils::player->IsSneaking();
 }
 bool IsJumping()
 {
