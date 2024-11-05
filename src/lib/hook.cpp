@@ -75,6 +75,9 @@ bool CanDo()
     if (!shield && !_leftMagic)
     {
         lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+        // Specially Torch
+        if (lHand && lHand->GetFormID() == 0x1D4EC)
+            lHand = nullptr;
         if (lHand)
         {
             if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
@@ -150,6 +153,9 @@ bool CanBash()
     if (shield)
         return true;
     auto lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+    // Specially Torch
+    if (lHand && lHand->GetFormID() == 0x1D4EC)
+        return false;
     if (lHand)
     {
         if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
@@ -1146,6 +1152,40 @@ void ThirdPersonState::Hook()
     FnPB = stl::unrestricted_cast<FnProcessButton>(vtable.write_vfunc(4, &ThirdPersonState::ProcessButton));
 }
 
+//
+// ToggleRunHandler
+//
+ToggleRunHandler *ToggleRunHandler::that;
+ToggleRunHandler::FnCanProcess ToggleRunHandler::FnCP;
+ToggleRunHandler::FnProcessButton ToggleRunHandler::FnPB;
+bool ToggleRunHandler::CanProcess(InputEvent *a_event)
+{
+    return (this->*FnCP)(a_event);
+}
+bool ToggleRunHandler::CP(InputEvent *a_event)
+{
+    return (that->*FnCP)(a_event);
+}
+bool ToggleRunHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
+{
+    auto code = KeyUtils::GetEventKeyMap(a_event);
+    if (Config::needModifier[code])
+        if (!KeyUtils::GetKeyState(Config::needModifier[code]))
+            return false;
+    return (this->*FnPB)(a_event, a_data);
+}
+bool ToggleRunHandler::PB(ButtonEvent *a_event, PlayerControlsData *a_data)
+{
+    return (that->*FnPB)(a_event, a_data);
+}
+void ToggleRunHandler::Hook()
+{
+    REL::Relocation<uintptr_t> vtable{VTABLE_ToggleRunHandler[0]};
+    that = stl::unrestricted_cast<ToggleRunHandler *>(vtable.address());
+    FnCP = stl::unrestricted_cast<FnCanProcess>(vtable.write_vfunc(1, &ToggleRunHandler::CanProcess));
+    FnPB = stl::unrestricted_cast<FnProcessButton>(vtable.write_vfunc(4, &ToggleRunHandler::ProcessButton));
+}
+
 void Hook()
 {
     MenuOpenHandler::Hook();
@@ -1158,5 +1198,6 @@ void Hook()
     ReadyWeaponHandler::Hook();
     SneakHandler::Hook();
     ThirdPersonState::Hook();
+    ToggleRunHandler::Hook();
 }
 } // namespace Hook

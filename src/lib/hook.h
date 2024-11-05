@@ -215,5 +215,25 @@ class ThirdPersonState
     static FnProcessButton FnPB;
 };
 
+//
+// ToggleRunHandler
+//
+class ToggleRunHandler
+{
+  public:
+    bool CanProcess(InputEvent *a_event);
+    static bool CP(InputEvent *a_event);
+    bool ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data);
+    static bool PB(ButtonEvent *a_event, PlayerControlsData *a_data);
+    static void Hook();
+
+  private:
+    static ToggleRunHandler *that;
+    typedef bool (ToggleRunHandler::*FnCanProcess)(InputEvent *);
+    typedef bool (ToggleRunHandler::*FnProcessButton)(ButtonEvent *, PlayerControlsData *);
+    static FnCanProcess FnCP;
+    static FnProcessButton FnPB;
+};
+
 void Hook();
 } // namespace Hook

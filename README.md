@@ -104,10 +104,12 @@ KLE supports three input modes:
 | Perk          | Player has the perk. |
 | Spell         | Player has the spell. |
 | Race          | Player is of the specified race. |
+| Female        | Player is of the specified gender. |
+| Faction       | Player is of the specified faction. |
 ##### FormID
 | Option        | Description |
 |---------------|-------------|
-| FormID        | The identifier for the target in the format ModName|Offset, like Mod.esp|0x12345. |
+| FormID        | The identifier for the target in the format. |
 ##### Logic
 | Option        | Description |
 |---------------|-------------|
@@ -153,11 +155,22 @@ KLE supports three input modes:
 |---------------|-------------|
 | Max           | The maximum value for Player's attribute range, inclusive. |
 
+#### ModValueRange
+- **Format**: `FormID|Min|Max`
+
 ### Events
 #### Addperk
+- **Description**: Adds a perk to the player.
+
 #### RemovePerk
+- **Description**: Removes a perk from the player.
+
 #### ApplySpellEffect
+- **Description**: Applys a SpellEffect on the player.
+
 #### RemoveSpellEffect
+- **Description**: Removes a SpellEffect from the player.
+
 #### CastSpell
 #### ChangeActorValue
 #### ChangeGraphValue
