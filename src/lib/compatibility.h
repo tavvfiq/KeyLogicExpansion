@@ -14,6 +14,7 @@ extern RE::TESIdleForm *BFCO_PowerAttackSwim;
 extern RE::TESIdleForm *BFCO_ComboAttack;
 
 extern bool MCO;
+extern RE::TESIdleForm *MCO_PowerAttackSprint;
 
 extern bool ELDEN;
 extern bool CanUseWarAsh;

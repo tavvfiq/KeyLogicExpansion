@@ -18,7 +18,7 @@ typedef struct
 static ActionQueue queue;
 static uint8_t isInQueue = 0;
 
-bool blockStop = false;
+static bool blockStop = false;
 
 static uint64_t startTime = 0;
 
@@ -335,17 +335,14 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
         Compatibility::powerAttackWin = false;
     }
 
-    if (a_event->tag == "bashRelease" && !blockStop)
+    if (a_event->tag == "bashRelease" && !blockStop && PlayerStatus::IsBlocking())
     {
         blockStop = true;
         std::thread([]() {
-            while (VarUtils::player->IsBlocking())
+            while (PlayerStatus::IsBlocking())
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                SKSE::GetTaskInterface()->AddTask([]() {
-                    VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
-                    VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
-                });
+                doAction(ActionList::BlockStop);
             }
             blockStop = false;
         }).detach();
@@ -391,8 +388,7 @@ bool MenuOpenHandler::CanProcess(InputEvent *a_event)
                 if (Compatibility::IsWarAsh(*spell))
                 {
                     VarUtils::player->GetMagicCaster(RE::MagicSystem::CastingSource::kInstant)
-                        ->CastSpellImmediate((RE::MagicItem *)(*spell), false, VarUtils::player, 1, false, 1,
-                                             VarUtils::player);
+                        ->CastSpellImmediate((RE::MagicItem *)(*spell), true, nullptr, 0, false, 0, nullptr);
                     Compatibility::CanUseWarAsh = false;
                     std::thread([]() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -592,6 +588,14 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
+            else if (Compatibility::MCO)
+            {
+                if (PlayerStatus::IsSprinting())
+                {
+                    VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+                    return true;
+                }
+            }
             if (leftMagic || rightMagic)
             {
                 if (!rightMagic)
@@ -672,6 +676,14 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
+            else if (Compatibility::MCO)
+            {
+                if (PlayerStatus::IsSprinting())
+                {
+                    doAction(Compatibility::MCO_PowerAttackSprint);
+                    return true;
+                }
+            }
             if (leftMagic || rightMagic)
             {
                 if (!leftMagic)
@@ -726,22 +738,30 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         if (code == Config::block)
         {
             a_event->userEvent = "";
-            if (!VarUtils::player->IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
+            if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
             {
-                VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
-                VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
+                doAction(ActionList::BlockStart);
                 blockStop = true;
                 KeyUtils::TrackKeyState(code, []() {
-                    while (VarUtils::player->IsBlocking())
+                    while (PlayerStatus::IsBlocking())
                     {
                         std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                        SKSE::GetTaskInterface()->AddTask([]() {
-                            VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
-                            VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
-                        });
+                        doAction(ActionList::BlockStop);
                     }
                     blockStop = false;
                 });
+            }
+            if (PlayerStatus::IsBlocking() && !blockStop)
+            {
+                blockStop = true;
+                std::thread([]() {
+                    while (PlayerStatus::IsBlocking())
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                        doAction(ActionList::BlockStop);
+                    }
+                    blockStop = false;
+                }).detach();
             }
             (this->*FnPB)(a_event, a_data);
         }

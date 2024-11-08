@@ -221,6 +221,9 @@ extern RE::TESIdleForm *PowerAttackRight;
 extern RE::TESIdleForm *PowerAttackLeft;
 extern RE::TESIdleForm *PowerAttackDual;
 
+extern RE::TESIdleForm *BlockStart;
+extern RE::TESIdleForm *BlockStop;
+
 void init();
 } // namespace ActionList
 

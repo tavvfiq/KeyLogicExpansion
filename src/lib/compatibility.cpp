@@ -13,6 +13,7 @@ RE::TESIdleForm *BFCO_PowerAttackSwim;
 RE::TESIdleForm *BFCO_ComboAttack;
 
 bool MCO = false;
+RE::TESIdleForm *MCO_PowerAttackSprint;
 
 bool ELDEN = false;
 bool CanUseWarAsh = false;
@@ -70,7 +71,10 @@ void init()
     // MCO: Attack_DXP.esp
     MCO = ModSupport::ModExist(std::string("Attack_DXP.esp"));
     if (MCO)
+    {
         logger::trace("Detecting MCO installed, compatibility with MCO.");
+        MCO_PowerAttackSprint = (RE::TESIdleForm *)TESForm::LookupByID(0xEC3CC);
+    }
 
     if (BFCO && MCO)
         logger::trace("Why you install BFCO and MCO at the same time?");
