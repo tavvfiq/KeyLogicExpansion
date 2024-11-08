@@ -34,6 +34,8 @@ A SKSE plugin that makes key input smooth and modern.
 
 - Add a modifier to every separate vanilla key. If you set a modifier for a key, you can only activate it by pressing the modifier first. You can set it to a very high number to disable the vanilla key, such as 10000.
 
+- Add a support for Elden Skills.You can cast your current WarAsh Spell in your Favourite Menu at the first position. **Attention: **If you set modifier to sprint key, you should choose hold sprint to use WarAsh in WarAsh setting menu.
+
 - Load custom input from other mod authors.
 
 
