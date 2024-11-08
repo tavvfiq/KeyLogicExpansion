@@ -11,19 +11,22 @@ enum class AttackType : std::uint8_t
 };
 typedef struct
 {
-    BGSAction *wantAction;
-    RE::BSFixedString wantEvent;
+    RE::TESIdleForm *target;
     uint64_t time;
     AttackType type;
 } ActionQueue;
 static ActionQueue queue;
 static uint8_t isInQueue = 0;
 
+bool blockStop = false;
+
+static uint64_t startTime = 0;
+
 static AttackType currentType;
 static bool isShield = false;
+static bool isTwoHand = false;
 static uint8_t leftMagic = 0;
 static uint8_t rightMagic = 0;
-static bool canComboAttack = true;
 
 typedef bool _doAction_t(RE::TESActionData *);
 REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
@@ -36,12 +39,10 @@ void doAction(BGSAction *action)
         _doAction(data.get());
     });
 }
-void doAction(RE::BSFixedString event)
+void doAction(RE::TESIdleForm *idle)
 {
-    SKSE::GetTaskInterface()->AddTask([event]() {
-        VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                 RE::ActorValue::kStamina, 0);
-        VarUtils::player->NotifyAnimationGraph(event);
+    SKSE::GetTaskInterface()->AddTask([idle]() {
+        return VarUtils::player->GetActorRuntimeData().currentProcess->PlayIdle(VarUtils::player, idle, nullptr);
     });
 }
 
@@ -86,6 +87,7 @@ bool CanDo()
             else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
                      lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
             {
+                isTwoHand = true;
                 currentType = AttackType::Right;
                 leftMagic = 0;
                 rightMagic = 0;
@@ -145,6 +147,7 @@ bool CanDo()
     if ((isShield && rightMagic) || (leftMagic == 1 && rightMagic == 1) || (leftMagic == 2 && rightMagic == 2) ||
         (leftMagic == 2 && rightMagic == 1))
         return false;
+    isTwoHand = false;
     return true;
 }
 bool CanBash()
@@ -195,6 +198,7 @@ void ActionPreInput(std::function<void()> func)
         // Process NormalAttack
         if (isInQueue == 1 && Compatibility::CanNormalAttack() && queue.type == currentType)
         {
+            startTime = TimeUtils::GetTime();
             func();
             isInQueue = 0;
             break;
@@ -202,49 +206,8 @@ void ActionPreInput(std::function<void()> func)
         // Process PowerAttack
         else if (isInQueue == 2 && Compatibility::CanPowerAttack() && queue.type == currentType)
         {
+            startTime = TimeUtils::GetTime();
             func();
-            isInQueue = 0;
-            break;
-        }
-        // Process BFCO NormalSpeacialAttack
-        else if (isInQueue == 3 && Compatibility::CanNormalAttack() && queue.type == currentType)
-        {
-            SKSE::GetTaskInterface()->AddTask([]() {
-                if (VarUtils::player->NotifyAnimationGraph("attackStartDualWield"))
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, -60);
-            });
-            isInQueue = 0;
-            break;
-        }
-        // Process BFCO PowerSpeacialAttack
-        else if (isInQueue == 4 && Compatibility::CanPowerAttack() && queue.type == currentType)
-        {
-            SKSE::GetTaskInterface()->AddTask([]() {
-                if (VarUtils::player->NotifyAnimationGraph("attackPowerStartDualWield"))
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, -80);
-            });
-            isInQueue = 0;
-            break;
-        }
-        // Process BFCO ComboAttack
-        else if (isInQueue == 5 && Compatibility::CanPowerAttack() && queue.type == currentType)
-        {
-            SKSE::GetTaskInterface()->AddTask([]() {
-                VarUtils::player->NotifyAnimationGraph("BFCOAttackStart_Comb");
-                if (VarUtils::player->NotifyAnimationGraph("attackPowerStartForward"))
-                {
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, -80);
-                    canComboAttack = false;
-                }
-                if (!canComboAttack)
-                    std::thread([]() {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                        canComboAttack = true;
-                    }).detach();
-            });
             isInQueue = 0;
             break;
         }
@@ -253,91 +216,87 @@ void ActionPreInput(std::function<void()> func)
 }
 void NormalAttack()
 {
-    BGSAction *RightAttack = (BGSAction *)TESForm::LookupByID(0x13005);
-    BGSAction *LeftAttack = (BGSAction *)TESForm::LookupByID(0x13004);
-    BGSAction *DualAttack = (BGSAction *)TESForm::LookupByID(0x50C96);
-    BGSAction *action;
-    if (!Compatibility::MCO)
-        switch (currentType)
-        {
-        case AttackType::Right:
-            action = RightAttack;
-            break;
-        case AttackType::Left:
-            action = LeftAttack;
-            break;
-        case AttackType::Dual:
-            action = DualAttack;
-            break;
-        }
-    else
-        action = RightAttack;
-    if ((Compatibility::MCO || Compatibility::BFCO) && PlayerStatus::IsAttacking())
+    if (Compatibility::MCO || Compatibility::BFCO)
     {
-        if (!Compatibility::CanNormalAttack())
+        if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            queue.wantAction = action;
-            queue.wantEvent = "attackStart";
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 30.0)
+                return;
+            queue.target = ActionList::NormalAttackRight;
             queue.time = TimeUtils::GetTime();
             queue.type = currentType;
             if (!isInQueue)
             {
                 isInQueue = 1;
-                if (Compatibility::MCO)
-                    std::thread(ActionPreInput, []() { doAction(queue.wantAction); }).detach();
-                else if (Compatibility::BFCO)
-                    std::thread(ActionPreInput, []() { doAction(queue.wantEvent); }).detach();
+                std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
             }
             else
                 isInQueue = 1;
             return;
         }
+        else
+        {
+            startTime = TimeUtils::GetTime();
+            doAction(ActionList::NormalAttackRight);
+        }
     }
-    doAction(action);
+    else
+    {
+        switch (currentType)
+        {
+        case AttackType::Right:
+            doAction(ActionList::NormalAttackRight);
+            return;
+        case AttackType::Left:
+            doAction(ActionList::NormalAttackLeft);
+            return;
+        case AttackType::Dual:
+            doAction(ActionList::NormalAttackDual);
+            return;
+        }
+    }
 }
 void PowerAttack()
 {
-    BGSAction *RightPowerAttack = (BGSAction *)TESForm::LookupByID(0x13383);
-    BGSAction *LeftPowerAttack = (BGSAction *)TESForm::LookupByID(0x2E2F6);
-    BGSAction *DualPowerAttack = (BGSAction *)TESForm::LookupByID(0x2E2F7);
-    BGSAction *action;
-    if (!Compatibility::MCO)
-        switch (currentType)
-        {
-        case AttackType::Right:
-            action = RightPowerAttack;
-            break;
-        case AttackType::Left:
-            action = LeftPowerAttack;
-            break;
-        case AttackType::Dual:
-            action = DualPowerAttack;
-            break;
-        }
-    else
-        action = RightPowerAttack;
-    if ((Compatibility::MCO || Compatibility::BFCO) && PlayerStatus::IsAttacking())
+    if (Compatibility::MCO || Compatibility::BFCO)
     {
-        if (!Compatibility::CanPowerAttack())
+        if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            queue.wantAction = action;
-            queue.wantEvent = "attackPowerStartInPlace";
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 30.0)
+                return;
+            queue.target = ActionList::PowerAttackRight;
             queue.time = TimeUtils::GetTime();
             queue.type = currentType;
             if (!isInQueue)
             {
                 isInQueue = 2;
-                if (Compatibility::MCO)
-                    std::thread(ActionPreInput, []() { doAction(queue.wantAction); }).detach();
-                else if (Compatibility::BFCO)
-                    std::thread(ActionPreInput, []() { doAction(queue.wantEvent); }).detach();
+                std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
             }
             else
                 isInQueue = 2;
             return;
         }
+        else
+        {
+            startTime = TimeUtils::GetTime();
+            doAction(ActionList::PowerAttackRight);
+        }
     }
-    doAction(action);
+    else
+    {
+        switch (currentType)
+        {
+        case AttackType::Right:
+            doAction(ActionList::PowerAttackRight);
+            return;
+        case AttackType::Left:
+            doAction(ActionList::PowerAttackLeft);
+            return;
+        case AttackType::Dual:
+            doAction(ActionList::PowerAttackDual);
+            return;
+        }
+    }
 }
 void SheatheAttack()
 {
@@ -374,6 +333,22 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
     {
         Compatibility::normalAttackWin = false;
         Compatibility::powerAttackWin = false;
+    }
+
+    if (a_event->tag == "bashRelease" && !blockStop)
+    {
+        blockStop = true;
+        std::thread([]() {
+            while (VarUtils::player->IsBlocking())
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                SKSE::GetTaskInterface()->AddTask([]() {
+                    VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
+                    VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
+                });
+            }
+            blockStop = false;
+        }).detach();
     }
 
     return RE::BSEventNotifyControl::kContinue;
@@ -584,35 +559,35 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (Compatibility::BFCO)
             {
-                if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
+                if (PlayerStatus::IsSwiming())
                 {
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, 0);
-                    if (VarUtils::player->NotifyAnimationGraph("attackStartSprint"))
-                        return true;
+                    doAction(Compatibility::BFCO_NormalAttackSwim);
+                    return true;
                 }
-                else if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+                else if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
                 {
-                    if ((!PlayerStatus::IsAttacking() ||
-                         (PlayerStatus::IsAttacking() && Compatibility::CanNormalAttack())) &&
-                        VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
+                    VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+                    return true;
+                }
+                if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+                {
+                    if (!PlayerStatus::IsAttacking())
                     {
-                        if (VarUtils::player->NotifyAnimationGraph("attackStartDualWield"))
-                            VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                                     RE::ActorValue::kStamina, -60);
+                        startTime = TimeUtils::GetTime();
+                        doAction(Compatibility::BFCO_NormalAttackSpecial);
                     }
-                    else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack() &&
-                             VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
+                    else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
                     {
+                        queue.target = Compatibility::BFCO_NormalAttackSpecial;
                         queue.time = TimeUtils::GetTime();
                         queue.type = currentType;
                         if (!isInQueue)
                         {
-                            isInQueue = 3;
-                            std::thread(ActionPreInput, []() { doAction(queue.wantEvent); }).detach();
+                            isInQueue = 1;
+                            std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
                         }
                         else
-                            isInQueue = 3;
+                            isInQueue = 1;
                     }
                     return true;
                 }
@@ -635,7 +610,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return (this->*FnPB)(a_event, a_data);
                 }
             }
-            a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
             {
                 if (CanBash())
@@ -649,6 +623,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return false;
             }
             NormalAttack();
+            a_event->userEvent = "";
             return (this->*FnPB)(a_event, a_data);
         }
         // Power Attack
@@ -656,35 +631,43 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (Compatibility::BFCO)
             {
-                if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
+                if (PlayerStatus::IsSwiming())
                 {
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, 0);
-                    if (VarUtils::player->NotifyAnimationGraph("attackPowerStart_Sprint"))
-                        return true;
+                    doAction(Compatibility::BFCO_PowerAttackSwim);
+                    return true;
                 }
-                else if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+                else if (PlayerStatus::IsJumping())
                 {
-                    if ((!PlayerStatus::IsAttacking() ||
-                         (PlayerStatus::IsAttacking() && Compatibility::CanPowerAttack())) &&
-                        VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
+                    if (isTwoHand)
+                        doAction(Compatibility::BFCO_PowerAttackJump2H);
+                    else
+                        doAction(Compatibility::BFCO_PowerAttackJump1H);
+                    return true;
+                }
+                else if (PlayerStatus::IsSprinting())
+                {
+                    doAction(Compatibility::BFCO_PowerAttackSprint);
+                    return true;
+                }
+                if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+                {
+                    if (!PlayerStatus::IsAttacking())
                     {
-                        if (VarUtils::player->NotifyAnimationGraph("attackPowerStartDualWield"))
-                            VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                                     RE::ActorValue::kStamina, -80);
-                        else if (PlayerStatus::IsAttacking() && !Compatibility::CanPowerAttack() &&
-                                 VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
+                        startTime = TimeUtils::GetTime();
+                        doAction(Compatibility::BFCO_PowerAttackSpecial);
+                    }
+                    else if (PlayerStatus::IsAttacking() && Compatibility::CanPowerAttack())
+                    {
+                        queue.target = Compatibility::BFCO_PowerAttackSpecial;
+                        queue.time = TimeUtils::GetTime();
+                        queue.type = currentType;
+                        if (!isInQueue)
                         {
-                            queue.time = TimeUtils::GetTime();
-                            queue.type = currentType;
-                            if (!isInQueue)
-                            {
-                                isInQueue = 4;
-                                std::thread(ActionPreInput, []() { doAction(queue.wantEvent); }).detach();
-                            }
-                            else
-                                isInQueue = 4;
+                            isInQueue = 2;
+                            std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
                         }
+                        else
+                            isInQueue = 2;
                     }
                     return true;
                 }
@@ -725,7 +708,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
-            a_event->userEvent = "";
             if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
             {
                 if (CanBash())
@@ -737,6 +719,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return false;
             }
             PowerAttack();
+            a_event->userEvent = "";
             return (this->*FnPB)(a_event, a_data);
         }
         // Block
@@ -747,28 +730,19 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             {
                 VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
                 VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStart);
+                blockStop = true;
                 KeyUtils::TrackKeyState(code, []() {
-                    while (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
+                    while (VarUtils::player->IsBlocking())
                     {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                        std::this_thread::sleep_for(std::chrono::milliseconds(5));
                         SKSE::GetTaskInterface()->AddTask([]() {
                             VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
                             VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
                         });
                     }
+                    blockStop = false;
                 });
             }
-            if (VarUtils::player->IsBlocking())
-                KeyUtils::TrackKeyState(code, []() {
-                    while (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
-                    {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                        SKSE::GetTaskInterface()->AddTask([]() {
-                            VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
-                            VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->blockStop);
-                        });
-                    }
-                });
             (this->*FnPB)(a_event, a_data);
         }
         // SheatheAttack
@@ -778,7 +752,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 if (!PlayerStatus::IsAttackReady())
                 {
                     ReadyWeaponHandler::PB(a_event, a_data);
-                    doAction((BGSAction *)TESForm::LookupByID(0x18BA8));
                     SKSE::GetTaskInterface()->AddTask(
                         []() { VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->forceRelease); });
                     if (code == Config::normalAttack)
@@ -799,38 +772,14 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 return true;
             }
         // BFCO ComboAttack
-        if (Compatibility::BFCO && code == Config::BFCO_ComboAttack && PlayerStatus::IsAttacking() && canComboAttack &&
-            VarUtils::player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) > 10)
+        if (Compatibility::BFCO && code == Config::BFCO_ComboAttack && PlayerStatus::IsAttacking())
         {
-            if (Compatibility::CanPowerAttack())
-            {
-                VarUtils::player->NotifyAnimationGraph("BFCOAttackStart_Comb");
-                if (VarUtils::player->NotifyAnimationGraph("attackPowerStartForward"))
-                {
-                    VarUtils::player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage,
-                                                                             RE::ActorValue::kStamina, -80);
-                    canComboAttack = false;
-                }
-                if (!canComboAttack)
-                    std::thread([]() {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                        canComboAttack = true;
-                    }).detach();
-            }
-            else
-            {
-                queue.time = TimeUtils::GetTime();
-                queue.type = currentType;
-                if (!isInQueue)
-                {
-                    isInQueue = 5;
-                    std::thread(ActionPreInput, []() { doAction(queue.wantEvent); }).detach();
-                }
-                else
-                    isInQueue = 5;
-            }
+            VarUtils::player->NotifyAnimationGraph("BFCOAttackStart_Comb");
+            doAction(Compatibility::BFCO_ComboAttack);
+            startTime = TimeUtils::GetTime();
         }
     }
+
     if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
     {
         if (code == Config::normalAttack || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack))

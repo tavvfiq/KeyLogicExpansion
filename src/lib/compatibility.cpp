@@ -3,6 +3,15 @@
 namespace Compatibility
 {
 bool BFCO = false;
+RE::TESIdleForm *BFCO_PowerAttackSprint;
+RE::TESIdleForm *BFCO_PowerAttackJump1H;
+RE::TESIdleForm *BFCO_PowerAttackJump2H;
+RE::TESIdleForm *BFCO_NormalAttackSpecial;
+RE::TESIdleForm *BFCO_PowerAttackSpecial;
+RE::TESIdleForm *BFCO_NormalAttackSwim;
+RE::TESIdleForm *BFCO_PowerAttackSwim;
+RE::TESIdleForm *BFCO_ComboAttack;
+
 bool MCO = false;
 
 bool ELDEN = false;
@@ -41,7 +50,23 @@ void init()
     // BFCO: SCSI-ACTbfco-Main.esp
     BFCO = ModSupport::ModExist(std::string("SCSI-ACTbfco-Main.esp"));
     if (BFCO)
+    {
         logger::trace("Detecting BFCO installed, compatibility with BFCO.");
+
+        ActionList::PowerAttackRight = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
+
+        BFCO_PowerAttackSprint = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BE");
+        BFCO_PowerAttackJump1H = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
+        BFCO_PowerAttackJump2H = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
+
+        BFCO_NormalAttackSpecial = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008A7");
+        BFCO_PowerAttackSpecial = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008AF");
+
+        BFCO_NormalAttackSwim = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00916");
+        BFCO_PowerAttackSwim = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00917");
+
+        BFCO_ComboAttack = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BF");
+    }
     // MCO: Attack_DXP.esp
     MCO = ModSupport::ModExist(std::string("Attack_DXP.esp"));
     if (MCO)

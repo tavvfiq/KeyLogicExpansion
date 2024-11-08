@@ -207,8 +207,22 @@ bool IsSprinting();
 bool IsSneaking();
 bool IsJumping();
 bool IsRiding();
+bool IsSwiming();
 bool IsInKillmove();
 } // namespace PlayerStatus
+
+namespace ActionList
+{
+extern RE::TESIdleForm *NormalAttackRight;
+extern RE::TESIdleForm *NormalAttackLeft;
+extern RE::TESIdleForm *NormalAttackDual;
+
+extern RE::TESIdleForm *PowerAttackRight;
+extern RE::TESIdleForm *PowerAttackLeft;
+extern RE::TESIdleForm *PowerAttackDual;
+
+void init();
+} // namespace ActionList
 
 namespace ModSupport
 {

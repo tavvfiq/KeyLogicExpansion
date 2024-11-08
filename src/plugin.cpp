@@ -30,6 +30,7 @@ void InitializePapyrus()
 void InitializeHooking()
 {
     VarUtils::init();
+    ActionList::init();
     Compatibility::init();
     Config::loadInI();
     Hook::Hook();

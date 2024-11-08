@@ -437,11 +437,37 @@ bool IsRiding()
 {
     return (VarUtils::player->AsActorState()->actorState1.sitSleepState == RE::SIT_SLEEP_STATE::kRidingMount);
 }
+bool IsSwiming()
+{
+    return VarUtils::player->AsActorState()->actorState1.swimming;
+}
 bool IsInKillmove()
 {
     return VarUtils::player->GetActorRuntimeData().boolFlags.all(RE::Actor::BOOL_FLAGS::kIsInKillMove);
 }
 } // namespace PlayerStatus
+
+namespace ActionList
+{
+RE::TESIdleForm *NormalAttackRight;
+RE::TESIdleForm *NormalAttackLeft;
+RE::TESIdleForm *NormalAttackDual;
+
+RE::TESIdleForm *PowerAttackRight;
+RE::TESIdleForm *PowerAttackLeft;
+RE::TESIdleForm *PowerAttackDual;
+
+void init()
+{
+    NormalAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x13215);
+    NormalAttackLeft = (RE::TESIdleForm *)TESForm::LookupByID(0xBACC3);
+    NormalAttackDual = (RE::TESIdleForm *)TESForm::LookupByID(0xBCF31);
+
+    PowerAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x19B26);
+    PowerAttackLeft = (RE::TESIdleForm *)TESForm::LookupByID(0x2E900);
+    PowerAttackDual = (RE::TESIdleForm *)TESForm::LookupByID(0x2E901);
+}
+} // namespace ActionList
 
 namespace ModSupport
 {
