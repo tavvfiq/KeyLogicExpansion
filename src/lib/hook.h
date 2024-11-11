@@ -1,5 +1,5 @@
 #pragma once
-#include "compatibility.h"
+#include "gui.h"
 
 using namespace RE;
 using namespace REL;
@@ -19,6 +19,20 @@ class AnimationGraphEventSink : public RE::BSTEventSink<RE::BSAnimationGraphEven
     RE::BSEventNotifyControl ProcessEvent(const RE::BSAnimationGraphEvent *a_event,
                                           RE::BSTEventSource<RE::BSAnimationGraphEvent> *a_eventSource) override;
 };
+
+//
+// InputEventSink
+//
+class InputEventSink
+{
+  public:
+    static void ProcessEvent(RE::BSTEventSource<RE::InputEvent *> *, RE::InputEvent *const *);
+    static void Hook();
+
+  private:
+    static inline REL::Relocation<decltype(ProcessEvent)> FnPE;
+};
+
 //
 // MenuOpenHandler
 //

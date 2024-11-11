@@ -36,4 +36,5 @@ extern std::unordered_map<uint32_t, uint32_t> needModifier;
 
 char *str(std::string ss);
 void loadInI();
+void saveInI();
 } // namespace Config

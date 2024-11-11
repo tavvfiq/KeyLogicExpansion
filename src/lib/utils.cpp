@@ -3,6 +3,7 @@
 namespace VarUtils
 {
 const SKSE::SerializationInterface *cosave;
+RE::Main *main = nullptr;
 RE::PlayerCharacter *player = nullptr;
 PlayerControls *pCtrl = nullptr;
 ControlMap *ctrlMap = nullptr;
@@ -16,6 +17,7 @@ void init()
     cosave->SetUniqueID(_byteswap_ulong('AKLE'));
     logger::trace("Cosave serialization initialized.");
 
+    main = Main::GetSingleton();
     player = RE::PlayerCharacter::GetSingleton();
     pCtrl = PlayerControls::GetSingleton();
     ctrlMap = ControlMap::GetSingleton();
@@ -306,14 +308,36 @@ uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent)
     return 0;
 }
 
-uint32_t GetEventKeyMap(ButtonEvent *a_event)
+uint32_t GetEventKeyMap(InputEvent *a_event)
 {
-    switch (a_event->GetDevice())
+    if (a_event->eventType == INPUT_EVENT_TYPE::kButton)
+    {
+        auto evn = a_event->AsButtonEvent();
+        switch (evn->GetDevice())
+        {
+        case RE::INPUT_DEVICE::kKeyboard:
+            return evn->GetIDCode();
+        case RE::INPUT_DEVICE::kMouse:
+            return MouseButtonOffset + evn->GetIDCode();
+        default:
+            return 0;
+        }
+    }
+    else if (a_event->eventType == INPUT_EVENT_TYPE::kMouseMove)
+    {
+        return 0;
+    }
+    return 0;
+}
+
+uint32_t GetEventKeyMap(ButtonEvent *evn)
+{
+    switch (evn->GetDevice())
     {
     case RE::INPUT_DEVICE::kKeyboard:
-        return a_event->GetIDCode();
+        return evn->GetIDCode();
     case RE::INPUT_DEVICE::kMouse:
-        return MouseButtonOffset + a_event->GetIDCode();
+        return MouseButtonOffset + evn->GetIDCode();
     default:
         return 0;
     }
@@ -394,6 +418,14 @@ TESForm *GetForm(std::string modForm)
     return TESForm::LookupByID(formId);
 }
 } // namespace FormUtils
+
+namespace GameStatus
+{
+bool isGameRunning()
+{
+    return VarUtils::main->quitGame;
+}
+} // namespace GameStatus
 
 namespace PlayerStatus
 {

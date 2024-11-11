@@ -62,6 +62,7 @@ void InitializeMessaging()
                 Hook::AnimationGraphEventSink::Install();
                 if (Stances::enableStances)
                     Stances::init();
+                GUI::showGUI();
                 break;
             case MessagingInterface::kSaveGame:
                 break;
@@ -86,6 +87,8 @@ SKSEPluginLoad(const LoadInterface *skse)
     Init(skse);
     InitializeMessaging();
     InitializePapyrus();
+
+    GUI::init();
 
     log::info("{} has finished loading.", plugin->GetName());
     return true;

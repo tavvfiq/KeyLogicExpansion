@@ -17,9 +17,9 @@ include(GNUInstallDirs)
 # AE Vanilla
 # set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/Steam/mods/KeyLogicOverhaul")
 # MCO
-set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/XL/mods/KLE")
+# set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/XL/mods/KLE")
 # BFCO
-# set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/BFCO/mods/KLE")
+set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/BFCO/mods/KLE")
 
 file(GLOB_RECURSE headers 
     "src/lib/*.h"
@@ -37,6 +37,9 @@ add_commonlibsse_plugin(${PROJECT_NAME}
     USE_SIGNATURE_SCANNING
     SOURCES ${headers} ${sources}
 )
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui::imgui)
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/lib/PCH.h)
 

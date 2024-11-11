@@ -352,6 +352,27 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
 }
 
 //
+// InputEventSink
+//
+void InputEventSink::ProcessEvent(RE::BSTEventSource<RE::InputEvent *> *a_dispatcher, RE::InputEvent *const *a_events)
+{
+    if (GUI::guiNums > 0)
+    {
+        GUI::guiInputQueue.push_back(KeyUtils::GetEventKeyMap(*a_events));
+        constexpr RE::InputEvent *const dummy[] = {nullptr};
+        FnPE(a_dispatcher, dummy);
+    }
+    FnPE(a_dispatcher, a_events);
+}
+void InputEventSink::Hook()
+{
+    const REL::Relocation<uintptr_t> inputHook{REL::VariantID(67315, 68617, 0xC519E0)};
+    auto &trampoline = SKSE::GetTrampoline();
+    SKSE::AllocTrampoline(14);
+    FnPE = trampoline.write_call<5>(inputHook.address() + REL::VariantOffset(0x7B, 0x7B, 0x81).offset(), ProcessEvent);
+}
+
+//
 // MenuOpenHandler
 //
 MenuOpenHandler *MenuOpenHandler::that;
@@ -1157,6 +1178,7 @@ void ToggleRunHandler::Hook()
 
 void Hook()
 {
+    InputEventSink::Hook();
     MenuOpenHandler::Hook();
     AutoMoveHandler::Hook();
     FirstPersonState::Hook();

@@ -8,6 +8,7 @@ using namespace SKSE::log;
 namespace VarUtils
 {
 extern const SKSE::SerializationInterface *cosave;
+extern RE::Main *main;
 extern RE::PlayerCharacter *player;
 extern PlayerControls *pCtrl;
 extern ControlMap *ctrlMap;
@@ -183,7 +184,8 @@ bool GetKeyState(uint32_t code);
 void TrackKeyState(uint32_t code, std::function<void()> func);
 
 uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent);
-uint32_t GetEventKeyMap(ButtonEvent *a_event);
+uint32_t GetEventKeyMap(InputEvent *a_event);
+uint32_t GetEventKeyMap(ButtonEvent *evn);
 } // namespace KeyUtils
 
 namespace TimeUtils
@@ -196,6 +198,11 @@ namespace FormUtils
 TESForm *GetForm(FormID FormId);
 TESForm *GetForm(std::string modForm);
 } // namespace FormUtils
+
+namespace GameStatus
+{
+bool isGameRunning();
+} // namespace GameStatus
 
 namespace PlayerStatus
 {
