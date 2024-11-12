@@ -18,8 +18,6 @@ typedef struct
 static ActionQueue queue;
 static uint8_t isInQueue = 0;
 
-static bool blockStop = false;
-
 static uint64_t startTime = 0;
 
 static AttackType currentType;
@@ -28,22 +26,29 @@ static bool isTwoHand = false;
 static uint8_t leftMagic = 0;
 static uint8_t rightMagic = 0;
 
-typedef bool _doAction_t(RE::TESActionData *);
-REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
-void doAction(BGSAction *action)
-{
-    SKSE::GetTaskInterface()->AddTask([action]() {
-        std::unique_ptr<TESActionData> data(TESActionData::Create());
-        data->source = NiPointer<TESObjectREFR>(VarUtils::player);
-        data->action = action;
-        _doAction(data.get());
-    });
-}
+// typedef bool _doAction_t(RE::TESActionData *);
+// REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
 void doAction(RE::TESIdleForm *idle)
 {
     SKSE::GetTaskInterface()->AddTask([idle]() {
-        return VarUtils::player->GetActorRuntimeData().currentProcess->PlayIdle(VarUtils::player, idle, nullptr);
+        VarUtils::player->GetActorRuntimeData().currentProcess->PlayIdle(VarUtils::player, idle, nullptr);
     });
+}
+
+void Recover()
+{
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        if ((PlayerStatus::IsBlocking() || PlayerStatus::IsBashing()) && !KeyUtils::GetKeyState(Config::block))
+            SKSE::GetTaskInterface()->AddTask([]() {
+                if (VarUtils::player->NotifyAnimationGraph("blockStop"))
+                    VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
+            });
+        if (Config::enableHoldSneak && PlayerStatus::IsSneaking() &&
+            !KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->sneak)))
+            SKSE::GetTaskInterface()->AddTask([]() { VarUtils::player->NotifyAnimationGraph("SneakStop"); });
+    }
 }
 
 bool CanDo()
@@ -152,36 +157,27 @@ bool CanDo()
 }
 bool CanBash()
 {
-    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
-    if (shield)
+    if (isShield || isTwoHand)
         return true;
     auto lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
     // Specially Torch
     if (lHand && lHand->GetFormID() == 0x1D4EC)
         return false;
-    if (lHand)
-    {
-        if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
-            lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
-            return true;
-        else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
-            return false;
-    }
+    if (rightMagic)
+        return false;
     else
     {
         auto rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
         if (rHand)
         {
-            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
-                return false;
-            else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
+                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
+                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
+                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
                 return true;
         }
+        return false;
     }
-    return false;
 }
 void ActionPreInput(std::function<void()> func)
 {
@@ -333,19 +329,6 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
     {
         Compatibility::normalAttackWin = false;
         Compatibility::powerAttackWin = false;
-    }
-
-    if (a_event->tag == "bashRelease" && !blockStop && PlayerStatus::IsBlocking())
-    {
-        blockStop = true;
-        std::thread([]() {
-            while (PlayerStatus::IsBlocking())
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                doAction(ActionList::BlockStop);
-            }
-            blockStop = false;
-        }).detach();
     }
 
     return RE::BSEventNotifyControl::kContinue;
@@ -617,6 +600,19 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
+            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
+            {
+                if (CanBash())
+                {
+                    logger::trace("CanBash");
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    (this->*FnPB)(a_event, a_data);
+                    VarUtils::player->NotifyAnimationGraph("bashRelease");
+                    return true;
+                }
+                else
+                    return false;
+            }
             if (leftMagic || rightMagic)
             {
                 if (!rightMagic)
@@ -634,18 +630,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
-            }
-            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
-            {
-                if (CanBash())
-                {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    (this->*FnPB)(a_event, a_data);
-                    VarUtils::player->NotifyAnimationGraph("bashRelease");
-                    return true;
-                }
-                else
-                    return false;
             }
             NormalAttack();
             a_event->userEvent = "";
@@ -705,6 +689,17 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
+            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
+            {
+                if (CanBash())
+                {
+                    logger::trace("CanBash");
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else
+                    return false;
+            }
             if (leftMagic || rightMagic)
             {
                 if (!leftMagic)
@@ -741,16 +736,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                     return true;
                 }
             }
-            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
-            {
-                if (CanBash())
-                {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
-                }
-                else
-                    return false;
-            }
             PowerAttack();
             a_event->userEvent = "";
             return (this->*FnPB)(a_event, a_data);
@@ -760,31 +745,11 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             a_event->userEvent = "";
             if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
-            {
-                doAction(ActionList::BlockStart);
-                blockStop = true;
-                KeyUtils::TrackKeyState(code, []() {
-                    while (PlayerStatus::IsBlocking())
-                    {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                        doAction(ActionList::BlockStop);
-                    }
-                    blockStop = false;
+                SKSE::GetTaskInterface()->AddTask([]() {
+                    if (VarUtils::player->NotifyAnimationGraph("blockStart"))
+                        VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
                 });
-            }
-            if (PlayerStatus::IsBlocking() && !blockStop)
-            {
-                blockStop = true;
-                std::thread([]() {
-                    while (PlayerStatus::IsBlocking())
-                    {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                        doAction(ActionList::BlockStop);
-                    }
-                    blockStop = false;
-                }).detach();
-            }
-            (this->*FnPB)(a_event, a_data);
+            return (this->*FnPB)(a_event, a_data);
         }
         // SheatheAttack
         if (Config::enableSheatheAttack)
@@ -820,7 +785,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             startTime = TimeUtils::GetTime();
         }
     }
-
     if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
     {
         if (code == Config::normalAttack || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack))
@@ -1192,5 +1156,6 @@ void Hook()
     SneakHandler::Hook();
     ThirdPersonState::Hook();
     ToggleRunHandler::Hook();
+    std::thread(Recover).detach();
 }
 } // namespace Hook

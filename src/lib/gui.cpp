@@ -148,21 +148,21 @@ void SwitchButton(const char *name, bool &value, const char *description = "")
         ImGui::SetTooltip(description);
 }
 
-void SelectButton(const char *name, uint32_t &code, const char *description = "")
+void SelectButton(const char *name, uint32_t &code, const char *description = nullptr)
 {
     if (ImGui::BeginCombo(name, GetNameByKey(code)))
     {
         for (auto item : KeyNameMap)
         {
-            bool is_selected = (Config::enableSheatheAttack == item.code);
+            bool is_selected = (code == item.code);
             if (ImGui::Selectable(item.name, is_selected))
-                Config::enableSheatheAttack = item.code;
+                code = item.code;
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    if (ImGui::IsItemHovered())
+    if (description && ImGui::IsItemHovered())
         ImGui::SetTooltip(description);
 }
 
@@ -365,7 +365,6 @@ class DX11Hook
             ImGui::NewFrame();
             ImGuiIO &io = ImGui::GetIO();
             io.MouseDrawCursor = showSettings;
-            // if (showStances)
             if (showSettings)
             {
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);

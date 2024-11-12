@@ -495,9 +495,6 @@ RE::TESIdleForm *PowerAttackRight;
 RE::TESIdleForm *PowerAttackLeft;
 RE::TESIdleForm *PowerAttackDual;
 
-RE::TESIdleForm *BlockStart;
-RE::TESIdleForm *BlockStop;
-
 void init()
 {
     NormalAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x13215);
@@ -507,9 +504,6 @@ void init()
     PowerAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x19B26);
     PowerAttackLeft = (RE::TESIdleForm *)TESForm::LookupByID(0x2E900);
     PowerAttackDual = (RE::TESIdleForm *)TESForm::LookupByID(0x2E901);
-
-    BlockStart = (RE::TESIdleForm *)TESForm::LookupByID(0x13217);
-    BlockStop = (RE::TESIdleForm *)TESForm::LookupByID(0x13ACA);
 }
 } // namespace ActionList
 
