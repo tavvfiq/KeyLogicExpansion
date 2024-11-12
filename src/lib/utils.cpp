@@ -28,10 +28,16 @@ void init()
 
 namespace KeyUtils
 {
+bool TracingMouse = false;
+uint64_t MouseWheelTime;
+float MouseWheelStatus = 0;
+
 uint32_t GetWinKeyMap(uint32_t code)
 {
     switch (code)
     {
+    case 0:
+        return 0;
     // KeyBoard
     case KeyBoard::ESC:
         return SKSE::WinAPI::VK_ESCAPE;
@@ -254,9 +260,9 @@ uint32_t GetWinKeyMap(uint32_t code)
     case Mouse::MouseButton7:
         return 0;
     case Mouse::MouseWheelUp:
-        return 0;
+        return MouseWheelStatus > 0;
     case Mouse::MouseWheelDown:
-        return 0;
+        return MouseWheelStatus < 0;
 
         // GamePad
         /*

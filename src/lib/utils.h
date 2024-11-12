@@ -20,6 +20,10 @@ void init();
 
 namespace KeyUtils
 {
+extern bool TracingMouse;
+extern uint64_t MouseWheelTime;
+extern float MouseWheelStatus;
+
 enum INPUT_DEVICE
 {
     KeyBoard = 0,

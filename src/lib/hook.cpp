@@ -352,27 +352,6 @@ RE::BSEventNotifyControl AnimationGraphEventSink::ProcessEvent(
 }
 
 //
-// InputEventSink
-//
-void InputEventSink::ProcessEvent(RE::BSTEventSource<RE::InputEvent *> *a_dispatcher, RE::InputEvent *const *a_events)
-{
-    if (GUI::guiNums > 0)
-    {
-        GUI::guiInputQueue.push_back(KeyUtils::GetEventKeyMap(*a_events));
-        constexpr RE::InputEvent *const dummy[] = {nullptr};
-        FnPE(a_dispatcher, dummy);
-    }
-    FnPE(a_dispatcher, a_events);
-}
-void InputEventSink::Hook()
-{
-    const REL::Relocation<uintptr_t> inputHook{REL::VariantID(67315, 68617, 0xC519E0)};
-    auto &trampoline = SKSE::GetTrampoline();
-    SKSE::AllocTrampoline(14);
-    FnPE = trampoline.write_call<5>(inputHook.address() + REL::VariantOffset(0x7B, 0x7B, 0x81).offset(), ProcessEvent);
-}
-
-//
 // MenuOpenHandler
 //
 MenuOpenHandler *MenuOpenHandler::that;
@@ -386,6 +365,25 @@ bool MenuOpenHandler::CanProcess(InputEvent *a_event)
         auto code = KeyUtils::GetEventKeyMap(evn); // altTweenMenu
         if (Custom::enableCustomInput && evn->IsDown())
             Custom::inputQueue.push_back(Custom::NewInput{code, TimeUtils::GetTime()});
+        if (code == KeyUtils::KeyBoard::K && KeyUtils::GetKeyState(KeyUtils::KeyBoard::RightShift) && evn->IsDown())
+            GUI::showSettings = !GUI::showSettings;
+        if ((code == KeyUtils::Mouse::MouseWheelUp || code == KeyUtils::Mouse::MouseWheelDown) && evn->IsDown())
+        {
+            KeyUtils::MouseWheelTime = TimeUtils::GetTime();
+            if (code == KeyUtils::Mouse::MouseWheelUp)
+                KeyUtils::MouseWheelStatus = 1;
+            else
+                KeyUtils::MouseWheelStatus = -1;
+            if (!KeyUtils::TracingMouse)
+            {
+                KeyUtils::TracingMouse = true;
+                KeyUtils::TrackKeyState(0, []() {
+                    if ((TimeUtils::GetTime() - KeyUtils::MouseWheelTime) / 1000.0 > 10)
+                        KeyUtils::MouseWheelStatus = 0;
+                    KeyUtils::TracingMouse = false;
+                });
+            }
+        }
         while (Stances::enableStances)
         {
             if (Stances::StancesModfier)
@@ -397,6 +395,8 @@ bool MenuOpenHandler::CanProcess(InputEvent *a_event)
                 Stances::ChangeStanceTo(Stances::Stances::Mid);
             else if (code == Stances::ChangeToHigh)
                 Stances::ChangeStanceTo(Stances::Stances::High);
+            else if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
+                Stances::ChangeStanceTo(Stances::Stances::Sheathe);
             break;
         }
         while (code == Config::warAsh && Compatibility::ELDEN && Compatibility::CanUseWarAsh)
@@ -994,6 +994,9 @@ ReadyWeaponHandler::FnCanProcess ReadyWeaponHandler::FnCP;
 ReadyWeaponHandler::FnProcessButton ReadyWeaponHandler::FnPB;
 bool ReadyWeaponHandler::CanProcess(InputEvent *a_event)
 {
+    if (Stances::enableStances)
+        if (KeyUtils::GetKeyState(Stances::StancesModfier))
+            return false;
     return (this->*FnCP)(a_event);
 }
 bool ReadyWeaponHandler::CP(InputEvent *a_event)
@@ -1178,7 +1181,6 @@ void ToggleRunHandler::Hook()
 
 void Hook()
 {
-    InputEventSink::Hook();
     MenuOpenHandler::Hook();
     AutoMoveHandler::Hook();
     FirstPersonState::Hook();

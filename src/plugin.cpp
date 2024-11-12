@@ -55,6 +55,7 @@ void InitializeMessaging()
                 Hook::AnimationGraphEventSink::Install();
                 if (Stances::enableStances)
                     Stances::init();
+                GUI::showGUI();
                 break;
             case MessagingInterface::kPreLoadGame:
                 break;

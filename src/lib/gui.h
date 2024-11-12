@@ -8,8 +8,7 @@
 
 namespace GUI
 {
-extern std::deque<uint32_t> guiInputQueue;
-extern uint8_t guiNums;
+extern bool showSettings;
 
 void init();
 void showGUI();

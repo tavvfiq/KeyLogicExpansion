@@ -15,7 +15,8 @@ enum Stances
 {
     Low = 0,
     Mid,
-    High
+    High,
+    Sheathe
 };
 
 void ChangeStanceTo(Stances stance);

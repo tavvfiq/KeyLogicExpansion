@@ -21,19 +21,6 @@ class AnimationGraphEventSink : public RE::BSTEventSink<RE::BSAnimationGraphEven
 };
 
 //
-// InputEventSink
-//
-class InputEventSink
-{
-  public:
-    static void ProcessEvent(RE::BSTEventSource<RE::InputEvent *> *, RE::InputEvent *const *);
-    static void Hook();
-
-  private:
-    static inline REL::Relocation<decltype(ProcessEvent)> FnPE;
-};
-
-//
 // MenuOpenHandler
 //
 class MenuOpenHandler

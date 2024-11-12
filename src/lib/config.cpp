@@ -75,6 +75,7 @@ void setVar()
             FormUtils::GetForm((ini.GetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519"))));
         Stances::StancesList.push_back(
             FormUtils::GetForm((ini.GetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518"))));
+        Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Sheathe"))));
         StancesModifier = ini.GetLongValue("Stances", "StancesModifier", KeyUtils::KeyBoard::LeftShift);
         ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
         ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
@@ -137,63 +138,45 @@ void setVar()
 void createInI()
 {
     // Features
-    ini.SetBoolValue("Features", NameToStr(enableCustomInput), true,
-                     ";Enable custom Input, maybe this is the reason you install this mod.");
-    ini.SetBoolValue("Features", NameToStr(enableStances), false,
-                     ";Enable Stances Supported by KLE\n;Contain 3 types "
-                     "of stance: High, Mid, Low.");
-    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), true, ";Change enable sprint when you hold sprint key");
-    ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false,
-                     ";Same as EnableHoldSprint, Change enable sneak when you hold sneak key");
-    ini.SetBoolValue(
-        "Features", NameToStr(enableReverseHorseAttack), false,
-        ";Reverse your HorseAttack diretion, if enable this, left key attack left, right key attack right");
-    ini.SetLongValue(
-        "Features", NameToStr(enableSheatheAttack), 0,
-        ";Make you can attack when you press this key, NOT completed.\n;0 means disable, other number means a "
-        "keycode\n;"
-        "when you press the key and Attack or PowerAttack or even Sheathe Key, you will do a SheatheAttack\n;Note: "
-        "Press with Sheathe Key can do SheatheAttack when you are NOT in Sheathe status.");
+    ini.SetBoolValue("Features", NameToStr(enableCustomInput), true);
+    ini.SetBoolValue("Features", NameToStr(enableStances), false);
+    ini.SetBoolValue("Features", NameToStr(enableHoldSprint), true);
+    ini.SetBoolValue("Features", NameToStr(enableHoldSneak), false);
+    ini.SetBoolValue("Features", NameToStr(enableReverseHorseAttack), false);
+    ini.SetLongValue("Features", NameToStr(enableSheatheAttack), 0);
 
     // Stances
     ini.SetValue("Stances", "Low", "Stances - Dynamic Weapon Movesets SE.esp|0x4251A",
                  ";Set this according to your stances mod");
     ini.SetValue("Stances", "Mid", "Stances - Dynamic Weapon Movesets SE.esp|0x42519");
     ini.SetValue("Stances", "High", "Stances - Dynamic Weapon Movesets SE.esp|0x42518");
-    ini.SetLongValue("Stances", "StancesModifier", KeyUtils::KeyBoard::LeftShift,
-                     ";Set change stance key, modifier = 0 means disable\n");
+    ini.SetValue("Stances", "Sheathe", "NULL");
+    ini.SetLongValue("Stances", "StancesModifier", KeyUtils::KeyBoard::LeftShift);
     ini.SetLongValue("Stances", "ChangeToLow", KeyUtils::Mouse::MouseWheelDown);
     ini.SetLongValue("Stances", "ChangeToMid", KeyUtils::Mouse::MouseButtonMiddle);
     ini.SetLongValue("Stances", "ChangeToHigh", KeyUtils::Mouse::MouseWheelUp);
 
     // Vanilla Input
-    ini.SetLongValue(
-        "Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft,
-        ";separete block key from Attack, still have some problems, don't use blockbash, it is overpowered");
+    ini.SetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
     ini.SetLongValue("Vanilla", NameToStr(MagicModifier), KeyUtils::KeyBoard::E);
     ini.SetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
     ini.SetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
-    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G,
-                     ";instead Vanilla Key, just All Alt* option do the same thing.");
+    ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 
     // Expand Input
-    ini.SetLongValue("Expand", NameToStr(warAsh), 0, ";EldenRim WarAsh support, press this to use WarAsh.");
+    ini.SetLongValue("Expand", NameToStr(warAsh), 0);
     ini.SetLongValue("Expand", NameToStr(warAshModifier), 0);
 
-    ini.SetLongValue("Expand", NameToStr(altZoomIn), 0,
-                     ";set it to Non 0 can instead default ZoomIn and ZoomOut \n;you don't konw what it mean? just "
-                     "Vanilla MouseWheelUp and MouseWheelDwon");
+    ini.SetLongValue("Expand", NameToStr(altZoomIn), 0);
     ini.SetLongValue("Expand", NameToStr(altZoomOut), 0);
     ini.SetLongValue("Expand", NameToStr(zoomModifier), 0);
 
     // Modifier Input
-    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0,
-                     ";Add a Modifier to Vanilla Key, if you want a key to work, you need press modifier key "
-                     "first.\n;set it 0 to disable, other means a keycode");
+    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->strafeLeft.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->back.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->strafeRight.c_str(), 0);
@@ -342,5 +325,9 @@ void saveInI()
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->quickStats)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->quickMap.c_str(),
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->quickMap)]);
+
+    rc = ini.SaveFile(ini_path.c_str());
+    if (rc < 0)
+        return SKSE::stl::report_and_fail("Cannot save to ini.");
 }
 } // namespace Config
