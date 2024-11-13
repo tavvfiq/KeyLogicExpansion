@@ -166,6 +166,27 @@ void SelectButton(const char *name, uint32_t &code, const char *description = nu
         ImGui::SetTooltip(description);
 }
 
+static std::vector<NameMap> attackTypeName = {{0, "Right"}, {1, "Left"}, {2, "Dual"}};
+void SelectAttackType(const char *name, Style::AttackType &type, const char *description = nullptr)
+{
+    auto res =
+        std::find_if(attackTypeName.begin(), attackTypeName.end(), [type](NameMap map) { return type == map.code; });
+    if (ImGui::BeginCombo(name, res->name))
+    {
+        for (auto item : attackTypeName)
+        {
+            bool is_selected = (type == item.code);
+            if (ImGui::Selectable(item.name, is_selected))
+                type = (Style::AttackType)item.code;
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    if (description && ImGui::IsItemHovered())
+        ImGui::SetTooltip(description);
+}
+
 void KeyBindSettings()
 {
     ImGui::Begin("KeyBind Settings", &showSettings, ImGuiWindowFlags_NoCollapse);
@@ -209,11 +230,43 @@ void KeyBindSettings()
         SelectButton("NormalAttack", Config::normalAttack, "NormalAttack Key used in KLE system");
         SelectButton("PowerAttack", Config::powerAttack, "PowerAttack Key used in KLE system");
         SelectButton("Block", Config::block, "separete block key from Attack");
-        SelectButton("MagicModifier", Config::MagicModifier);
-        SelectButton("BFCO SpecialAttackModifier", Config::BFCO_SpecialAttackModifier);
-        SelectButton("BFCO ComboAttack", Config::BFCO_ComboAttack);
+        ImGui::Spacing();
         SelectButton("AltTweenMenu", Config::altTweenMenu, "instead Vanilla Key");
         SelectButton("AltTogglePOV", Config::altTogglePOV, "instead Vanilla Key");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Style"))
+    {
+        ImGui::Text("Current Style: %s", Style::GetStyleName(Style::currentStyle));
+        SwitchButton("UsingVanillaLogic", Style::styleMap[Style::currentStyle].usingVanillaLogic,
+                     "While true, KLE won't apply changes on this style's logic");
+        SwitchButton("ReverseAttack", Style::styleMap[Style::currentStyle].reverseAttack,
+                     "Only works when UsingVanillaDual is true");
+        ImGui::Spacing();
+        SelectAttackType("NormalAttackType", Style::styleMap[Style::currentStyle].normalAttackType,
+                         "For BFCO/MCO, Right means Dual, you can try other types, maybe crash or maybe funny");
+        SwitchButton("RepeatNormalAttack", Style::styleMap[Style::currentStyle].repeatNormalAttack,
+                     "Whether repeat attack when hold key");
+        SwitchButton("SheatheNormalAttack", Style::styleMap[Style::currentStyle].sheatheNormalAttack,
+                     "Whether KLE normal attack can sheathe");
+        ImGui::Spacing();
+        SelectAttackType("PowerAttackType", Style::styleMap[Style::currentStyle].powerAttackType,
+                         "For BFCO/MCO, Right means Dual");
+        SwitchButton("RepeatPowerAttack", Style::styleMap[Style::currentStyle].repeatPowerAttack,
+                     "Whether repeat attack when hold key");
+        SwitchButton("SheathePowerAttack", Style::styleMap[Style::currentStyle].sheathePowerAttack,
+                     "Whether KLE power attack can sheathe");
+        ImGui::Spacing();
+        SelectButton("VanillaModifier", Style::styleMap[Style::currentStyle].vanillaModifier,
+                     "If you press this key, KLE will temporarily use Vanilla logic, you can use magic/staff now.");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("BFCO"))
+    {
+        SelectButton("BFCO SpecialAttackModifier", Config::BFCO_SpecialAttackModifier);
+        SelectButton("BFCO ComboAttack", Config::BFCO_ComboAttack);
         ImGui::TreePop();
     }
 
@@ -221,6 +274,7 @@ void KeyBindSettings()
     {
         SelectButton("WarAshModifier", Config::warAshModifier);
         SelectButton("WarAsh", Config::warAsh, "EldenRim WarAsh support, press this to use WarAsh.");
+        ImGui::Spacing();
         SelectButton("ZoomModifier", Config::zoomModifier,
                      "set it to Non 0 can instead default ZoomIn and ZoomOut \nyou don't konw what it mean? just "
                      "Vanilla MouseWheelUp and MouseWheelDwon");

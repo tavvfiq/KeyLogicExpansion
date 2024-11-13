@@ -457,6 +457,13 @@ bool IsBashing()
     VarUtils::player->GetGraphVariableBool("IsBashing", std::ref(res));
     return res;
 }
+bool IsMoving()
+{
+    return KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->forward)) ||
+           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeLeft)) ||
+           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeRight)) ||
+           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->back));
+}
 bool IsSprinting()
 {
     return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;

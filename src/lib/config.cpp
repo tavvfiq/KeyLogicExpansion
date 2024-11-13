@@ -23,12 +23,13 @@ uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
 uint32_t normalAttack;
 uint32_t powerAttack;
 uint32_t block;
-uint32_t MagicModifier;
-uint32_t BFCO_SpecialAttackModifier;
-uint32_t BFCO_ComboAttack;
 
 uint32_t altTweenMenu;
 uint32_t altTogglePOV;
+
+// BFCO
+uint32_t BFCO_SpecialAttackModifier;
+uint32_t BFCO_ComboAttack;
 
 // Expand Input
 uint32_t warAsh;
@@ -86,13 +87,14 @@ void setVar()
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     block = ini.GetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
-    MagicModifier = ini.GetLongValue("Vanilla", NameToStr(MagicModifier), KeyUtils::KeyBoard::E);
-    BFCO_SpecialAttackModifier =
-        ini.GetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
-    BFCO_ComboAttack = ini.GetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     altTweenMenu = ini.GetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
     altTogglePOV = ini.GetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
+
+    // BFCO
+    BFCO_SpecialAttackModifier =
+        ini.GetLongValue("BFCO", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
+    BFCO_ComboAttack = ini.GetLongValue("BFCO", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     // Expand Input
     warAsh = ini.GetLongValue("Expand", NameToStr(warAsh), 0);
@@ -101,6 +103,25 @@ void setVar()
     altZoomIn = ini.GetLongValue("Expand", NameToStr(altZoomIn), 0);
     altZoomOut = ini.GetLongValue("Expand", NameToStr(altZoomOut), 0);
     zoomModifier = ini.GetLongValue("Expand", NameToStr(zoomModifier), 0);
+
+    // Combat Style
+    for (int i = Style::Styles::TwoHand; i <= Style::Styles::StaffMagic; i++)
+    {
+        Style::styleMap.insert(std::make_pair(
+            (Style::Styles)i,
+            Style::CombatStyle{ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "UsingVanillaLogic", false),
+                               ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "ReverseAttack", false),
+                               (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i),
+                                                                   "NormalAttackType", Style::AttackType::Right),
+                               ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack", true),
+                               ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack", false),
+                               (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i),
+                                                                   "NormalAttackType", Style::AttackType::Right),
+                               ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack", true),
+                               ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack", false),
+                               (uint32_t)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "VanillaModifier",
+                                                          KeyUtils::KeyBoard::E)}));
+    }
 
     // Modifier Input
     std::list<CSimpleIniA::Entry> list;
@@ -160,12 +181,13 @@ void createInI()
     ini.SetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
-    ini.SetLongValue("Vanilla", NameToStr(MagicModifier), KeyUtils::KeyBoard::E);
-    ini.SetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
-    ini.SetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
+
+    // BFCO
+    ini.SetLongValue("BFCO", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftShift);
+    ini.SetLongValue("BFCO", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     // Expand Input
     ini.SetLongValue("Expand", NameToStr(warAsh), 0);
@@ -174,6 +196,20 @@ void createInI()
     ini.SetLongValue("Expand", NameToStr(altZoomIn), 0);
     ini.SetLongValue("Expand", NameToStr(altZoomOut), 0);
     ini.SetLongValue("Expand", NameToStr(zoomModifier), 0);
+
+    // Combat Style
+    for (int i = Style::Styles::TwoHand; i <= Style::Styles::StaffMagic; i++)
+    {
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "UsingVanillaLogic", false);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "ReverseAttack", false);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::Right);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack", true);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack", false);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::Right);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack", true);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack", false);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "VanillaModifier", KeyUtils::KeyBoard::E);
+    }
 
     // Modifier Input
     ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0);
@@ -255,12 +291,13 @@ void saveInI()
     ini.SetLongValue("Vanilla", NameToStr(normalAttack), normalAttack);
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), powerAttack);
     ini.SetLongValue("Vanilla", NameToStr(block), block);
-    ini.SetLongValue("Vanilla", NameToStr(MagicModifier), MagicModifier);
-    ini.SetLongValue("Vanilla", NameToStr(BFCO_SpecialAttackModifier), BFCO_SpecialAttackModifier);
-    ini.SetLongValue("Vanilla", NameToStr(BFCO_ComboAttack), BFCO_ComboAttack);
 
     ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), altTweenMenu);
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), altTogglePOV);
+
+    // BFCO
+    ini.SetLongValue("BFCO", NameToStr(BFCO_SpecialAttackModifier), BFCO_SpecialAttackModifier);
+    ini.SetLongValue("BFCO", NameToStr(BFCO_ComboAttack), BFCO_ComboAttack);
 
     // Expand Input
     ini.SetLongValue("Expand", NameToStr(warAsh), warAsh);
@@ -269,6 +306,29 @@ void saveInI()
     ini.SetLongValue("Expand", NameToStr(altZoomIn), altZoomIn);
     ini.SetLongValue("Expand", NameToStr(altZoomOut), altZoomOut);
     ini.SetLongValue("Expand", NameToStr(zoomModifier), zoomModifier);
+
+    // Combat Style
+    for (int i = Style::Styles::TwoHand; i <= Style::Styles::StaffMagic; i++)
+    {
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "UsingVanillaLogic",
+                         Style::styleMap[(Style::Styles)i].usingVanillaLogic);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "ReverseAttack",
+                         Style::styleMap[(Style::Styles)i].reverseAttack);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType",
+                         Style::styleMap[(Style::Styles)i].normalAttackType);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack",
+                         Style::styleMap[(Style::Styles)i].repeatNormalAttack);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack",
+                         Style::styleMap[(Style::Styles)i].sheatheNormalAttack);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType",
+                         Style::styleMap[(Style::Styles)i].powerAttackType);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack",
+                         Style::styleMap[(Style::Styles)i].repeatPowerAttack);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack",
+                         Style::styleMap[(Style::Styles)i].sheathePowerAttack);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "VanillaModifier",
+                         Style::styleMap[(Style::Styles)i].vanillaModifier);
+    }
 
     // Modifier Input
     ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(),

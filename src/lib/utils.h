@@ -214,6 +214,7 @@ bool IsAttacking();
 bool IsBlocking();
 bool IsAttackReady();
 bool IsBashing();
+bool IsMoving();
 bool IsSprinting();
 bool IsSneaking();
 bool IsJumping();

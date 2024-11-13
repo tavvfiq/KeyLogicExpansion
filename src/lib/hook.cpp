@@ -2,29 +2,15 @@
 
 namespace Hook
 {
-enum class AttackType : std::uint8_t
-{
-    Null = 0,
-    Right = 1,
-    Left = 2,
-    Dual = 3
-};
+using AttackType = Style::AttackType;
 typedef struct
 {
     RE::TESIdleForm *target;
     uint64_t time;
-    AttackType type;
 } ActionQueue;
 static ActionQueue queue;
 static uint8_t isInQueue = 0;
-
 static uint64_t startTime = 0;
-
-static AttackType currentType;
-static bool isShield = false;
-static bool isTwoHand = false;
-static uint8_t leftMagic = 0;
-static uint8_t rightMagic = 0;
 
 // typedef bool _doAction_t(RE::TESActionData *);
 // REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
@@ -51,6 +37,126 @@ void Recover()
     }
 }
 
+void DetectStyle()
+{
+    uint8_t leftWeapen = 0;
+    uint8_t rightWeapen = 0;
+    uint8_t leftMagic = 0;
+    uint8_t rightMagic = 0;
+    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
+    RE::TESForm *lHand = nullptr;
+    RE::TESForm *rHand = nullptr;
+    RE::MagicItem *lMagic = nullptr;
+    if (!shield)
+        lMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kLeftHand];
+    if (lMagic && lMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
+        lMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+        leftMagic = 1;
+    if (!shield && !leftMagic)
+    {
+        lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+        // Specially Torch
+        if (lHand && lHand->GetFormID() == 0x1D4EC)
+        {
+            lHand = nullptr;
+            leftWeapen = 2;
+        }
+        if (lHand)
+        {
+            if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
+                lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow)
+            {
+                Style::currentStyle = Style::Styles::Bow;
+                return;
+            }
+            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
+                     lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
+            {
+                Style::currentStyle = Style::Styles::TwoHand;
+                return;
+            }
+            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+                leftMagic = 2;
+            else
+                leftWeapen = 1;
+        }
+    }
+    auto rMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kRightHand];
+    if (rMagic && rMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
+        rMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
+        rightMagic = 1;
+    if (!rightMagic)
+    {
+        rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+        if (rHand)
+        {
+            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
+                rightMagic = 2;
+            else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+                rightWeapen = 1;
+        }
+    }
+    if (shield)
+    {
+        if (rightMagic == 1)
+            Style::currentStyle = Style::Styles::ShieldMagic;
+        else if (rightMagic == 2)
+            Style::currentStyle = Style::Styles::ShieldStaff;
+        if (rightWeapen == 1)
+            Style::currentStyle = Style::Styles::ShieldSword;
+        else if (rightWeapen == 0)
+            Style::currentStyle = Style::Styles::ShieldFist;
+    }
+    else if (leftMagic == 1)
+    {
+        if (rightMagic == 1)
+            Style::currentStyle = Style::Styles::DualMagic;
+        else if (rightMagic == 2)
+            Style::currentStyle = Style::Styles::MagicStaff;
+        if (rightWeapen == 1)
+            Style::currentStyle = Style::Styles::MagicSword;
+        else if (rightWeapen == 0)
+            Style::currentStyle = Style::Styles::MagicFist;
+    }
+    else if (leftMagic == 2)
+    {
+        if (rightMagic == 1)
+            Style::currentStyle = Style::Styles::StaffMagic;
+        else if (rightMagic == 2)
+            Style::currentStyle = Style::Styles::DualStaff;
+        if (rightWeapen == 1)
+            Style::currentStyle = Style::Styles::StaffSword;
+        else if (rightWeapen == 0)
+            Style::currentStyle = Style::Styles::StaffFist;
+    }
+    else if (leftWeapen == 1)
+    {
+        if (rightMagic == 1)
+            Style::currentStyle = Style::Styles::SwordMagic;
+        else if (rightMagic == 2)
+            Style::currentStyle = Style::Styles::SwordStaff;
+        if (rightWeapen == 1)
+            Style::currentStyle = Style::Styles::DualSword;
+        else if (rightWeapen == 0)
+            Style::currentStyle = Style::Styles::SwordFist;
+    }
+    else if (leftWeapen == 0)
+    {
+        if (rightMagic == 1)
+            Style::currentStyle = Style::Styles::OnlyMagic;
+        else if (rightMagic == 2)
+            Style::currentStyle = Style::Styles::OnlyStaff;
+        if (rightWeapen == 1)
+            Style::currentStyle = Style::Styles::OnlySword;
+        else if (rightWeapen == 0)
+            Style::currentStyle = Style::Styles::DualFist;
+    }
+    else
+        Style::currentStyle = Style::Styles::Null;
+}
 bool CanDo()
 {
     if (VarUtils::ui->numPausesGame > 0 || PlayerStatus::IsInKillmove() || PlayerStatus::IsRiding() ||
@@ -60,130 +166,27 @@ bool CanDo()
          ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking)) !=
             ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking))
         return false;
-    AttackType type = AttackType::Null;
-    currentType = AttackType::Null;
-    uint8_t _leftMagic = 0;
-    uint8_t _rightMagic = 0;
-    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
-    RE::TESForm *lHand = nullptr;
-    RE::TESForm *rHand = nullptr;
-    RE::MagicItem *lMagic = nullptr;
-    if (!shield)
-    {
-        isShield = false;
-        lMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kLeftHand];
-    }
-    else
-        isShield = true;
-    if (lMagic && lMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
-        lMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-        _leftMagic = 1;
-    if (!shield && !_leftMagic)
-    {
-        lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-        // Specially Torch
-        if (lHand && lHand->GetFormID() == 0x1D4EC)
-            lHand = nullptr;
-        if (lHand)
-        {
-            if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-                lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow)
-                return false;
-            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
-                     lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
-            {
-                isTwoHand = true;
-                currentType = AttackType::Right;
-                leftMagic = 0;
-                rightMagic = 0;
-                return true;
-            }
-            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
-                _leftMagic = 2;
-            else
-                type = AttackType::Left;
-        }
-    }
-    auto rMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kRightHand];
-    if (rMagic && rMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
-        rMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-        _rightMagic = 1;
-    if (!_rightMagic)
-    {
-        rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-        if (rHand)
-        {
-            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
-                _rightMagic = 2;
-            else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
-            {
-                if (type == AttackType::Left)
-                    type = AttackType::Dual;
-                else
-                    type = AttackType::Right;
-            }
-        }
-    }
-    leftMagic = _leftMagic;
-    rightMagic = _rightMagic;
-    if (!lHand || !rHand)
-    {
-        if (!lHand && !rHand)
-            type = AttackType::Null;
-        else if (rHand)
-        {
-            if (rightMagic)
-                type = AttackType::Null;
-            else
-                type = AttackType::Right;
-        }
-        else if (lHand)
-        {
-            if (leftMagic)
-                type = AttackType::Null;
-            else
-                type = AttackType::Left;
-        }
-    }
-    currentType = type;
-    if ((isShield && rightMagic) || (leftMagic == 1 && rightMagic == 1) || (leftMagic == 2 && rightMagic == 2) ||
-        (leftMagic == 2 && rightMagic == 1))
+    DetectStyle();
+    if (Style::currentStyle == Style::Styles::Bow)
         return false;
-    isTwoHand = false;
     return true;
 }
 bool CanBash()
 {
-    if (isShield || isTwoHand)
+    if (Style::currentStyle == Style::Styles::TwoHand || Style::currentStyle == Style::Styles::DualSword ||
+        Style::currentStyle == Style::Styles::DualFist || Style::currentStyle == Style::Styles::DualMagic ||
+        Style::currentStyle == Style::Styles::OnlySword || Style::currentStyle == Style::Styles::OnlyMagic ||
+        Style::currentStyle == Style::Styles::OnlyStaff || Style::currentStyle == Style::Styles::ShieldSword ||
+        Style::currentStyle == Style::Styles::ShieldFist || Style::currentStyle == Style::Styles::ShieldMagic ||
+        Style::currentStyle == Style::Styles::ShieldStaff || Style::currentStyle == Style::Styles::ShieldMagic ||
+        Style::currentStyle == Style::Styles::MagicSword || Style::currentStyle == Style::Styles::MagicFist ||
+        Style::currentStyle == Style::Styles::MagicStaff || Style::currentStyle == Style::Styles::StaffSword)
         return true;
-    auto lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-    // Specially Torch
-    if (lHand && lHand->GetFormID() == 0x1D4EC)
-        return false;
-    if (rightMagic)
-        return false;
-    else
-    {
-        auto rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-        if (rHand)
-        {
-            if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
-                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
-                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
-                rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
-                return true;
-        }
-        return false;
-    }
+    return false;
 }
 void ActionPreInput(std::function<void()> func)
 {
     uint32_t preInputTime = 100;
-    if (Compatibility::BFCO)
-        preInputTime = 200;
     while (true)
     {
         if ((TimeUtils::GetTime() - queue.time) / 1000.0 > preInputTime)
@@ -192,7 +195,7 @@ void ActionPreInput(std::function<void()> func)
             break;
         }
         // Process NormalAttack
-        if (isInQueue == 1 && Compatibility::CanNormalAttack() && queue.type == currentType)
+        if (isInQueue == 1 && Compatibility::CanNormalAttack())
         {
             startTime = TimeUtils::GetTime();
             func();
@@ -200,7 +203,7 @@ void ActionPreInput(std::function<void()> func)
             break;
         }
         // Process PowerAttack
-        else if (isInQueue == 2 && Compatibility::CanPowerAttack() && queue.type == currentType)
+        else if (isInQueue == 2 && Compatibility::CanPowerAttack())
         {
             startTime = TimeUtils::GetTime();
             func();
@@ -210,17 +213,65 @@ void ActionPreInput(std::function<void()> func)
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
-void NormalAttack()
+void NormalAttack(AttackType type)
 {
+    RE::TESIdleForm *target;
+    switch (type)
+    {
+    case AttackType::Right:
+        target = ActionList::NormalAttackRight;
+        break;
+    case AttackType::Left:
+        target = ActionList::NormalAttackLeft;
+        break;
+    case AttackType::Dual:
+        target = ActionList::NormalAttackDual;
+        break;
+    }
+    if (Compatibility::BFCO)
+    {
+        if (PlayerStatus::IsSwiming())
+            doAction(Compatibility::BFCO_NormalAttackSwim);
+        else if ((PlayerStatus::IsSprinting() && PlayerStatus::IsMoving()) || PlayerStatus::IsJumping())
+            VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+        if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+        {
+            if (!PlayerStatus::IsAttacking())
+            {
+                startTime = TimeUtils::GetTime();
+                doAction(Compatibility::BFCO_NormalAttackSpecial);
+            }
+            else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
+            {
+                queue.target = Compatibility::BFCO_NormalAttackSpecial;
+                queue.time = TimeUtils::GetTime();
+                if (!isInQueue)
+                {
+                    isInQueue = 1;
+                    std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
+                }
+                else
+                    isInQueue = 1;
+            }
+            return;
+        }
+    }
+    else if (Compatibility::MCO)
+    {
+        if (PlayerStatus::IsSprinting() && PlayerStatus::IsMoving())
+        {
+            VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+            return;
+        }
+    }
     if (Compatibility::MCO || Compatibility::BFCO)
     {
         if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 30.0)
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 50.0)
                 return;
-            queue.target = ActionList::NormalAttackRight;
+            queue.target = target;
             queue.time = TimeUtils::GetTime();
-            queue.type = currentType;
             if (!isInQueue)
             {
                 isInQueue = 1;
@@ -233,36 +284,69 @@ void NormalAttack()
         else
         {
             startTime = TimeUtils::GetTime();
-            doAction(ActionList::NormalAttackRight);
+            doAction(target);
         }
     }
     else
-    {
-        switch (currentType)
-        {
-        case AttackType::Right:
-            doAction(ActionList::NormalAttackRight);
-            return;
-        case AttackType::Left:
-            doAction(ActionList::NormalAttackLeft);
-            return;
-        case AttackType::Dual:
-            doAction(ActionList::NormalAttackDual);
-            return;
-        }
-    }
+        doAction(target);
 }
-void PowerAttack()
+void PowerAttack(AttackType type)
 {
+    RE::TESIdleForm *target;
+    switch (type)
+    {
+    case AttackType::Right:
+        target = ActionList::PowerAttackRight;
+        break;
+    case AttackType::Left:
+        target = ActionList::PowerAttackLeft;
+        break;
+    case AttackType::Dual:
+        target = ActionList::PowerAttackDual;
+        break;
+    }
+    if (Compatibility::BFCO)
+    {
+        if (PlayerStatus::IsSwiming())
+            doAction(Compatibility::BFCO_NormalAttackSwim);
+        else if ((PlayerStatus::IsSprinting() && PlayerStatus::IsMoving()) || PlayerStatus::IsJumping())
+            VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+        if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
+        {
+            if (!PlayerStatus::IsAttacking())
+            {
+                startTime = TimeUtils::GetTime();
+                doAction(Compatibility::BFCO_NormalAttackSpecial);
+            }
+            else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
+            {
+                queue.target = Compatibility::BFCO_NormalAttackSpecial;
+                queue.time = TimeUtils::GetTime();
+                if (!isInQueue)
+                {
+                    isInQueue = 1;
+                    std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
+                }
+                else
+                    isInQueue = 1;
+            }
+            return;
+        }
+    }
+    else if (Compatibility::MCO)
+    {
+        if (PlayerStatus::IsSprinting() && PlayerStatus::IsMoving())
+            VarUtils::player->NotifyAnimationGraph("attackStartSprint");
+    }
+
     if (Compatibility::MCO || Compatibility::BFCO)
     {
         if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 30.0)
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 50.0)
                 return;
-            queue.target = ActionList::PowerAttackRight;
+            queue.target = target;
             queue.time = TimeUtils::GetTime();
-            queue.type = currentType;
             if (!isInQueue)
             {
                 isInQueue = 2;
@@ -275,24 +359,19 @@ void PowerAttack()
         else
         {
             startTime = TimeUtils::GetTime();
-            doAction(ActionList::PowerAttackRight);
+            doAction(target);
         }
     }
     else
-    {
-        switch (currentType)
-        {
-        case AttackType::Right:
-            doAction(ActionList::PowerAttackRight);
-            return;
-        case AttackType::Left:
-            doAction(ActionList::PowerAttackLeft);
-            return;
-        case AttackType::Dual:
-            doAction(ActionList::PowerAttackDual);
-            return;
-        }
-    }
+        doAction(target);
+}
+void Block()
+{
+    if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
+        SKSE::GetTaskInterface()->AddTask([]() {
+            if (VarUtils::player->NotifyAnimationGraph("blockStart"))
+                VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
+        });
 }
 void SheatheAttack()
 {
@@ -554,229 +633,28 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
     auto code = KeyUtils::GetEventKeyMap(a_event);
     if (CanDo() && Config::normalAttack && Config::powerAttack && Config::block)
     {
-        // Attack
-        if (code == Config::normalAttack)
+        if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
         {
-            if (Compatibility::BFCO)
+            if (CanBash())
             {
-                if (PlayerStatus::IsSwiming())
+                if (code == Config::normalAttack)
                 {
-                    doAction(Compatibility::BFCO_NormalAttackSwim);
-                    return true;
-                }
-                else if (PlayerStatus::IsSprinting() || PlayerStatus::IsJumping())
-                {
-                    VarUtils::player->NotifyAnimationGraph("attackStartSprint");
-                    return true;
-                }
-                if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
-                {
-                    if (!PlayerStatus::IsAttacking())
-                    {
-                        startTime = TimeUtils::GetTime();
-                        doAction(Compatibility::BFCO_NormalAttackSpecial);
-                    }
-                    else if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
-                    {
-                        queue.target = Compatibility::BFCO_NormalAttackSpecial;
-                        queue.time = TimeUtils::GetTime();
-                        queue.type = currentType;
-                        if (!isInQueue)
-                        {
-                            isInQueue = 1;
-                            std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
-                        }
-                        else
-                            isInQueue = 1;
-                    }
-                    return true;
-                }
-            }
-            else if (Compatibility::MCO)
-            {
-                if (PlayerStatus::IsSprinting())
-                {
-                    VarUtils::player->NotifyAnimationGraph("attackStartSprint");
-                    return true;
-                }
-            }
-            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
-            {
-                if (CanBash())
-                {
-                    logger::trace("CanBash");
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
                     (this->*FnPB)(a_event, a_data);
                     VarUtils::player->NotifyAnimationGraph("bashRelease");
                     return true;
                 }
-                else
-                    return false;
-            }
-            if (leftMagic || rightMagic)
-            {
-                if (!rightMagic)
-                {
-                    NormalAttack();
-                    return true;
-                }
-                else if (rightMagic == 1)
-                {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
-                }
-                else if (rightMagic == 2)
+                else if (code == Config::powerAttack)
                 {
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
             }
-            NormalAttack();
-            a_event->userEvent = "";
-            return (this->*FnPB)(a_event, a_data);
+            else
+                return false;
         }
-        // Power Attack
-        if (code == Config::powerAttack)
-        {
-            if (Compatibility::BFCO)
-            {
-                if (PlayerStatus::IsSwiming())
-                {
-                    doAction(Compatibility::BFCO_PowerAttackSwim);
-                    return true;
-                }
-                else if (PlayerStatus::IsJumping())
-                {
-                    if (isTwoHand)
-                        doAction(Compatibility::BFCO_PowerAttackJump2H);
-                    else
-                        doAction(Compatibility::BFCO_PowerAttackJump1H);
-                    return true;
-                }
-                else if (PlayerStatus::IsSprinting())
-                {
-                    doAction(Compatibility::BFCO_PowerAttackSprint);
-                    return true;
-                }
-                if (KeyUtils::GetKeyState(Config::BFCO_SpecialAttackModifier))
-                {
-                    if (!PlayerStatus::IsAttacking())
-                    {
-                        startTime = TimeUtils::GetTime();
-                        doAction(Compatibility::BFCO_PowerAttackSpecial);
-                    }
-                    else if (PlayerStatus::IsAttacking() && Compatibility::CanPowerAttack())
-                    {
-                        queue.target = Compatibility::BFCO_PowerAttackSpecial;
-                        queue.time = TimeUtils::GetTime();
-                        queue.type = currentType;
-                        if (!isInQueue)
-                        {
-                            isInQueue = 2;
-                            std::thread(ActionPreInput, []() { doAction(queue.target); }).detach();
-                        }
-                        else
-                            isInQueue = 2;
-                    }
-                    return true;
-                }
-            }
-            else if (Compatibility::MCO)
-            {
-                if (PlayerStatus::IsSprinting())
-                {
-                    doAction(Compatibility::MCO_PowerAttackSprint);
-                    return true;
-                }
-            }
-            if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
-            {
-                if (CanBash())
-                {
-                    logger::trace("CanBash");
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
-                }
-                else
-                    return false;
-            }
-            if (leftMagic || rightMagic)
-            {
-                if (!leftMagic)
-                {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
-                    return (this->*FnPB)(a_event, a_data);
-                }
-                else if (leftMagic == 1)
-                {
-                    if (rightMagic == 2)
-                    {
-                        a_event->userEvent = VarUtils::userEvent->leftAttack;
-                        return (this->*FnPB)(a_event, a_data);
-                    }
-                    else
-                    {
-                        if (KeyUtils::GetKeyState(Config::MagicModifier))
-                        {
-                            a_event->userEvent = VarUtils::userEvent->leftAttack;
-                            return (this->*FnPB)(a_event, a_data);
-                        }
-                        PowerAttack();
-                        return true;
-                    }
-                }
-                else if (leftMagic == 2)
-                {
-                    if (KeyUtils::GetKeyState(Config::MagicModifier))
-                    {
-                        a_event->userEvent = VarUtils::userEvent->leftAttack;
-                        return (this->*FnPB)(a_event, a_data);
-                    }
-                    PowerAttack();
-                    return true;
-                }
-            }
-            PowerAttack();
-            a_event->userEvent = "";
-            return (this->*FnPB)(a_event, a_data);
-        }
-        // Block
         if (code == Config::block)
-        {
-            a_event->userEvent = "";
-            if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
-                SKSE::GetTaskInterface()->AddTask([]() {
-                    if (VarUtils::player->NotifyAnimationGraph("blockStart"))
-                        VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
-                });
-            return (this->*FnPB)(a_event, a_data);
-        }
-        // SheatheAttack
-        if (Config::enableSheatheAttack)
-            if (KeyUtils::GetKeyState(Config::enableSheatheAttack))
-            {
-                if (!PlayerStatus::IsAttackReady())
-                {
-                    ReadyWeaponHandler::PB(a_event, a_data);
-                    SKSE::GetTaskInterface()->AddTask(
-                        []() { VarUtils::player->NotifyAnimationGraph(VarUtils::userEvent->forceRelease); });
-                    if (code == Config::normalAttack)
-                        NormalAttack();
-                    else if (code == Config::powerAttack)
-                        PowerAttack();
-                    else if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
-                        SheatheAttack();
-                }
-                else
-                {
-                    if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
-                    {
-                        ReadyWeaponHandler::PB(a_event, a_data);
-                        SheatheAttack();
-                    }
-                }
-                return true;
-            }
+            Block();
         // BFCO ComboAttack
         if (Compatibility::BFCO && code == Config::BFCO_ComboAttack && PlayerStatus::IsAttacking())
         {
@@ -784,6 +662,54 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             doAction(Compatibility::BFCO_ComboAttack);
             startTime = TimeUtils::GetTime();
         }
+
+        if (code == Config::normalAttack)
+        {
+            if (Style::styleMap[Style::currentStyle].sheatheNormalAttack && !PlayerStatus::IsAttackReady())
+            {
+                a_event->userEvent = VarUtils::userEvent->rightAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
+            if (Style::styleMap[Style::currentStyle].usingVanillaLogic ||
+                KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].vanillaModifier))
+            {
+                if (Style::styleMap[Style::currentStyle].reverseAttack)
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
+            else
+            {
+                if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                    NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
+                else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                    NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
+                return true;
+            }
+        }
+        else if (code == Config::powerAttack)
+        {
+            if (Style::styleMap[Style::currentStyle].sheathePowerAttack && !PlayerStatus::IsAttackReady())
+            {
+                a_event->userEvent = VarUtils::userEvent->rightAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
+            if (Style::styleMap[Style::currentStyle].usingVanillaLogic ||
+                KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].vanillaModifier))
+            {
+                if (Style::styleMap[Style::currentStyle].reverseAttack)
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                return (this->*FnPB)(a_event, a_data);
+            }
+            else
+            {
+                if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                    PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
+                else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                    PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
+                return true;
+            }
+        }
+        return false;
     }
     if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
     {
