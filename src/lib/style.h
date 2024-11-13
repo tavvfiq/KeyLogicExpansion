@@ -6,7 +6,9 @@ enum AttackType : std::uint8_t
 {
     Right = 0,
     Left,
-    Dual
+    Dual,
+    VanillaLeft,
+    VanillaRight
 };
 enum Styles : std::uint8_t
 {
@@ -36,21 +38,19 @@ enum Styles : std::uint8_t
 };
 typedef struct
 {
-    bool usingVanillaLogic;
-    bool reverseAttack;
     AttackType normalAttackType;
     bool repeatNormalAttack;
     bool sheatheNormalAttack;
     AttackType powerAttackType;
     bool repeatPowerAttack;
     bool sheathePowerAttack;
-    uint32_t vanillaModifier;
+    uint32_t attackTypeModifier;
+    AttackType altNormalAttackType;
+    AttackType altPowerAttackType;
 } CombatStyle;
 
 extern Styles currentStyle;
 extern std::unordered_map<Styles, CombatStyle> styleMap;
 
 const char *GetStyleName(Styles style);
-Styles GetStyle(std::string styleName);
-
 } // namespace Style

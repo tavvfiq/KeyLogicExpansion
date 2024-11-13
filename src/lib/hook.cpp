@@ -12,6 +12,9 @@ static ActionQueue queue;
 static uint8_t isInQueue = 0;
 static uint64_t startTime = 0;
 
+static uint32_t preInputTime = 100;
+static uint32_t intervalTime = 50;
+
 // typedef bool _doAction_t(RE::TESActionData *);
 // REL::Relocation<_doAction_t> _doAction{RELOCATION_ID(40551, 41557)};
 void doAction(RE::TESIdleForm *idle)
@@ -186,7 +189,6 @@ bool CanBash()
 }
 void ActionPreInput(std::function<void()> func)
 {
-    uint32_t preInputTime = 100;
     while (true)
     {
         if ((TimeUtils::GetTime() - queue.time) / 1000.0 > preInputTime)
@@ -268,8 +270,9 @@ void NormalAttack(AttackType type)
     {
         if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 50.0)
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < intervalTime)
                 return;
+            logger::trace("Block Wait");
             queue.target = target;
             queue.time = TimeUtils::GetTime();
             if (!isInQueue)
@@ -283,6 +286,8 @@ void NormalAttack(AttackType type)
         }
         else
         {
+            if (isInQueue || (TimeUtils::GetTime() - startTime) / 1000.0 < intervalTime)
+                return;
             startTime = TimeUtils::GetTime();
             doAction(target);
         }
@@ -343,7 +348,7 @@ void PowerAttack(AttackType type)
     {
         if (PlayerStatus::IsAttacking() && !Compatibility::CanNormalAttack())
         {
-            if ((TimeUtils::GetTime() - startTime) / 1000.0 < 50.0)
+            if ((TimeUtils::GetTime() - startTime) / 1000.0 < intervalTime)
                 return;
             queue.target = target;
             queue.time = TimeUtils::GetTime();
@@ -358,6 +363,8 @@ void PowerAttack(AttackType type)
         }
         else
         {
+            if (isInQueue || (TimeUtils::GetTime() - startTime) / 1000.0 < intervalTime)
+                return;
             startTime = TimeUtils::GetTime();
             doAction(target);
         }
@@ -662,54 +669,111 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             doAction(Compatibility::BFCO_ComboAttack);
             startTime = TimeUtils::GetTime();
         }
-
         if (code == Config::normalAttack)
         {
-            if (Style::styleMap[Style::currentStyle].sheatheNormalAttack && !PlayerStatus::IsAttackReady())
+            if (KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier))
             {
-                a_event->userEvent = VarUtils::userEvent->rightAttack;
-                return (this->*FnPB)(a_event, a_data);
-            }
-            if (Style::styleMap[Style::currentStyle].usingVanillaLogic ||
-                KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].vanillaModifier))
-            {
-                if (Style::styleMap[Style::currentStyle].reverseAttack)
+                if (Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaLeft &&
+                    Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaRight)
+                {
+                    if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                        NormalAttack(Style::styleMap[Style::currentStyle].altNormalAttackType);
+                    else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                        NormalAttack(Style::styleMap[Style::currentStyle].altNormalAttackType);
+                }
+                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaLeft)
+                {
                     a_event->userEvent = VarUtils::userEvent->leftAttack;
-                return (this->*FnPB)(a_event, a_data);
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaRight)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
             }
             else
             {
-                if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
-                    NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
-                else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
-                    NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
-                return true;
+                if (Style::styleMap[Style::currentStyle].normalAttackType != AttackType::VanillaLeft &&
+                    Style::styleMap[Style::currentStyle].normalAttackType != AttackType::VanillaRight)
+                {
+                    if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                        NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
+                    else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
+                        NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
+                }
+                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaLeft)
+                {
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaRight)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
             }
         }
         else if (code == Config::powerAttack)
         {
-            if (Style::styleMap[Style::currentStyle].sheathePowerAttack && !PlayerStatus::IsAttackReady())
+            if (KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier))
+            {
+                if (Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaLeft &&
+                    Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaRight)
+                {
+                    if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
+                        PowerAttack(Style::styleMap[Style::currentStyle].altPowerAttackType);
+                    else if (Style::styleMap[Style::currentStyle].repeatPowerAttack)
+                        PowerAttack(Style::styleMap[Style::currentStyle].altPowerAttackType);
+                }
+                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaLeft)
+                {
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaRight)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+            }
+            else
+            {
+                if (Style::styleMap[Style::currentStyle].powerAttackType != AttackType::VanillaLeft &&
+                    Style::styleMap[Style::currentStyle].powerAttackType != AttackType::VanillaRight)
+                {
+                    if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
+                        PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
+                    else if (Style::styleMap[Style::currentStyle].repeatPowerAttack)
+                        PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
+                }
+                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaLeft)
+                {
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaRight)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+            }
+        }
+        if (!PlayerStatus::IsAttackReady())
+        {
+            if (code == Config::normalAttack && Style::styleMap[Style::currentStyle].sheatheNormalAttack)
             {
                 a_event->userEvent = VarUtils::userEvent->rightAttack;
                 return (this->*FnPB)(a_event, a_data);
             }
-            if (Style::styleMap[Style::currentStyle].usingVanillaLogic ||
-                KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].vanillaModifier))
+            if (code == Config::powerAttack && Style::styleMap[Style::currentStyle].sheathePowerAttack)
             {
-                if (Style::styleMap[Style::currentStyle].reverseAttack)
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                a_event->userEvent = VarUtils::userEvent->rightAttack;
                 return (this->*FnPB)(a_event, a_data);
             }
-            else
-            {
-                if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
-                    PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
-                else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
-                    PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
-                return true;
-            }
         }
-        return false;
+        a_event->userEvent = "";
+        return (this->*FnPB)(a_event, a_data);
     }
     if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
     {
@@ -1083,5 +1147,7 @@ void Hook()
     ThirdPersonState::Hook();
     ToggleRunHandler::Hook();
     std::thread(Recover).detach();
+    if (Compatibility::BFCO)
+        preInputTime = 200;
 }
 } // namespace Hook

@@ -54,7 +54,7 @@ void init()
     {
         logger::trace("Detecting BFCO installed, compatibility with BFCO.");
 
-        // ActionList::PowerAttackRight = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
+        ActionList::PowerAttackRight = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
 
         BFCO_PowerAttackSprint = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BE");
         BFCO_PowerAttackJump1H = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");

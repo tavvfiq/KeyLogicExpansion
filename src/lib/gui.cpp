@@ -166,7 +166,8 @@ void SelectButton(const char *name, uint32_t &code, const char *description = nu
         ImGui::SetTooltip(description);
 }
 
-static std::vector<NameMap> attackTypeName = {{0, "Right"}, {1, "Left"}, {2, "Dual"}};
+static std::vector<NameMap> attackTypeName = {
+    {0, "Right"}, {1, "Left"}, {2, "Dual"}, {3, "VanillaLeft"}, {4, "VanillaRight"}};
 void SelectAttackType(const char *name, Style::AttackType &type, const char *description = nullptr)
 {
     auto res =
@@ -192,7 +193,10 @@ void KeyBindSettings()
     ImGui::Begin("KeyBind Settings", &showSettings, ImGuiWindowFlags_NoCollapse);
 
     if (ImGui::Button("Save to InI"))
+    {
         Config::saveInI();
+        ImGui::Text("Save to ini...");
+    }
 
     SwitchButton("ShowCustomSettings", showCustom);
     if (ImGui::TreeNode("Features"))
@@ -200,8 +204,9 @@ void KeyBindSettings()
         SwitchButton("EnableCustomInput", Custom::enableCustomInput,
                      "Enable custom Input, maybe this is the reason you install this mod.");
         SwitchButton("EnableStances", Stances::enableStances,
-                     "Enable Stances Supported by KLE\nContain 3 types "
-                     "of stance: High, Mid, Low.");
+                     "Enable Stances Supported by KLE\nContain 4 types "
+                     "of stance: High, Mid, Low and Sheathe.\nIf you switch to Sheathe, you should press Modifier and "
+                     "Sheathe key.");
         SwitchButton("EnableHoldSprint", Config::enableHoldSprint, "Change enable sprint when you hold sprint key");
         SwitchButton("EnableHoldSneak", Config::enableHoldSneak,
                      "Same as EnableHoldSprint, Change enable sneak when you hold sneak key");
@@ -239,11 +244,6 @@ void KeyBindSettings()
     if (ImGui::TreeNode("Style"))
     {
         ImGui::Text("Current Style: %s", Style::GetStyleName(Style::currentStyle));
-        SwitchButton("UsingVanillaLogic", Style::styleMap[Style::currentStyle].usingVanillaLogic,
-                     "While true, KLE won't apply changes on this style's logic");
-        SwitchButton("ReverseAttack", Style::styleMap[Style::currentStyle].reverseAttack,
-                     "Only works when UsingVanillaDual is true");
-        ImGui::Spacing();
         SelectAttackType("NormalAttackType", Style::styleMap[Style::currentStyle].normalAttackType,
                          "For BFCO/MCO, Right means Dual, you can try other types, maybe crash or maybe funny");
         SwitchButton("RepeatNormalAttack", Style::styleMap[Style::currentStyle].repeatNormalAttack,
@@ -258,8 +258,12 @@ void KeyBindSettings()
         SwitchButton("SheathePowerAttack", Style::styleMap[Style::currentStyle].sheathePowerAttack,
                      "Whether KLE power attack can sheathe");
         ImGui::Spacing();
-        SelectButton("VanillaModifier", Style::styleMap[Style::currentStyle].vanillaModifier,
-                     "If you press this key, KLE will temporarily use Vanilla logic, you can use magic/staff now.");
+        SelectButton("VanillaModifier", Style::styleMap[Style::currentStyle].attackTypeModifier,
+                     "If you press this key, KLE will temporarily use another attack type.");
+        SelectAttackType("AltNormalAttackType", Style::styleMap[Style::currentStyle].altNormalAttackType,
+                         "Vanilla left and right means you can cast spell or using staff, like Vanilla logic");
+        SelectAttackType("AltPowerAttackType", Style::styleMap[Style::currentStyle].altPowerAttackType,
+                         "Vanilla left and right means you can cast spell or using staff, like Vanilla logic");
         ImGui::TreePop();
     }
 
