@@ -4,17 +4,15 @@
 namespace Compatibility
 {
 extern bool BFCO;
-extern RE::TESIdleForm *BFCO_PowerAttackSprint;
-extern RE::TESIdleForm *BFCO_PowerAttackJump1H;
-extern RE::TESIdleForm *BFCO_PowerAttackJump2H;
-extern RE::TESIdleForm *BFCO_NormalAttackSpecial;
-extern RE::TESIdleForm *BFCO_PowerAttackSpecial;
-extern RE::TESIdleForm *BFCO_NormalAttackSwim;
-extern RE::TESIdleForm *BFCO_PowerAttackSwim;
-extern RE::TESIdleForm *BFCO_ComboAttack;
+// extern ActionList::Action BFCO_PowerAttackJump1H;
+// extern ActionList::Action BFCO_PowerAttackJump2H;
+extern ActionList::Animation BFCO_NormalAttackSpecial;
+extern ActionList::Animation BFCO_PowerAttackSpecial;
+extern ActionList::Animation BFCO_NormalAttackSwim;
+extern ActionList::Animation BFCO_PowerAttackSwim;
+extern ActionList::Animation BFCO_ComboAttack;
 
 extern bool MCO;
-extern RE::TESIdleForm *MCO_PowerAttackSprint;
 
 extern bool ELDEN;
 extern bool CanUseWarAsh;

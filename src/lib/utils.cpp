@@ -459,14 +459,14 @@ bool IsBashing()
 }
 bool IsMoving()
 {
-    return KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->forward)) ||
-           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeLeft)) ||
-           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeRight)) ||
-           KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->back));
+    return VarUtils::player->AsActorState()->actorState1.movingBack ||
+           VarUtils::player->AsActorState()->actorState1.movingForward ||
+           VarUtils::player->AsActorState()->actorState1.movingRight ||
+           VarUtils::player->AsActorState()->actorState1.movingLeft;
 }
 bool IsSprinting()
 {
-    return VarUtils::player->GetPlayerRuntimeData().playerFlags.isSprinting;
+    return VarUtils::player->AsActorState()->actorState1.sprinting;
 }
 bool IsSneaking()
 {
@@ -494,23 +494,64 @@ bool IsInKillmove()
 
 namespace ActionList
 {
-RE::TESIdleForm *NormalAttackRight;
-RE::TESIdleForm *NormalAttackLeft;
-RE::TESIdleForm *NormalAttackDual;
+Animation NormalAttackRight;
+Animation NormalAttackLeft;
+Animation NormalAttackDual;
 
-RE::TESIdleForm *PowerAttackRight;
-RE::TESIdleForm *PowerAttackLeft;
-RE::TESIdleForm *PowerAttackDual;
+Animation PowerAttackRight;
+Animation PowerAttackLeft;
+Animation PowerAttackDual;
+
+Animation NormalAttackSprint;
+Animation PowerAttackSprint1H;
+Animation PowerAttackSprint2H;
 
 void init()
 {
-    NormalAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x13215);
-    NormalAttackLeft = (RE::TESIdleForm *)TESForm::LookupByID(0xBACC3);
-    NormalAttackDual = (RE::TESIdleForm *)TESForm::LookupByID(0xBCF31);
+    NormalAttackRight.type = ActionType::Idle;
+    NormalAttackRight.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x13215);
+    NormalAttackRight.action = (BGSAction *)TESForm::LookupByID(0x13005);
+    NormalAttackRight.event = "attackStart";
 
-    PowerAttackRight = (RE::TESIdleForm *)TESForm::LookupByID(0x19B26);
-    PowerAttackLeft = (RE::TESIdleForm *)TESForm::LookupByID(0x2E900);
-    PowerAttackDual = (RE::TESIdleForm *)TESForm::LookupByID(0x2E901);
+    NormalAttackLeft.type = ActionType::Idle;
+    NormalAttackLeft.idle = (RE::TESIdleForm *)TESForm::LookupByID(0xBACC3);
+    NormalAttackLeft.action = (BGSAction *)TESForm::LookupByID(0x13004);
+    NormalAttackLeft.event = "";
+
+    NormalAttackDual.type = ActionType::Idle;
+    NormalAttackDual.idle = (RE::TESIdleForm *)TESForm::LookupByID(0xBCF31);
+    NormalAttackDual.action = (BGSAction *)TESForm::LookupByID(0x50C96);
+    NormalAttackDual.event = "";
+
+    PowerAttackRight.type = ActionType::Action;
+    PowerAttackRight.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x19B26);
+    PowerAttackRight.action = (BGSAction *)TESForm::LookupByID(0x13383);
+    PowerAttackRight.event = "attackPowerStartInPlace";
+
+    PowerAttackLeft.type = ActionType::Action;
+    PowerAttackLeft.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x2E900);
+    PowerAttackLeft.action = (BGSAction *)TESForm::LookupByID(0x2E2F6);
+    PowerAttackLeft.event = "";
+
+    PowerAttackDual.type = ActionType::Action;
+    PowerAttackDual.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x2E901);
+    PowerAttackDual.action = (BGSAction *)TESForm::LookupByID(0x2E2F7);
+    PowerAttackDual.event = "";
+
+    NormalAttackSprint.type = ActionType::AniamtionEvent;
+    NormalAttackSprint.idle = nullptr;
+    NormalAttackSprint.action = nullptr;
+    NormalAttackSprint.event = "attackStartSprint";
+
+    PowerAttackSprint1H.type = ActionType::AniamtionEvent;
+    PowerAttackSprint1H.idle = nullptr;
+    PowerAttackSprint1H.action = nullptr;
+    PowerAttackSprint1H.event = "attackPowerStart_Sprint";
+
+    PowerAttackSprint2H.type = ActionType::AniamtionEvent;
+    PowerAttackSprint2H.idle = nullptr;
+    PowerAttackSprint2H.action = nullptr;
+    PowerAttackSprint2H.event = "attackPowerStart_2HMSprint";
 }
 } // namespace ActionList
 

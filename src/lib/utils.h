@@ -225,13 +225,31 @@ bool IsInKillmove();
 
 namespace ActionList
 {
-extern RE::TESIdleForm *NormalAttackRight;
-extern RE::TESIdleForm *NormalAttackLeft;
-extern RE::TESIdleForm *NormalAttackDual;
+enum ActionType
+{
+    Idle = 0,
+    Action,
+    AniamtionEvent
+};
+typedef struct
+{
+    ActionType type;
+    RE::TESIdleForm *idle;
+    RE::BGSAction *action;
+    std::string event;
+} Animation;
 
-extern RE::TESIdleForm *PowerAttackRight;
-extern RE::TESIdleForm *PowerAttackLeft;
-extern RE::TESIdleForm *PowerAttackDual;
+extern Animation NormalAttackRight;
+extern Animation NormalAttackLeft;
+extern Animation NormalAttackDual;
+
+extern Animation PowerAttackRight;
+extern Animation PowerAttackLeft;
+extern Animation PowerAttackDual;
+
+extern Animation NormalAttackSprint;
+extern Animation PowerAttackSprint1H;
+extern Animation PowerAttackSprint2H;
 
 void init();
 } // namespace ActionList

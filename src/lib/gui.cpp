@@ -2,8 +2,6 @@
 
 namespace GUI
 {
-std::deque<uint32_t> guiInputQueue;
-uint8_t guiNums;
 typedef struct
 {
     uint32_t code;
@@ -80,10 +78,10 @@ void buildKeyNameMap()
         {KeyUtils::KeyBoard::B, "B"},
         {KeyUtils::KeyBoard::N, "N"},
         {KeyUtils::KeyBoard::M, "M"},
-        {KeyUtils::KeyBoard::ArrowUp, "↑"},
-        {KeyUtils::KeyBoard::ArrowDown, "↓"},
-        {KeyUtils::KeyBoard::ArrowLeft, "←"},
-        {KeyUtils::KeyBoard::ArrowRight, "→"},
+        {KeyUtils::KeyBoard::ArrowUp, "ArrowUp"},
+        {KeyUtils::KeyBoard::ArrowDown, "ArrowDown"},
+        {KeyUtils::KeyBoard::ArrowLeft, "ArrowLeft"},
+        {KeyUtils::KeyBoard::ArrowRight, "ArrowRight"},
         {KeyUtils::KeyBoard::LeftBracket, "["},
         {KeyUtils::KeyBoard::RightBracket, "]"},
         {KeyUtils::KeyBoard::Console, "~"},

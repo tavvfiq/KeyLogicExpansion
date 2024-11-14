@@ -3,17 +3,15 @@
 namespace Compatibility
 {
 bool BFCO = false;
-RE::TESIdleForm *BFCO_PowerAttackSprint;
-RE::TESIdleForm *BFCO_PowerAttackJump1H;
-RE::TESIdleForm *BFCO_PowerAttackJump2H;
-RE::TESIdleForm *BFCO_NormalAttackSpecial;
-RE::TESIdleForm *BFCO_PowerAttackSpecial;
-RE::TESIdleForm *BFCO_NormalAttackSwim;
-RE::TESIdleForm *BFCO_PowerAttackSwim;
-RE::TESIdleForm *BFCO_ComboAttack;
+ActionList::Animation BFCO_PowerAttackJump1H;
+ActionList::Animation BFCO_PowerAttackJump2H;
+ActionList::Animation BFCO_NormalAttackSpecial;
+ActionList::Animation BFCO_PowerAttackSpecial;
+ActionList::Animation BFCO_NormalAttackSwim;
+ActionList::Animation BFCO_PowerAttackSwim;
+ActionList::Animation BFCO_ComboAttack;
 
 bool MCO = false;
-RE::TESIdleForm *MCO_PowerAttackSprint;
 
 bool ELDEN = false;
 bool CanUseWarAsh = false;
@@ -54,26 +52,44 @@ void init()
     {
         logger::trace("Detecting BFCO installed, compatibility with BFCO.");
 
-        ActionList::PowerAttackRight = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
+        ActionList::PowerAttackRight.type = ActionList::ActionType::Idle;
+        ActionList::PowerAttackRight.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
 
-        BFCO_PowerAttackSprint = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BE");
-        BFCO_PowerAttackJump1H = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
-        BFCO_PowerAttackJump2H = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
+        // BFCO_PowerAttackSprint = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BE");
+        // BFCO_PowerAttackJump1H = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
+        // BFCO_PowerAttackJump2H = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
 
-        BFCO_NormalAttackSpecial = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008A7");
-        BFCO_PowerAttackSpecial = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008AF");
+        BFCO_NormalAttackSpecial.type = ActionList::ActionType::Idle;
+        BFCO_NormalAttackSpecial.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008A7");
+        BFCO_NormalAttackSpecial.action = nullptr;
+        BFCO_NormalAttackSpecial.event = "attackStartDualWield";
 
-        BFCO_NormalAttackSwim = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00916");
-        BFCO_PowerAttackSwim = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00917");
+        BFCO_PowerAttackSpecial.type = ActionList::ActionType::Idle;
+        BFCO_PowerAttackSpecial.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008AF");
+        BFCO_PowerAttackSpecial.action = nullptr;
+        BFCO_PowerAttackSpecial.event = "attackPowerStartDualWield";
 
-        BFCO_ComboAttack = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BF");
+        BFCO_NormalAttackSwim.type = ActionList::ActionType::Idle;
+        BFCO_NormalAttackSwim.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00916");
+        BFCO_NormalAttackSwim.action = nullptr;
+        BFCO_NormalAttackSwim.event = "";
+
+        BFCO_PowerAttackSwim.type = ActionList::ActionType::Idle;
+        BFCO_PowerAttackSwim.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00917");
+        BFCO_PowerAttackSwim.action = nullptr;
+        BFCO_PowerAttackSwim.event = "";
+
+        BFCO_ComboAttack.type = ActionList::ActionType::Idle;
+        BFCO_ComboAttack.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BF");
+        BFCO_ComboAttack.action = nullptr;
+        BFCO_ComboAttack.event = "attackPowerStartForward";
     }
     // MCO: Attack_DXP.esp
     MCO = ModSupport::ModExist(std::string("Attack_DXP.esp"));
     if (MCO)
     {
         logger::trace("Detecting MCO installed, compatibility with MCO.");
-        MCO_PowerAttackSprint = (RE::TESIdleForm *)TESForm::LookupByID(0xEC3CC);
+        // MCO_PowerAttackSprint = (ActionList::Action)TESForm::LookupByID(0xEC3CC);
     }
 
     if (BFCO && MCO)
