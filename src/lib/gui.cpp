@@ -256,6 +256,10 @@ void KeyBindSettings()
         SwitchButton("SheathePowerAttack", Style::styleMap[Style::currentStyle].sheathePowerAttack,
                      "Whether KLE power attack can sheathe");
         ImGui::Spacing();
+        SwitchButton("IsAltTypeEnable", Style::styleMap[Style::currentStyle].isAltTypeEnable,
+                     "Whether AltTypeModifier works now.");
+        SwitchButton("IsUsingHold", Style::styleMap[Style::currentStyle].isUsingHold,
+                     "Press modifier to swicth immediately or hold to switch");
         SelectButton("VanillaModifier", Style::styleMap[Style::currentStyle].attackTypeModifier,
                      "If you press this key, KLE will temporarily use another attack type.");
         SelectAttackType("AltNormalAttackType", Style::styleMap[Style::currentStyle].altNormalAttackType,

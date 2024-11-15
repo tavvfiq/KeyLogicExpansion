@@ -445,11 +445,9 @@ bool IsBlocking()
 {
     return VarUtils::player->IsBlocking();
 }
-bool IsAttackReady()
+bool IsSheathe()
 {
-    bool res;
-    VarUtils::player->GetGraphVariableBool("IsAttackReady", std::ref(res));
-    return res;
+    return VarUtils::player->AsActorState()->IsWeaponDrawn();
 }
 bool IsBashing()
 {

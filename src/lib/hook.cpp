@@ -47,58 +47,42 @@ void doAnimation(ActionList::Animation action)
         break;
     }
 }
-void DetectStyle()
+Style::Styles DetectStyle()
 {
     uint8_t leftWeapen = 0;
     uint8_t rightWeapen = 0;
     uint8_t leftMagic = 0;
     uint8_t rightMagic = 0;
-    auto shield = VarUtils::player->GetWornArmor(RE::BGSBipedObjectForm::BipedObjectSlot::kShield);
-    RE::TESForm *lHand = nullptr;
-    RE::TESForm *rHand = nullptr;
-    RE::MagicItem *lMagic = nullptr;
-    if (!shield)
-        lMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kLeftHand];
-    if (lMagic && lMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
-        lMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-        leftMagic = 1;
-    if (!shield && !leftMagic)
+    bool shield = false;
+    RE::TESForm *lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+    if (lHand)
     {
-        lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
-        // Specially Torch
-        if (lHand && lHand->GetFormID() == 0x1D4EC)
-        {
-            lHand = nullptr;
+        if (lHand->formType == RE::FormType::Armor)
+            shield = true;
+        else if (lHand->formType == RE::FormType::Spell || lHand->formType == RE::FormType::Scroll)
+            leftMagic = 1;
+        else if (lHand->formType == RE::FormType::Light)
             leftWeapen = 2;
-        }
-        if (lHand)
+        else if (lHand->formType == RE::FormType::Weapon)
         {
             if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
                 lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow)
-            {
-                Style::currentStyle = Style::Styles::Bow;
-                return;
-            }
+                return Style::Styles::Bow;
             else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
                      lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
-            {
-                Style::currentStyle = Style::Styles::TwoHand;
-                return;
-            }
+                return Style::Styles::TwoHand;
             else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
                 leftMagic = 2;
             else
                 leftWeapen = 1;
         }
     }
-    auto rMagic = VarUtils::player->GetActorRuntimeData().selectedSpells[RE::Actor::SlotTypes::kRightHand];
-    if (rMagic && rMagic->GetSpellType() != RE::MagicSystem::SpellType::kPoison &&
-        rMagic->GetSpellType() != RE::MagicSystem::SpellType::kEnchantment)
-        rightMagic = 1;
-    if (!rightMagic)
+    RE::TESForm *rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
+    if (rHand)
     {
-        rHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedRightHand();
-        if (rHand)
+        if (rHand->formType == RE::FormType::Spell || rHand->formType == RE::FormType::Scroll)
+            rightMagic = 1;
+        else if (rHand->formType == RE::FormType::Weapon)
         {
             if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
                 rightMagic = 2;
@@ -112,60 +96,70 @@ void DetectStyle()
     if (shield)
     {
         if (rightMagic == 1)
-            Style::currentStyle = Style::Styles::ShieldMagic;
+            return Style::Styles::ShieldMagic;
         else if (rightMagic == 2)
-            Style::currentStyle = Style::Styles::ShieldStaff;
+            return Style::Styles::ShieldStaff;
         if (rightWeapen == 1)
-            Style::currentStyle = Style::Styles::ShieldSword;
+            return Style::Styles::ShieldSword;
         else if (rightWeapen == 0)
-            Style::currentStyle = Style::Styles::ShieldFist;
+            return Style::Styles::ShieldFist;
     }
     else if (leftMagic == 1)
     {
         if (rightMagic == 1)
-            Style::currentStyle = Style::Styles::DualMagic;
+            return Style::Styles::DualMagic;
         else if (rightMagic == 2)
-            Style::currentStyle = Style::Styles::MagicStaff;
+            return Style::Styles::MagicStaff;
         if (rightWeapen == 1)
-            Style::currentStyle = Style::Styles::MagicSword;
+            return Style::Styles::MagicSword;
         else if (rightWeapen == 0)
-            Style::currentStyle = Style::Styles::MagicFist;
+            return Style::Styles::MagicFist;
     }
     else if (leftMagic == 2)
     {
         if (rightMagic == 1)
-            Style::currentStyle = Style::Styles::StaffMagic;
+            return Style::Styles::StaffMagic;
         else if (rightMagic == 2)
-            Style::currentStyle = Style::Styles::DualStaff;
+            return Style::Styles::DualStaff;
         if (rightWeapen == 1)
-            Style::currentStyle = Style::Styles::StaffSword;
+            return Style::Styles::StaffSword;
         else if (rightWeapen == 0)
-            Style::currentStyle = Style::Styles::StaffFist;
-    }
-    else if (leftWeapen == 1)
-    {
-        if (rightMagic == 1)
-            Style::currentStyle = Style::Styles::SwordMagic;
-        else if (rightMagic == 2)
-            Style::currentStyle = Style::Styles::SwordStaff;
-        if (rightWeapen == 1)
-            Style::currentStyle = Style::Styles::DualSword;
-        else if (rightWeapen == 0)
-            Style::currentStyle = Style::Styles::SwordFist;
+            return Style::Styles::StaffFist;
     }
     else if (leftWeapen == 0)
     {
         if (rightMagic == 1)
-            Style::currentStyle = Style::Styles::OnlyMagic;
+            return Style::Styles::FistMagic;
         else if (rightMagic == 2)
-            Style::currentStyle = Style::Styles::OnlyStaff;
+            return Style::Styles::FistStaff;
         if (rightWeapen == 1)
-            Style::currentStyle = Style::Styles::OnlySword;
+            return Style::Styles::FistSword;
         else if (rightWeapen == 0)
-            Style::currentStyle = Style::Styles::DualFist;
+            return Style::Styles::DualFist;
     }
-    else
-        Style::currentStyle = Style::Styles::Null;
+    else if (leftWeapen == 1)
+    {
+        if (rightMagic == 1)
+            return Style::Styles::SwordMagic;
+        else if (rightMagic == 2)
+            return Style::Styles::SwordStaff;
+        if (rightWeapen == 1)
+            return Style::Styles::DualSword;
+        else if (rightWeapen == 0)
+            return Style::Styles::SwordFist;
+    }
+    else if (leftWeapen == 2)
+    {
+        if (rightMagic == 1)
+            return Style::Styles::TorchMagic;
+        else if (rightMagic == 2)
+            return Style::Styles::TorchStaff;
+        if (rightWeapen == 1)
+            return Style::Styles::TorchSword;
+        else if (rightWeapen == 0)
+            return Style::Styles::TorchFist;
+    }
+    return Style::Styles::Null;
 }
 bool CanDo()
 {
@@ -176,7 +170,7 @@ bool CanDo()
          ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking)) !=
             ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking))
         return false;
-    if (Style::currentStyle == Style::Styles::Bow)
+    if (Style::currentStyle == Style::Styles::Null || Style::currentStyle == Style::Styles::Bow)
         return false;
     return true;
 }
@@ -184,8 +178,8 @@ bool CanBash()
 {
     if (Style::currentStyle == Style::Styles::TwoHand || Style::currentStyle == Style::Styles::DualSword ||
         Style::currentStyle == Style::Styles::DualFist || Style::currentStyle == Style::Styles::DualMagic ||
-        Style::currentStyle == Style::Styles::OnlySword || Style::currentStyle == Style::Styles::OnlyMagic ||
-        Style::currentStyle == Style::Styles::OnlyStaff || Style::currentStyle == Style::Styles::ShieldSword ||
+        Style::currentStyle == Style::Styles::FistSword || Style::currentStyle == Style::Styles::FistMagic ||
+        Style::currentStyle == Style::Styles::FistStaff || Style::currentStyle == Style::Styles::ShieldSword ||
         Style::currentStyle == Style::Styles::ShieldFist || Style::currentStyle == Style::Styles::ShieldMagic ||
         Style::currentStyle == Style::Styles::ShieldStaff || Style::currentStyle == Style::Styles::ShieldMagic ||
         Style::currentStyle == Style::Styles::MagicSword || Style::currentStyle == Style::Styles::MagicFist ||
@@ -375,7 +369,7 @@ void PowerAttack(AttackType type)
 }
 void Block()
 {
-    if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsAttackReady())
+    if (!PlayerStatus::IsBlocking() && !PlayerStatus::IsBashing() && PlayerStatus::IsSheathe())
         SKSE::GetTaskInterface()->AddTask([]() {
             if (VarUtils::player->NotifyAnimationGraph("blockStart"))
             {
@@ -393,7 +387,10 @@ void Recover()
     while (true)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        DetectStyle();
+        Style::currentStyle = DetectStyle();
+        if (Style::styleMap[Style::currentStyle].isUsingHold)
+            Style::styleMap[Style::currentStyle].isAltTypeEnable =
+                KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier);
         if ((PlayerStatus::IsBlocking() || PlayerStatus::IsBashing()) &&
             ((!KeyUtils::GetKeyState(Config::block) && !vanillaLeft) ||
              (vanillaLeft && !KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack)))))
@@ -642,22 +639,19 @@ bool AttackBlockHandler::CanProcess(InputEvent *a_event)
     {
         auto evn = a_event->AsButtonEvent();
         auto code = KeyUtils::GetEventKeyMap(evn);
-        if (!PlayerStatus::IsAttackReady() && !PlayerStatus::IsAttacking())
-        {
-            if (code == Config::normalAttack && Style::styleMap[Style::currentStyle].sheatheNormalAttack)
-                return true;
-            else if (code == Config::powerAttack && Style::styleMap[Style::currentStyle].sheathePowerAttack)
-                return true;
-            else
-                return false;
-        }
+        if (!Style::styleMap[Style::currentStyle].isUsingHold && evn->IsDown() &&
+            code == Style::styleMap[Style::currentStyle].attackTypeModifier)
+            Style::styleMap[Style::currentStyle].isAltTypeEnable =
+                !Style::styleMap[Style::currentStyle].isAltTypeEnable;
+        if (!PlayerStatus::IsSheathe())
+            return false;
         if (code == Config::normalAttack || code == Config::powerAttack || code == Config::block ||
             code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
             return true;
         if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack) ||
             code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack))
             return false;
-        if (Compatibility::BFCO || code == Config::BFCO_ComboAttack)
+        if (Compatibility::BFCO && code == Config::BFCO_ComboAttack)
             return true;
     }
     return false;
@@ -671,11 +665,6 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
     auto code = KeyUtils::GetEventKeyMap(a_event);
     if (CanDo() && Config::normalAttack && Config::powerAttack && Config::block)
     {
-        if (!PlayerStatus::IsAttackReady() && !PlayerStatus::IsAttacking())
-        {
-            a_event->userEvent = VarUtils::userEvent->rightAttack;
-            return (this->*FnPB)(a_event, a_data);
-        }
         if (VarUtils::player->IsBlocking() || PlayerStatus::IsBashing())
         {
             if (CanBash())
@@ -706,7 +695,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         }
         if (code == Config::normalAttack)
         {
-            if (KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier))
+            if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
             {
                 if (Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaLeft &&
                     Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaRight)
@@ -753,7 +742,7 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         }
         else if (code == Config::powerAttack)
         {
-            if (KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier))
+            if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
             {
                 if (Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaLeft &&
                     Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaRight)
@@ -979,7 +968,21 @@ bool ReadyWeaponHandler::CanProcess(InputEvent *a_event)
     if (Stances::enableStances)
         if (KeyUtils::GetKeyState(Stances::StancesModfier))
             return false;
-    return (this->*FnCP)(a_event);
+    if (a_event->GetEventType() == INPUT_EVENT_TYPE::kButton)
+    {
+        auto evn = a_event->AsButtonEvent();
+        auto code = KeyUtils::GetEventKeyMap(evn);
+        if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
+            return true;
+        if (!PlayerStatus::IsSheathe())
+        {
+            if (code == Config::normalAttack && Style::styleMap[Style::currentStyle].sheatheNormalAttack)
+                return true;
+            else if (code == Config::powerAttack && Style::styleMap[Style::currentStyle].sheathePowerAttack)
+                return true;
+        }
+    }
+    return false;
 }
 bool ReadyWeaponHandler::CP(InputEvent *a_event)
 {
@@ -987,16 +990,9 @@ bool ReadyWeaponHandler::CP(InputEvent *a_event)
 }
 bool ReadyWeaponHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData *a_data)
 {
-    if (PlayerStatus::IsAttacking())
-    {
-        if (Compatibility::BFCO || Compatibility::MCO)
-        {
-            if (Compatibility::CanRecovery())
-                return (this->*FnCP)(a_event);
-            else
-                return false;
-        }
-    }
+    a_event->userEvent = VarUtils::userEvent->readyWeapon;
+    if (PlayerStatus::IsAttacking() && Style::currentStyle != Style::Styles::Bow)
+        return false;
     auto code = KeyUtils::GetEventKeyMap(a_event);
     if (Config::needModifier[code])
         if (!KeyUtils::GetKeyState(Config::needModifier[code]))

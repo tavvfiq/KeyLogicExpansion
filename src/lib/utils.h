@@ -212,7 +212,7 @@ namespace PlayerStatus
 {
 bool IsAttacking();
 bool IsBlocking();
-bool IsAttackReady();
+bool IsSheathe();
 bool IsBashing();
 bool IsMoving();
 bool IsSprinting();

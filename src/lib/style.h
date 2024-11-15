@@ -19,16 +19,20 @@ enum Styles : std::uint8_t
     DualFist,
     DualMagic,
     DualStaff,
-    OnlySword,
-    OnlyMagic,
-    OnlyStaff,
     ShieldSword,
     ShieldFist,
     ShieldMagic,
     ShieldStaff,
+    TorchSword,
+    TorchFist,
+    TorchMagic,
+    TorchStaff,
     SwordFist,
     SwordMagic,
     SwordStaff,
+    FistSword,
+    FistMagic,
+    FistStaff,
     MagicSword,
     MagicFist,
     MagicStaff,
@@ -44,6 +48,8 @@ typedef struct
     AttackType powerAttackType;
     bool repeatPowerAttack;
     bool sheathePowerAttack;
+    bool isAltTypeEnable;
+    bool isUsingHold;
     uint32_t attackTypeModifier;
     AttackType altNormalAttackType;
     AttackType altPowerAttackType;
@@ -53,4 +59,9 @@ extern Styles currentStyle;
 extern std::unordered_map<Styles, CombatStyle> styleMap;
 
 const char *GetStyleName(Styles style);
+bool IsSheild();
+bool IsSpellLeft();
+bool IsSpellRight();
+bool IsStaffLeft();
+bool IsStaffRight();
 } // namespace Style
