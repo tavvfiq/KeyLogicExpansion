@@ -15,7 +15,7 @@ static uint64_t startTime = 0;
 static uint32_t preInputTime = 100;
 static uint32_t intervalTime = 50;
 
-static bool vanillaLeft = false;
+static bool vanillaRMB = false;
 
 typedef bool _doAction_t(RE::TESActionData *);
 REL::Relocation<_doAction_t> doAction{RELOCATION_ID(40551, 41557)};
@@ -159,7 +159,7 @@ Style::Styles DetectStyle()
         else if (rightWeapen == 0)
             return Style::Styles::TorchFist;
     }
-    return Style::Styles::Null;
+    return Style::Styles::Unknown;
 }
 bool CanDo()
 {
@@ -223,13 +223,13 @@ void NormalAttack(AttackType type)
     ActionList::Animation target;
     switch (type)
     {
-    case AttackType::Right:
+    case AttackType::RightHand:
         target = ActionList::NormalAttackRight;
         break;
-    case AttackType::Left:
+    case AttackType::LeftHand:
         target = ActionList::NormalAttackLeft;
         break;
-    case AttackType::Dual:
+    case AttackType::DualHand:
         target = ActionList::NormalAttackDual;
         break;
     }
@@ -305,13 +305,13 @@ void PowerAttack(AttackType type)
     ActionList::Animation target;
     switch (type)
     {
-    case AttackType::Right:
+    case AttackType::RightHand:
         target = ActionList::PowerAttackRight;
         break;
-    case AttackType::Left:
+    case AttackType::LeftHand:
         target = ActionList::PowerAttackLeft;
         break;
-    case AttackType::Dual:
+    case AttackType::DualHand:
         target = ActionList::PowerAttackDual;
         break;
     }
@@ -371,7 +371,7 @@ void Block()
         SKSE::GetTaskInterface()->AddTask([]() {
             if (VarUtils::player->NotifyAnimationGraph("blockStart"))
             {
-                vanillaLeft = false;
+                vanillaRMB = false;
                 VarUtils::player->AsActorState()->actorState2.wantBlocking = true;
             }
         });
@@ -390,8 +390,8 @@ void Recover()
             Style::styleMap[Style::currentStyle].isAltTypeEnable =
                 KeyUtils::GetKeyState(Style::styleMap[Style::currentStyle].attackTypeModifier);
         if ((PlayerStatus::IsBlocking() || PlayerStatus::IsBashing()) &&
-            ((!KeyUtils::GetKeyState(Config::block) && !vanillaLeft) ||
-             (vanillaLeft && !KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack)))))
+            ((!KeyUtils::GetKeyState(Config::block) && !vanillaRMB) ||
+             (vanillaRMB && !KeyUtils::GetKeyState(KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack)))))
             SKSE::GetTaskInterface()->AddTask([]() {
                 if (VarUtils::player->NotifyAnimationGraph("blockStop"))
                     VarUtils::player->AsActorState()->actorState2.wantBlocking = false;
@@ -643,8 +643,8 @@ bool AttackBlockHandler::CanProcess(InputEvent *a_event)
                 !Style::styleMap[Style::currentStyle].isAltTypeEnable;
         if (!PlayerStatus::IsSheathe())
             return false;
-        if (code == Config::normalAttack || code == Config::powerAttack || code == Config::block ||
-            code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
+        if (code == Config::normalAttack || code == Config::powerAttack || code == Config::otherAttack ||
+            code == Config::block || code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
             return true;
         if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack) ||
             code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack))
@@ -695,99 +695,150 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
             {
-                if (Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaLeft &&
-                    Style::styleMap[Style::currentStyle].altNormalAttackType != AttackType::VanillaRight)
+                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
                         NormalAttack(Style::styleMap[Style::currentStyle].altNormalAttackType);
                     else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
                         NormalAttack(Style::styleMap[Style::currentStyle].altNormalAttackType);
                 }
-                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaLeft)
+                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaLMB)
                 {
-                    vanillaLeft = true;
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->right;
                     return (this->*FnPB)(a_event, a_data);
                 }
-                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaRight)
+                else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaRMB)
                 {
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
                 }
             }
             else
             {
-                if (Style::styleMap[Style::currentStyle].normalAttackType != AttackType::VanillaLeft &&
-                    Style::styleMap[Style::currentStyle].normalAttackType != AttackType::VanillaRight)
+                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
                         NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
                     else if (Style::styleMap[Style::currentStyle].repeatNormalAttack)
                         NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
                 }
-                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaLeft)
+                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaLMB)
                 {
-                    vanillaLeft = true;
                     a_event->userEvent = VarUtils::userEvent->leftAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
-                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaRight)
+                else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaRMB)
                 {
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
                 }
             }
+            a_event->userEvent = "";
         }
         else if (code == Config::powerAttack)
         {
             if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
             {
-                if (Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaLeft &&
-                    Style::styleMap[Style::currentStyle].altPowerAttackType != AttackType::VanillaRight)
+                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].altPowerAttackType);
                     else if (Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].altPowerAttackType);
                 }
-                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaLeft)
+                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaLMB)
                 {
-                    vanillaLeft = true;
                     a_event->userEvent = VarUtils::userEvent->leftAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
-                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaRight)
+                else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaRMB)
                 {
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
                 }
+                else
+                    return false;
             }
             else
             {
-                if (Style::styleMap[Style::currentStyle].powerAttackType != AttackType::VanillaLeft &&
-                    Style::styleMap[Style::currentStyle].powerAttackType != AttackType::VanillaRight)
+                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
                     else if (Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
                 }
-                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaLeft)
+                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaLMB)
                 {
-                    vanillaLeft = true;
                     a_event->userEvent = VarUtils::userEvent->leftAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
-                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaRight)
+                else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaRMB)
                 {
                     a_event->userEvent = VarUtils::userEvent->rightAttack;
-                    return (this->*FnPB)(a_event, a_data);
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
                 }
             }
-        }
-        if (a_event->userEvent == VarUtils::userEvent->leftAttack ||
-            a_event->userEvent == VarUtils::userEvent->rightAttack)
             a_event->userEvent = "";
+        }
+        else if (code == Config::otherAttack)
+        {
+            if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
+            {
+                if (Style::styleMap[Style::currentStyle].altOtherAttackType == AttackType::VanillaLMB)
+                {
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].altOtherAttackType == AttackType::VanillaRMB)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
+                }
+                else
+                    return false;
+            }
+            else
+            {
+                if (Style::styleMap[Style::currentStyle].otherAttackType == AttackType::VanillaLMB)
+                {
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    return (this->*FnPB)(a_event, a_data);
+                }
+                else if (Style::styleMap[Style::currentStyle].otherAttackType == AttackType::VanillaRMB)
+                {
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    (this->*FnPB)(a_event, a_data);
+                    if (PlayerStatus::IsBlocking())
+                        vanillaRMB = true;
+                    return true;
+                }
+            }
+            a_event->userEvent = "";
+        }
         return (this->*FnPB)(a_event, a_data);
     }
     if (PlayerStatus::IsRiding() && Config::enableReverseHorseAttack)
@@ -977,6 +1028,8 @@ bool ReadyWeaponHandler::CanProcess(InputEvent *a_event)
             if (code == Config::normalAttack && Style::styleMap[Style::currentStyle].sheatheNormalAttack)
                 return true;
             else if (code == Config::powerAttack && Style::styleMap[Style::currentStyle].sheathePowerAttack)
+                return true;
+            else if (code == Config::otherAttack && Style::styleMap[Style::currentStyle].sheatheOtherAttack)
                 return true;
         }
     }

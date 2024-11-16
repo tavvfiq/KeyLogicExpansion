@@ -22,6 +22,7 @@ uint32_t &ChangeToHigh = std::ref(Stances::ChangeToHigh);
 // Vanilla Input
 uint32_t normalAttack;
 uint32_t powerAttack;
+uint32_t otherAttack;
 uint32_t block;
 
 uint32_t altTweenMenu;
@@ -80,6 +81,7 @@ void setVar()
     // Vanilla Input
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack));
     powerAttack = ini.GetLongValue("Vanilla", NameToStr(powerAttack));
+    otherAttack = ini.GetLongValue("Vanilla", NameToStr(otherAttack));
     block = ini.GetLongValue("Vanilla", NameToStr(block));
 
     altTweenMenu = ini.GetLongValue("Vanilla", NameToStr(altTweenMenu));
@@ -98,22 +100,29 @@ void setVar()
     zoomModifier = ini.GetLongValue("Expand", NameToStr(zoomModifier));
 
     // Combat Style
-    for (int i = Style::Styles::TwoHand; i <= Style::Styles::StaffMagic; i++)
+    for (int i = Style::Styles::Unknown; i <= Style::Styles::StaffMagic; i++)
     {
         Style::styleMap.insert(std::make_pair(
             (Style::Styles)i,
             Style::CombatStyle{
+                // Normal
                 (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType"),
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack"),
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack"),
-                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType"),
+                // Power
+                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType"),
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack"),
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack"),
+                // Other
+                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "OtherAttackType"),
+                ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheOtherAttack"),
+                // Alt
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "IsAltTypeEnable"),
                 ini.GetBoolValue(Style::GetStyleName((Style::Styles)i), "IsUsingHold"),
                 (uint32_t)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "AttackTypeModifier"),
                 (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "AltNormalAttackType"),
-                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "AltPowerAttackType")}));
+                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "AltPowerAttackType"),
+                (Style::AttackType)ini.GetLongValue(Style::GetStyleName((Style::Styles)i), "AltOtherAttackType")}));
     }
 
     // Modifier Input
@@ -172,6 +181,7 @@ void createInI()
     // Vanilla Input
     ini.SetLongValue("Vanilla", NameToStr(normalAttack), KeyUtils::Mouse::MouseButtonLeft);
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), KeyUtils::Mouse::MouseButtonRight);
+    ini.SetLongValue("Vanilla", NameToStr(otherAttack), 0);
     ini.SetLongValue("Vanilla", NameToStr(block), KeyUtils::KeyBoard::Tab);
 
     ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), KeyUtils::KeyBoard::G);
@@ -190,19 +200,26 @@ void createInI()
     ini.SetLongValue("Expand", NameToStr(zoomModifier), 0);
 
     // Combat Style
-    for (int i = Style::Styles::Null; i <= Style::Styles::StaffMagic; i++)
+    for (int i = Style::Styles::Unknown; i <= Style::Styles::StaffMagic; i++)
     {
-        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::Right);
+        // Normal
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::RightHand);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack", true);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack", false);
-        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::Right);
+        // Power
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::LeftHand);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack", true);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack", true);
+        // Other
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "OtherAttackType", Style::AttackType::None);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheOtherAttack", false);
+        // Alt
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "IsAltTypeEnable", false);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "IsUsingHold", true);
         ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AttackTypeModifier", KeyUtils::KeyBoard::V);
-        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltNormalAttackType", Style::AttackType::VanillaRight);
-        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltPowerAttackType", Style::AttackType::VanillaLeft);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltNormalAttackType", Style::AttackType::VanillaLMB);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltPowerAttackType", Style::AttackType::VanillaRMB);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltOtherAttackType", Style::AttackType::None);
 
         switch ((Style::Styles)i)
         {
@@ -220,7 +237,7 @@ void createInI()
         case Style::Styles::StaffSword:
         case Style::Styles::StaffFist:
             break;
-        case Style::Styles::Null:
+        case Style::Styles::Unknown:
         case Style::Styles::DualMagic:
         case Style::Styles::DualStaff:
         case Style::Styles::ShieldMagic:
@@ -231,15 +248,14 @@ void createInI()
         case Style::Styles::StaffMagic:
         case Style::Styles::FistMagic:
         case Style::Styles::FistStaff:
-            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType",
-                             Style::AttackType::VanillaRight);
-            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::VanillaLeft);
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::VanillaLMB);
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::VanillaRMB);
             break;
         case Style::Styles::SwordFist:
         case Style::Styles::SwordMagic:
         case Style::Styles::SwordStaff:
-            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::Left);
-            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::Left);
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::LeftHand);
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::LeftHand);
             break;
         }
     }
@@ -323,6 +339,7 @@ void saveInI()
     // Vanilla Input
     ini.SetLongValue("Vanilla", NameToStr(normalAttack), normalAttack);
     ini.SetLongValue("Vanilla", NameToStr(powerAttack), powerAttack);
+    ini.SetLongValue("Vanilla", NameToStr(otherAttack), otherAttack);
     ini.SetLongValue("Vanilla", NameToStr(block), block);
 
     ini.SetLongValue("Vanilla", NameToStr(altTweenMenu), altTweenMenu);
@@ -341,20 +358,28 @@ void saveInI()
     ini.SetLongValue("Expand", NameToStr(zoomModifier), zoomModifier);
 
     // Combat Style
-    for (int i = Style::Styles::TwoHand; i <= Style::Styles::StaffMagic; i++)
+    for (int i = Style::Styles::Unknown; i <= Style::Styles::StaffMagic; i++)
     {
+        // Normal
         ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType",
                          Style::styleMap[(Style::Styles)i].normalAttackType);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack",
                          Style::styleMap[(Style::Styles)i].repeatNormalAttack);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack",
                          Style::styleMap[(Style::Styles)i].sheatheNormalAttack);
+        // Power
         ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType",
                          Style::styleMap[(Style::Styles)i].powerAttackType);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack",
                          Style::styleMap[(Style::Styles)i].repeatPowerAttack);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack",
                          Style::styleMap[(Style::Styles)i].sheathePowerAttack);
+        // Other
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "OtherAttackType",
+                         Style::styleMap[(Style::Styles)i].otherAttackType);
+        ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheOtherAttack",
+                         Style::styleMap[(Style::Styles)i].sheatheOtherAttack);
+        // Alt
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "IsAltTypeEnable",
                          Style::styleMap[(Style::Styles)i].isAltTypeEnable);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "IsUsingHold",
@@ -365,6 +390,8 @@ void saveInI()
                          Style::styleMap[(Style::Styles)i].altNormalAttackType);
         ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltPowerAttackType",
                          Style::styleMap[(Style::Styles)i].altPowerAttackType);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "AltOtherAttackType",
+                         Style::styleMap[(Style::Styles)i].altOtherAttackType);
     }
 
     // Modifier Input

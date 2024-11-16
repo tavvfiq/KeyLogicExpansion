@@ -2,7 +2,7 @@
 
 namespace Style
 {
-Styles currentStyle = Styles::Null;
+Styles currentStyle = Styles::Unknown;
 std::unordered_map<Styles, CombatStyle> styleMap;
 
 const char *GetStyleName(Styles style)
@@ -62,7 +62,7 @@ const char *GetStyleName(Styles style)
     case Styles::StaffMagic:
         return "StaffMagic";
     default:
-        return "Null";
+        return "Unknown";
     }
 }
 bool IsSheild()

@@ -164,8 +164,8 @@ void SelectButton(const char *name, uint32_t &code, const char *description = nu
         ImGui::SetTooltip(description);
 }
 
-static std::vector<NameMap> attackTypeName = {
-    {0, "Right"}, {1, "Left"}, {2, "Dual"}, {3, "VanillaLeft"}, {4, "VanillaRight"}};
+static std::vector<NameMap> attackTypeName = {{0, "None"},     {1, "RightHand"},  {2, "LeftHand"},
+                                              {3, "DualHand"}, {4, "VanillaLMB"}, {5, "VanillaRMB"}};
 void SelectAttackType(const char *name, Style::AttackType &type, const char *description = nullptr)
 {
     auto res =
@@ -232,6 +232,8 @@ void KeyBindSettings()
     {
         SelectButton("NormalAttack", Config::normalAttack, "NormalAttack Key used in KLE system");
         SelectButton("PowerAttack", Config::powerAttack, "PowerAttack Key used in KLE system");
+        SelectButton("OtherAttack", Config::otherAttack,
+                     "OtherAttack Key used in KLE system, can only use VanillaLMB and VanillaRMB type");
         SelectButton("Block", Config::block, "separete block key from Attack");
         ImGui::Spacing();
         SelectButton("AltTweenMenu", Config::altTweenMenu, "instead Vanilla Key");
@@ -243,7 +245,7 @@ void KeyBindSettings()
     {
         ImGui::Text("Current Style: %s", Style::GetStyleName(Style::currentStyle));
         SelectAttackType("NormalAttackType", Style::styleMap[Style::currentStyle].normalAttackType,
-                         "For BFCO/MCO, Right means Dual, you can try other types, maybe crash or maybe funny");
+                         "For BFCO/MCO, Right means Dual, you can try any types, maybe crash or maybe funny");
         SwitchButton("RepeatNormalAttack", Style::styleMap[Style::currentStyle].repeatNormalAttack,
                      "Whether repeat attack when hold key");
         SwitchButton("SheatheNormalAttack", Style::styleMap[Style::currentStyle].sheatheNormalAttack,
@@ -256,6 +258,11 @@ void KeyBindSettings()
         SwitchButton("SheathePowerAttack", Style::styleMap[Style::currentStyle].sheathePowerAttack,
                      "Whether KLE power attack can sheathe");
         ImGui::Spacing();
+        SelectAttackType("OtherAttackType", Style::styleMap[Style::currentStyle].otherAttackType,
+                         "only VanillaLMB and VanillaRMB available");
+        SwitchButton("SheatheOtherAttack", Style::styleMap[Style::currentStyle].sheatheOtherAttack,
+                     "Whether KLE other attack can sheathe");
+        ImGui::Spacing();
         SwitchButton("IsAltTypeEnable", Style::styleMap[Style::currentStyle].isAltTypeEnable,
                      "Whether AltTypeModifier works now.");
         SwitchButton("IsUsingHold", Style::styleMap[Style::currentStyle].isUsingHold,
@@ -263,9 +270,11 @@ void KeyBindSettings()
         SelectButton("VanillaModifier", Style::styleMap[Style::currentStyle].attackTypeModifier,
                      "If you press this key, KLE will temporarily use another attack type.");
         SelectAttackType("AltNormalAttackType", Style::styleMap[Style::currentStyle].altNormalAttackType,
-                         "Vanilla left and right means you can cast spell or using staff, like Vanilla logic");
+                         "Vanilla LMB and RMB means you can cast spell or using staff, like Vanilla logic");
         SelectAttackType("AltPowerAttackType", Style::styleMap[Style::currentStyle].altPowerAttackType,
-                         "Vanilla left and right means you can cast spell or using staff, like Vanilla logic");
+                         "Vanilla LMB and RMB means you can cast spell or using staff, like Vanilla logic");
+        SelectAttackType("AltPowerAttackType", Style::styleMap[Style::currentStyle].altOtherAttackType,
+                         "Vanilla LMB and RMB means you can cast spell or using staff, like Vanilla logic");
         ImGui::TreePop();
     }
 

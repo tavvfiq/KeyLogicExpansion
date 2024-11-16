@@ -4,15 +4,16 @@ namespace Style
 {
 enum AttackType : std::uint8_t
 {
-    Right = 0,
-    Left,
-    Dual,
-    VanillaLeft,
-    VanillaRight
+    None = 0,
+    RightHand,
+    LeftHand,
+    DualHand,
+    VanillaLMB,
+    VanillaRMB
 };
 enum Styles : std::uint8_t
 {
-    Null = 0,
+    Unknown = 0,
     TwoHand,
     Bow,
     DualSword,
@@ -42,17 +43,24 @@ enum Styles : std::uint8_t
 };
 typedef struct
 {
+    // Normal
     AttackType normalAttackType;
     bool repeatNormalAttack;
     bool sheatheNormalAttack;
+    // Power
     AttackType powerAttackType;
     bool repeatPowerAttack;
     bool sheathePowerAttack;
+    // Other
+    AttackType otherAttackType;
+    bool sheatheOtherAttack;
+    // Alt
     bool isAltTypeEnable;
     bool isUsingHold;
     uint32_t attackTypeModifier;
     AttackType altNormalAttackType;
     AttackType altPowerAttackType;
+    AttackType altOtherAttackType;
 } CombatStyle;
 
 extern Styles currentStyle;
