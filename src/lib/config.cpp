@@ -68,17 +68,14 @@ void setVar()
     enableSheatheAttack = ini.GetLongValue("Features", NameToStr(enableSheatheAttack));
 
     // Stances
-    if (enableStances)
-    {
-        Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Low"))));
-        Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Mid"))));
-        Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "High"))));
-        Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Sheathe"))));
-        StancesModifier = ini.GetLongValue("Stances", "StancesModifier");
-        ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow");
-        ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid");
-        ChangeToHigh = ini.GetLongValue("Stances", "ChangeToHigh");
-    }
+    Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Low"))));
+    Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Mid"))));
+    Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "High"))));
+    Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Sheathe"))));
+    StancesModifier = ini.GetLongValue("Stances", "StancesModifier");
+    ChangeToLow = ini.GetLongValue("Stances", "ChangeToLow");
+    ChangeToMid = ini.GetLongValue("Stances", "ChangeToMid");
+    ChangeToHigh = ini.GetLongValue("Stances", "ChangeToHigh");
 
     // Vanilla Input
     normalAttack = ini.GetLongValue("Vanilla", NameToStr(normalAttack));
@@ -130,18 +127,17 @@ void setVar()
             trigger = altTweenMenu;
         else if (item.pItem == VarUtils::userEvent->togglePOV && altTogglePOV)
             trigger = altTogglePOV;
-        logger::trace("{} {} {}", item.pItem, trigger, modifier);
         if (trigger)
-            needModifier.insert(std::make_pair(trigger, modifier));
+            needModifier[trigger] = modifier;
     }
     if (altZoomIn)
-        needModifier.insert(std::make_pair(altZoomIn, zoomModifier));
+        needModifier[altZoomIn] = zoomModifier;
     else
-        needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelUp, zoomModifier));
+        needModifier[KeyUtils::Mouse::MouseWheelUp] = zoomModifier;
     if (altZoomOut)
-        needModifier.insert(std::make_pair(altZoomOut, zoomModifier));
+        needModifier[altZoomOut] = zoomModifier;
     else
-        needModifier.insert(std::make_pair(KeyUtils::Mouse::MouseWheelDown, zoomModifier));
+        needModifier[KeyUtils::Mouse::MouseWheelDown] = zoomModifier;
 
     // Custom Input
     if (enableCustomInput)
@@ -430,5 +426,8 @@ void saveInI()
     rc = ini.SaveFile(ini_path.c_str());
     if (rc < 0)
         return SKSE::stl::report_and_fail("Cannot save to ini.");
+
+    needModifier.clear();
+    setVar();
 }
 } // namespace Config

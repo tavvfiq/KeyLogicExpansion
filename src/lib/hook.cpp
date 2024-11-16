@@ -170,8 +170,6 @@ bool CanDo()
          ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking)) !=
             ((uint32_t)UserEvents::USER_EVENT_FLAG::kMovement & (uint32_t)UserEvents::USER_EVENT_FLAG::kLooking))
         return false;
-    if (Style::currentStyle == Style::Styles::Null || Style::currentStyle == Style::Styles::Bow)
-        return false;
     return true;
 }
 bool CanBash()
@@ -973,7 +971,7 @@ bool ReadyWeaponHandler::CanProcess(InputEvent *a_event)
         auto evn = a_event->AsButtonEvent();
         auto code = KeyUtils::GetEventKeyMap(evn);
         if (code == KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->readyWeapon))
-            return true;
+            return (this->*FnCP)(a_event);
         if (!PlayerStatus::IsSheathe())
         {
             if (code == Config::normalAttack && Style::styleMap[Style::currentStyle].sheatheNormalAttack)
