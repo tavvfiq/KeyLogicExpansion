@@ -15,7 +15,7 @@ bool MCO = false;
 
 bool ELDEN = false;
 bool CanUseWarAsh = false;
-std::vector<TESForm *> warAshList;
+std::vector<RE::TESForm *> warAshList;
 
 bool normalAttackWin = false;
 bool powerAttackWin = false;
@@ -36,9 +36,9 @@ bool CanRecovery()
 
     return true;
 }
-bool IsWarAsh(TESForm *form)
+bool IsWarAsh(RE::TESForm *form)
 {
-    auto res = std::find_if(warAshList.begin(), warAshList.end(), [form](TESForm *i) { return form == i; });
+    auto res = std::find_if(warAshList.begin(), warAshList.end(), [form](RE::TESForm *i) { return form == i; });
     if (res == warAshList.end())
         return false;
     return true;

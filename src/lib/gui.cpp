@@ -1,4 +1,6 @@
 #include "gui.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace GUI
 {
@@ -9,9 +11,13 @@ typedef struct
 } NameMap;
 static std::vector<NameMap> KeyNameMap;
 
+static ID3D11Device *device;
+
 static bool showGui = false;
 bool showSettings;
 static bool showCustom;
+static bool showStatus;
+static bool showStances;
 
 static uint64_t tmpMouse;
 
@@ -186,6 +192,58 @@ void SelectAttackType(const char *name, Style::AttackType &type, const char *des
         ImGui::SetTooltip(description);
 }
 
+typedef struct
+{
+    ID3D11ShaderResourceView *srv;
+    float width;
+    float height;
+} Image;
+Image GetImage(std::string image)
+{
+    int width, height, channels;
+    stbi_uc *data = stbi_load(image.c_str(), &width, &height, &channels, 0);
+    ID3D11ShaderResourceView *pSRV = nullptr;
+    if (data)
+    {
+        D3D11_TEXTURE2D_DESC desc;
+        ZeroMemory(&desc, sizeof(desc));
+        desc.Width = width;
+        desc.Height = height;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        desc.CPUAccessFlags = 0;
+        desc.MiscFlags = 0;
+
+        D3D11_SUBRESOURCE_DATA subResource;
+        subResource.pSysMem = data;
+        subResource.SysMemPitch = width * channels;
+        subResource.SysMemSlicePitch = 0;
+
+        ID3D11Texture2D *pTexture = nullptr;
+        HRESULT hr = device->CreateTexture2D(&desc, &subResource, &pTexture);
+        if (SUCCEEDED(hr))
+        {
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+            ZeroMemory(&srvDesc, sizeof(srvDesc));
+            srvDesc.Format = desc.Format;
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Texture2D.MipLevels = desc.MipLevels;
+            srvDesc.Texture2D.MostDetailedMip = 0;
+            hr = device->CreateShaderResourceView(pTexture, &srvDesc, &pSRV);
+            pTexture->Release();
+        }
+        stbi_image_free(data);
+    }
+    if (pSRV)
+        return Image{pSRV, (float)width, (float)height};
+    logger::error("Cannot load image:{}", image);
+    return Image{nullptr, 0, 0};
+}
+
 void KeyBindSettings()
 {
     ImGui::Begin("KeyBind Settings", &showSettings, ImGuiWindowFlags_NoCollapse);
@@ -197,6 +255,8 @@ void KeyBindSettings()
     }
 
     SwitchButton("ShowCustomSettings", showCustom);
+    SwitchButton("ShowStatusSettings", showStatus, "Whether Show PlayerStatus, Now only has Stances");
+    ImGui::Spacing();
     if (ImGui::TreeNode("Features"))
     {
         SwitchButton("EnableCustomInput", Custom::enableCustomInput,
@@ -359,6 +419,33 @@ void KeyBindSettings()
     ImGui::End();
 }
 
+static std::vector<Image> StancesImage;
+static std::string StancesImage_dir = "Data/SKSE/Plugins/KeyLogicExpansion/Stances/";
+void ShowStances()
+{
+    auto image = StancesImage[Stances::currentStance];
+    ImGui::Image(image.srv, ImVec2(image.width, image.height));
+}
+void ShowStatus()
+{
+    float alpha = 0;
+    ImGuiWindowFlags flag = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground;
+    if (showSettings)
+    {
+        alpha = 0.3f;
+        flag = ImGuiWindowFlags_NoCollapse;
+    }
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.WindowBorderSize = 0.0f;
+    ImGui::SetNextWindowBgAlpha(alpha);
+    ImGui::Begin("Status", &showStatus, flag);
+    if (showStances)
+        ShowStances();
+    ImGui::End();
+    style.WindowBorderSize = 1.0f;
+}
+
 class Win32Hook
 {
   public:
@@ -404,7 +491,7 @@ class DX11Hook
 
         const auto renderManager = RE::BSGraphics::Renderer::GetSingleton();
 
-        auto device = reinterpret_cast<ID3D11Device *>(renderManager->data.forwarder);
+        device = reinterpret_cast<ID3D11Device *>(renderManager->data.forwarder);
         auto context = reinterpret_cast<ID3D11DeviceContext *>(renderManager->data.context);
         auto swapChain = reinterpret_cast<IDXGISwapChain *>(renderManager->data.renderWindows[0].swapChain);
 
@@ -439,6 +526,8 @@ class DX11Hook
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
                 KeyBindSettings();
             }
+            if (showStatus)
+                ShowStatus();
             ImGui::Render();
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
         }
@@ -500,8 +589,15 @@ void init()
 }
 void showGUI()
 {
+    StancesImage.push_back(GetImage(StancesImage_dir + "Stances-Null.png"));
+    StancesImage.push_back(GetImage(StancesImage_dir + "Stances-Low.png"));
+    StancesImage.push_back(GetImage(StancesImage_dir + "Stances-Mid.png"));
+    StancesImage.push_back(GetImage(StancesImage_dir + "Stances-High.png"));
+    StancesImage.push_back(GetImage(StancesImage_dir + "Stances-Sheathe.png"));
     showGui = true;
     showSettings = false;
     showCustom = false;
+    showStatus = true;
+    showStances = Stances::enableStances;
 }
 } // namespace GUI

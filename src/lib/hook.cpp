@@ -706,12 +706,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->right;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;
@@ -720,9 +720,9 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
             else
             {
-                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
+                if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].normalAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].normalAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatNormalAttack)
                         NormalAttack(Style::styleMap[Style::currentStyle].normalAttackType);
@@ -731,12 +731,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].normalAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;
@@ -749,9 +749,9 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
         {
             if (Style::styleMap[Style::currentStyle].isAltTypeEnable)
             {
-                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
+                if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].altPowerAttackType);
@@ -760,12 +760,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].altPowerAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;
@@ -776,9 +776,9 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             }
             else
             {
-                if (Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::RightHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::LeftHand ||
-                    Style::styleMap[Style::currentStyle].altNormalAttackType == AttackType::DualHand)
+                if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::RightHand ||
+                    Style::styleMap[Style::currentStyle].powerAttackType == AttackType::LeftHand ||
+                    Style::styleMap[Style::currentStyle].powerAttackType == AttackType::DualHand)
                 {
                     if (a_event->IsDown() && !Style::styleMap[Style::currentStyle].repeatPowerAttack)
                         PowerAttack(Style::styleMap[Style::currentStyle].powerAttackType);
@@ -787,12 +787,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
                 }
                 else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].powerAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;
@@ -807,12 +807,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             {
                 if (Style::styleMap[Style::currentStyle].altOtherAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].altOtherAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;
@@ -825,12 +825,12 @@ bool AttackBlockHandler::ProcessButton(ButtonEvent *a_event, PlayerControlsData 
             {
                 if (Style::styleMap[Style::currentStyle].otherAttackType == AttackType::VanillaLMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->leftAttack;
+                    a_event->userEvent = VarUtils::userEvent->rightAttack;
                     return (this->*FnPB)(a_event, a_data);
                 }
                 else if (Style::styleMap[Style::currentStyle].otherAttackType == AttackType::VanillaRMB)
                 {
-                    a_event->userEvent = VarUtils::userEvent->rightAttack;
+                    a_event->userEvent = VarUtils::userEvent->leftAttack;
                     (this->*FnPB)(a_event, a_data);
                     if (PlayerStatus::IsBlocking())
                         vanillaRMB = true;

@@ -9,18 +9,17 @@ extern uint32_t ChangeToLow;
 extern uint32_t ChangeToMid;
 extern uint32_t ChangeToHigh;
 
-extern std::vector<RE::TESForm *> StancesList;
-
 enum Stances
 {
-    Low = 0,
+    Null = 0,
+    Low,
     Mid,
     High,
     Sheathe
 };
+extern std::vector<RE::TESForm *> StancesList;
+extern Stances currentStance;
 
 void ChangeStanceTo(Stances stance);
-
 void init();
-
 } // namespace Stances

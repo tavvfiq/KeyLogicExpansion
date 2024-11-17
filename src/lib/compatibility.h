@@ -24,7 +24,7 @@ bool CanNormalAttack();
 bool CanPowerAttack();
 bool CanRecovery();
 
-bool IsWarAsh(TESForm *form);
+bool IsWarAsh(RE::TESForm *form);
 
 void init();
 } // namespace Compatibility

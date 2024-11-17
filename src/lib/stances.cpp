@@ -8,32 +8,33 @@ uint32_t ChangeToLow;
 uint32_t ChangeToMid;
 uint32_t ChangeToHigh;
 
-static RE::BGSPerk *currentStance;
 std::vector<RE::TESForm *> StancesList;
+Stances currentStance = Stances::Null;
 
 void ChangeStanceTo(Stances stance)
 {
     auto target = (RE::BGSPerk *)StancesList[stance];
-    if (currentStance)
-        VarUtils::player->RemoveTemporaryPerk(currentStance);
+    if (StancesList[currentStance])
+        VarUtils::player->RemoveTemporaryPerk((RE::BGSPerk *)StancesList[currentStance]);
     if (target)
         VarUtils::player->ApplyTemporaryPerk(target);
-    currentStance = target;
+    currentStance = stance;
 }
 
 void init()
 {
     bool inited = false;
-    for (auto i : StancesList)
-        if (VarUtils::player->HasPerk((RE::BGSPerk *)i))
+    for (int i = 1; i < StancesList.size(); i++)
+        if (VarUtils::player->HasPerk((RE::BGSPerk *)i) || StancesList[i] == nullptr)
         {
             inited = true;
-            currentStance = (RE::BGSPerk *)i;
+            currentStance = (Stances)i;
+            break;
         }
     if (!inited)
     {
         RE::BGSPerk *target = (RE::BGSPerk *)StancesList[Stances::Mid];
-        currentStance = target;
+        currentStance = Stances::Mid;
         if (target)
             VarUtils::player->ApplyTemporaryPerk(target);
     }

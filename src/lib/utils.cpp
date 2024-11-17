@@ -5,10 +5,10 @@ namespace VarUtils
 const SKSE::SerializationInterface *cosave;
 RE::Main *main = nullptr;
 RE::PlayerCharacter *player = nullptr;
-PlayerControls *pCtrl = nullptr;
-ControlMap *ctrlMap = nullptr;
-UserEvents *userEvent = nullptr;
-UI *ui = nullptr;
+RE::PlayerControls *pCtrl = nullptr;
+RE::ControlMap *ctrlMap = nullptr;
+RE::UserEvents *userEvent = nullptr;
+RE::UI *ui = nullptr;
 
 void init()
 {
@@ -17,12 +17,12 @@ void init()
     cosave->SetUniqueID(_byteswap_ulong('AKLE'));
     logger::trace("Cosave serialization initialized.");
 
-    main = Main::GetSingleton();
+    main = RE::Main::GetSingleton();
     player = RE::PlayerCharacter::GetSingleton();
-    pCtrl = PlayerControls::GetSingleton();
-    ctrlMap = ControlMap::GetSingleton();
-    userEvent = UserEvents::GetSingleton();
-    ui = UI::GetSingleton();
+    pCtrl = RE::PlayerControls::GetSingleton();
+    ctrlMap = RE::ControlMap::GetSingleton();
+    userEvent = RE::UserEvents::GetSingleton();
+    ui = RE::UI::GetSingleton();
 }
 } // namespace VarUtils
 
@@ -40,7 +40,7 @@ uint32_t GetWinKeyMap(uint32_t code)
         return 0;
     // KeyBoard
     case KeyBoard::ESC:
-        return SKSE::WinAPI::VK_ESCAPE;
+        return VK_ESCAPE;
     case KeyBoard::MAIN1:
         return SKSE::WinAPI::VK_1;
     case KeyBoard::MAIN2:
@@ -62,13 +62,13 @@ uint32_t GetWinKeyMap(uint32_t code)
     case KeyBoard::MAIN0:
         return SKSE::WinAPI::VK_0;
     case KeyBoard::Minus:
-        return SKSE::WinAPI::VK_OEM_MINUS;
+        return VK_OEM_MINUS;
     case KeyBoard::Equals:
-        return SKSE::WinAPI::VK_OEM_PLUS;
+        return VK_OEM_PLUS;
     case KeyBoard::Backspace:
-        return SKSE::WinAPI::VK_BACK;
+        return VK_BACK;
     case KeyBoard::Tab:
-        return SKSE::WinAPI::VK_TAB;
+        return VK_TAB;
     case KeyBoard::Q:
         return SKSE::WinAPI::VK_Q;
     case KeyBoard::W:
@@ -90,13 +90,13 @@ uint32_t GetWinKeyMap(uint32_t code)
     case KeyBoard::P:
         return SKSE::WinAPI::VK_P;
     case KeyBoard::LeftBracket:
-        return SKSE::WinAPI::VK_OEM_4;
+        return VK_OEM_4;
     case KeyBoard::RightBracket:
-        return SKSE::WinAPI::VK_OEM_6;
+        return VK_OEM_6;
     case KeyBoard::Enter:
-        return SKSE::WinAPI::VK_RETURN;
+        return VK_RETURN;
     case KeyBoard::LeftCtrl:
-        return SKSE::WinAPI::VK_LCONTROL;
+        return VK_LCONTROL;
     case KeyBoard::A:
         return SKSE::WinAPI::VK_A;
     case KeyBoard::S:
@@ -116,15 +116,15 @@ uint32_t GetWinKeyMap(uint32_t code)
     case KeyBoard::L:
         return SKSE::WinAPI::VK_L;
     case KeyBoard::Semicolon:
-        return SKSE::WinAPI::VK_OEM_1;
+        return VK_OEM_1;
     case KeyBoard::Apostrophe:
-        return SKSE::WinAPI::VK_OEM_7;
+        return VK_OEM_7;
     case KeyBoard::Console:
-        return SKSE::WinAPI::VK_OEM_3;
+        return VK_OEM_3;
     case KeyBoard::LeftShift:
-        return SKSE::WinAPI::VK_LSHIFT;
+        return VK_LSHIFT;
     case KeyBoard::BackSlash:
-        return SKSE::WinAPI::VK_OEM_102;
+        return VK_OEM_102;
     case KeyBoard::Z:
         return SKSE::WinAPI::VK_Z;
     case KeyBoard::X:
@@ -140,119 +140,119 @@ uint32_t GetWinKeyMap(uint32_t code)
     case KeyBoard::M:
         return SKSE::WinAPI::VK_M;
     case KeyBoard::Comma:
-        return SKSE::WinAPI::VK_OEM_COMMA;
+        return VK_OEM_COMMA;
     case KeyBoard::Period:
-        return SKSE::WinAPI::VK_OEM_PERIOD;
+        return VK_OEM_PERIOD;
     case KeyBoard::Slash:
-        return SKSE::WinAPI::VK_OEM_2;
+        return VK_OEM_2;
     case KeyBoard::RightShift:
-        return SKSE::WinAPI::VK_RSHIFT;
+        return VK_RSHIFT;
     case KeyBoard::NUM_star:
-        return SKSE::WinAPI::VK_MULTIPLY;
+        return VK_MULTIPLY;
     case KeyBoard::LeftAlt:
-        return SKSE::WinAPI::VK_LMENU;
+        return VK_LMENU;
     case KeyBoard::Space:
-        return SKSE::WinAPI::VK_SPACE;
+        return VK_SPACE;
     case KeyBoard::CapsLock:
-        return SKSE::WinAPI::VK_CAPITAL;
+        return VK_CAPITAL;
     case KeyBoard::F1:
-        return SKSE::WinAPI::VK_F1;
+        return VK_F1;
     case KeyBoard::F2:
-        return SKSE::WinAPI::VK_F2;
+        return VK_F2;
     case KeyBoard::F3:
-        return SKSE::WinAPI::VK_F3;
+        return VK_F3;
     case KeyBoard::F4:
-        return SKSE::WinAPI::VK_F4;
+        return VK_F4;
     case KeyBoard::F5:
-        return SKSE::WinAPI::VK_F5;
+        return VK_F5;
     case KeyBoard::F6:
-        return SKSE::WinAPI::VK_F6;
+        return VK_F6;
     case KeyBoard::F7:
-        return SKSE::WinAPI::VK_F7;
+        return VK_F7;
     case KeyBoard::F8:
-        return SKSE::WinAPI::VK_F8;
+        return VK_F8;
     case KeyBoard::F9:
-        return SKSE::WinAPI::VK_F9;
+        return VK_F9;
     case KeyBoard::F10:
-        return SKSE::WinAPI::VK_F10;
+        return VK_F10;
     case KeyBoard::NumLock:
-        return SKSE::WinAPI::VK_NUMLOCK;
+        return VK_NUMLOCK;
     case KeyBoard::SrcollLock:
-        return SKSE::WinAPI::VK_SCROLL;
+        return VK_SCROLL;
     case KeyBoard::NUM7:
-        return SKSE::WinAPI::VK_NUMPAD7;
+        return VK_NUMPAD7;
     case KeyBoard::NUM8:
-        return SKSE::WinAPI::VK_NUMPAD8;
+        return VK_NUMPAD8;
     case KeyBoard::NUM9:
-        return SKSE::WinAPI::VK_NUMPAD9;
+        return VK_NUMPAD9;
     case KeyBoard::NUM_Minus:
-        return SKSE::WinAPI::VK_SUBTRACT;
+        return VK_SUBTRACT;
     case KeyBoard::NUM4:
-        return SKSE::WinAPI::VK_NUMPAD4;
+        return VK_NUMPAD4;
     case KeyBoard::NUM5:
-        return SKSE::WinAPI::VK_NUMPAD5;
+        return VK_NUMPAD5;
     case KeyBoard::NUM6:
-        return SKSE::WinAPI::VK_NUMPAD6;
+        return VK_NUMPAD6;
     case KeyBoard::NUM_Plus:
-        return SKSE::WinAPI::VK_ADD;
+        return VK_ADD;
     case KeyBoard::NUM1:
-        return SKSE::WinAPI::VK_NUMPAD1;
+        return VK_NUMPAD1;
     case KeyBoard::NUM2:
-        return SKSE::WinAPI::VK_NUMPAD2;
+        return VK_NUMPAD2;
     case KeyBoard::NUM3:
-        return SKSE::WinAPI::VK_NUMPAD3;
+        return VK_NUMPAD3;
     case KeyBoard::NUM0:
-        return SKSE::WinAPI::VK_NUMPAD0;
+        return VK_NUMPAD0;
     case KeyBoard::NUM_Dot:
-        return SKSE::WinAPI::VK_DECIMAL;
+        return VK_DECIMAL;
     case KeyBoard::F11:
-        return SKSE::WinAPI::VK_F11;
+        return VK_F11;
     case KeyBoard::F12:
-        return SKSE::WinAPI::VK_F12;
+        return VK_F12;
     case KeyBoard::NUM_Enter:
-        return SKSE::WinAPI::VK_RETURN;
+        return VK_RETURN;
     case KeyBoard::RightCtrl:
-        return SKSE::WinAPI::VK_RCONTROL;
+        return VK_RCONTROL;
     case KeyBoard::NUM_Slash:
-        return SKSE::WinAPI::VK_DIVIDE;
+        return VK_DIVIDE;
     case KeyBoard::PrtSc:
-        return SKSE::WinAPI::VK_SNAPSHOT;
+        return VK_SNAPSHOT;
     case KeyBoard::RightAlt:
-        return SKSE::WinAPI::VK_RMENU;
+        return VK_RMENU;
     case KeyBoard::Pause:
-        return SKSE::WinAPI::VK_PAUSE;
+        return VK_PAUSE;
     case KeyBoard::Home:
-        return SKSE::WinAPI::VK_HOME;
+        return VK_HOME;
     case KeyBoard::ArrowUp:
-        return SKSE::WinAPI::VK_UP;
+        return VK_UP;
     case KeyBoard::PageUp:
-        return SKSE::WinAPI::VK_PRIOR;
+        return VK_PRIOR;
     case KeyBoard::ArrowLeft:
-        return SKSE::WinAPI::VK_LEFT;
+        return VK_LEFT;
     case KeyBoard::ArrowRight:
-        return SKSE::WinAPI::VK_RIGHT;
+        return VK_RIGHT;
     case KeyBoard::End:
-        return SKSE::WinAPI::VK_END;
+        return VK_END;
     case KeyBoard::ArrowDown:
-        return SKSE::WinAPI::VK_DOWN;
+        return VK_DOWN;
     case KeyBoard::PageDown:
-        return SKSE::WinAPI::VK_NEXT;
+        return VK_NEXT;
     case KeyBoard::Insert:
-        return SKSE::WinAPI::VK_INSERT;
+        return VK_INSERT;
     case KeyBoard::Delete:
-        return SKSE::WinAPI::VK_DELETE;
+        return VK_DELETE;
 
     // Mouse
     case Mouse::MouseButtonLeft:
-        return SKSE::WinAPI::VK_LBUTTON;
+        return VK_LBUTTON;
     case Mouse::MouseButtonRight:
-        return SKSE::WinAPI::VK_RBUTTON;
+        return VK_RBUTTON;
     case Mouse::MouseButtonMiddle:
-        return SKSE::WinAPI::VK_MBUTTON;
+        return VK_MBUTTON;
     case Mouse::MouseButton3:
-        return SKSE::WinAPI::VK_XBUTTON1;
+        return VK_XBUTTON1;
     case Mouse::MouseButton4:
-        return SKSE::WinAPI::VK_XBUTTON2;
+        return VK_XBUTTON2;
     case Mouse::MouseButton5:
         return 0;
     case Mouse::MouseButton6:
@@ -267,13 +267,13 @@ uint32_t GetWinKeyMap(uint32_t code)
         // GamePad
         /*
         case GamePad::GamepadButtonDpadUp:
-            return SKSE::WinAPI::VK_DELETE;
+            return VK_DELETE;
         case GamePad::GamepadButtonDpadDown:
-            return SKSE::WinAPI::VK_DELETE;
+            return VK_DELETE;
         case GamePad::GamepadButtonDpadLfet:
-            return SKSE::WinAPI::VK_DELETE;
+            return VK_DELETE;
         case GamePad::GamepadButtonDpadRight:
-            return SKSE::WinAPI::VK_DELETE;
+            return VK_DELETE;
         */
     }
     return 0;
@@ -314,9 +314,9 @@ uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent)
     return 0;
 }
 
-uint32_t GetEventKeyMap(InputEvent *a_event)
+uint32_t GetEventKeyMap(RE::InputEvent *a_event)
 {
-    if (a_event->eventType == INPUT_EVENT_TYPE::kButton)
+    if (a_event->eventType == RE::INPUT_EVENT_TYPE::kButton)
     {
         auto evn = a_event->AsButtonEvent();
         switch (evn->GetDevice())
@@ -329,14 +329,14 @@ uint32_t GetEventKeyMap(InputEvent *a_event)
             return 0;
         }
     }
-    else if (a_event->eventType == INPUT_EVENT_TYPE::kMouseMove)
+    else if (a_event->eventType == RE::INPUT_EVENT_TYPE::kMouseMove)
     {
         return 0;
     }
     return 0;
 }
 
-uint32_t GetEventKeyMap(ButtonEvent *evn)
+uint32_t GetEventKeyMap(RE::ButtonEvent *evn)
 {
     switch (evn->GetDevice())
     {
@@ -362,14 +362,14 @@ uint64_t GetTime()
 
 namespace FormUtils
 {
-TESForm *GetForm(FormID FormId)
+RE::TESForm *GetForm(RE::FormID FormId)
 {
-    return TESForm::LookupByID(FormId);
+    return RE::TESForm::LookupByID(FormId);
 }
-TESForm *GetForm(std::string modForm)
+RE::TESForm *GetForm(std::string modForm)
 {
     std::string modName;
-    FormID formId;
+    RE::FormID formId;
 
     auto delimiterPos = modForm.find('|');
     if (delimiterPos == std::string::npos)
@@ -391,11 +391,11 @@ TESForm *GetForm(std::string modForm)
                       modForm.c_str(), formid_str.c_str());
         return nullptr;
     }
-    TESDataHandler *dataHandler = TESDataHandler::GetSingleton();
-    TESFile *modFile = nullptr;
+    RE::TESDataHandler *dataHandler = RE::TESDataHandler::GetSingleton();
+    RE::TESFile *modFile = nullptr;
     for (auto it = dataHandler->files.begin(); it != dataHandler->files.end(); it++)
     {
-        TESFile *f = *it;
+        RE::TESFile *f = *it;
         if (strcmp(f->fileName, modName.c_str()) == 0)
         {
             modFile = f;
@@ -421,7 +421,7 @@ TESForm *GetForm(std::string modForm)
         }
     }
     logger::trace("resolve formID:{} success, result:{}", modForm.c_str(), formId);
-    return TESForm::LookupByID(formId);
+    return RE::TESForm::LookupByID(formId);
 }
 } // namespace FormUtils
 
@@ -507,33 +507,33 @@ Animation PowerAttackSprint2H;
 void init()
 {
     NormalAttackRight.type = ActionType::Idle;
-    NormalAttackRight.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x13215);
-    NormalAttackRight.action = (BGSAction *)TESForm::LookupByID(0x13005);
+    NormalAttackRight.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0x13215);
+    NormalAttackRight.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x13005);
     NormalAttackRight.event = "attackStart";
 
     NormalAttackLeft.type = ActionType::Idle;
-    NormalAttackLeft.idle = (RE::TESIdleForm *)TESForm::LookupByID(0xBACC3);
-    NormalAttackLeft.action = (BGSAction *)TESForm::LookupByID(0x13004);
+    NormalAttackLeft.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0xBACC3);
+    NormalAttackLeft.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x13004);
     NormalAttackLeft.event = "";
 
     NormalAttackDual.type = ActionType::Idle;
-    NormalAttackDual.idle = (RE::TESIdleForm *)TESForm::LookupByID(0xBCF31);
-    NormalAttackDual.action = (BGSAction *)TESForm::LookupByID(0x50C96);
+    NormalAttackDual.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0xBCF31);
+    NormalAttackDual.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x50C96);
     NormalAttackDual.event = "";
 
     PowerAttackRight.type = ActionType::Action;
-    PowerAttackRight.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x19B26);
-    PowerAttackRight.action = (BGSAction *)TESForm::LookupByID(0x13383);
+    PowerAttackRight.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0x19B26);
+    PowerAttackRight.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x13383);
     PowerAttackRight.event = "attackPowerStartInPlace";
 
     PowerAttackLeft.type = ActionType::Action;
-    PowerAttackLeft.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x2E900);
-    PowerAttackLeft.action = (BGSAction *)TESForm::LookupByID(0x2E2F6);
+    PowerAttackLeft.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0x2E900);
+    PowerAttackLeft.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x2E2F6);
     PowerAttackLeft.event = "";
 
     PowerAttackDual.type = ActionType::Action;
-    PowerAttackDual.idle = (RE::TESIdleForm *)TESForm::LookupByID(0x2E901);
-    PowerAttackDual.action = (BGSAction *)TESForm::LookupByID(0x2E2F7);
+    PowerAttackDual.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0x2E901);
+    PowerAttackDual.action = (RE::BGSAction *)RE::TESForm::LookupByID(0x2E2F7);
     PowerAttackDual.event = "";
 
     NormalAttackSprint.type = ActionType::AniamtionEvent;
@@ -557,11 +557,11 @@ namespace ModSupport
 {
 bool ModExist(std::string modName)
 {
-    TESDataHandler *dataHandler = TESDataHandler::GetSingleton();
-    TESFile *modFile = nullptr;
+    RE::TESDataHandler *dataHandler = RE::TESDataHandler::GetSingleton();
+    RE::TESFile *modFile = nullptr;
     for (auto it = dataHandler->files.begin(); it != dataHandler->files.end(); it++)
     {
-        TESFile *f = *it;
+        RE::TESFile *f = *it;
         if (strcmp(f->fileName, modName.c_str()) == 0)
         {
             modFile = f;

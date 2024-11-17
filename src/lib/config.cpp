@@ -69,6 +69,7 @@ void setVar()
     enableSheatheAttack = ini.GetLongValue("Features", NameToStr(enableSheatheAttack));
 
     // Stances
+    Stances::StancesList.push_back(nullptr);
     Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Low"))));
     Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "Mid"))));
     Stances::StancesList.push_back(FormUtils::GetForm((ini.GetValue("Stances", "High"))));
@@ -207,7 +208,7 @@ void createInI()
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatNormalAttack", true);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheatheNormalAttack", false);
         // Power
-        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::LeftHand);
+        ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::RightHand);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "RepeatPowerAttack", true);
         ini.SetBoolValue(Style::GetStyleName((Style::Styles)i), "SheathePowerAttack", true);
         // Other
@@ -232,10 +233,12 @@ void createInI()
         case Style::Styles::TorchSword:
         case Style::Styles::TorchFist:
         case Style::Styles::FistSword:
+            break;
         case Style::Styles::MagicSword:
         case Style::Styles::MagicFist:
         case Style::Styles::StaffSword:
         case Style::Styles::StaffFist:
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "OtherAttackType", Style::AttackType::VanillaLMB);
             break;
         case Style::Styles::Unknown:
         case Style::Styles::DualMagic:
@@ -256,6 +259,7 @@ void createInI()
         case Style::Styles::SwordStaff:
             ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "NormalAttackType", Style::AttackType::LeftHand);
             ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "PowerAttackType", Style::AttackType::LeftHand);
+            ini.SetLongValue(Style::GetStyleName((Style::Styles)i), "OtherAttackType", Style::AttackType::VanillaRMB);
             break;
         }
     }
@@ -454,6 +458,8 @@ void saveInI()
     if (rc < 0)
         return SKSE::stl::report_and_fail("Cannot save to ini.");
 
+    Stances::StancesList.clear();
+    Style::styleMap.clear();
     needModifier.clear();
     setVar();
 }

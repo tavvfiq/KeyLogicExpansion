@@ -1,19 +1,15 @@
 #pragma once
 #include "PCH.h"
 
-using namespace RE;
-using namespace REL;
-using namespace SKSE::log;
-
 namespace VarUtils
 {
 extern const SKSE::SerializationInterface *cosave;
 extern RE::Main *main;
 extern RE::PlayerCharacter *player;
-extern PlayerControls *pCtrl;
-extern ControlMap *ctrlMap;
-extern UserEvents *userEvent;
-extern UI *ui;
+extern RE::PlayerControls *pCtrl;
+extern RE::ControlMap *ctrlMap;
+extern RE::UserEvents *userEvent;
+extern RE::UI *ui;
 
 void init();
 } // namespace VarUtils
@@ -188,8 +184,8 @@ bool GetKeyState(uint32_t code);
 void TrackKeyState(uint32_t code, std::function<void()> func);
 
 uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent);
-uint32_t GetEventKeyMap(InputEvent *a_event);
-uint32_t GetEventKeyMap(ButtonEvent *evn);
+uint32_t GetEventKeyMap(RE::InputEvent *a_event);
+uint32_t GetEventKeyMap(RE::ButtonEvent *evn);
 } // namespace KeyUtils
 
 namespace TimeUtils
@@ -199,8 +195,8 @@ uint64_t GetTime();
 
 namespace FormUtils
 {
-TESForm *GetForm(FormID FormId);
-TESForm *GetForm(std::string modForm);
+RE::TESForm *GetForm(RE::FormID FormId);
+RE::TESForm *GetForm(std::string modForm);
 } // namespace FormUtils
 
 namespace GameStatus
