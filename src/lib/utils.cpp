@@ -289,20 +289,6 @@ bool GetKeyState(uint32_t code)
     return false;
 }
 
-void Tracker(uint32_t code, std::function<void()> func)
-{
-    while (GetKeyState(code))
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    }
-    func();
-}
-
-void TrackKeyState(uint32_t code, std::function<void()> func)
-{
-    std::thread(Tracker, code, func).detach();
-}
-
 uint32_t GetVanillaKeyMap(RE::BSFixedString userEvent)
 {
     auto keyBoard = VarUtils::ctrlMap->GetMappedKey(userEvent, RE::INPUT_DEVICE::kKeyboard);
@@ -457,14 +443,11 @@ bool IsBashing()
 }
 bool IsMoving()
 {
-    return VarUtils::player->AsActorState()->actorState1.movingBack ||
-           VarUtils::player->AsActorState()->actorState1.movingForward ||
-           VarUtils::player->AsActorState()->actorState1.movingRight ||
-           VarUtils::player->AsActorState()->actorState1.movingLeft;
+    return VarUtils::player->IsMoving();
 }
 bool IsSprinting()
 {
-    return VarUtils::player->AsActorState()->actorState1.sprinting;
+    return VarUtils::player->AsActorState()->IsSprinting() && IsMoving();
 }
 bool IsSneaking()
 {
@@ -474,7 +457,7 @@ bool IsJumping()
 {
     bool res;
     VarUtils::player->GetGraphVariableBool("bInJumpState", std::ref(res));
-    return res;
+    return res && VarUtils::player->IsInMidair();
 }
 bool IsRiding()
 {

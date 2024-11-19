@@ -3,10 +3,11 @@
 namespace Compatibility
 {
 bool BFCO = false;
-ActionList::Animation BFCO_PowerAttackJump1H;
-ActionList::Animation BFCO_PowerAttackJump2H;
 ActionList::Animation BFCO_NormalAttackSpecial;
 ActionList::Animation BFCO_PowerAttackSpecial;
+ActionList::Animation BFCO_NormalAttackJump;
+ActionList::Animation BFCO_PowerAttackJump1H;
+ActionList::Animation BFCO_PowerAttackJump2H;
 ActionList::Animation BFCO_NormalAttackSwim;
 ActionList::Animation BFCO_PowerAttackSwim;
 ActionList::Animation BFCO_ComboAttack;
@@ -55,9 +56,14 @@ void init()
         ActionList::PowerAttackRight.type = ActionList::ActionType::Idle;
         ActionList::PowerAttackRight.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008C5");
 
-        // BFCO_PowerAttackSprint = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008BE");
-        // BFCO_PowerAttackJump1H = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
-        // BFCO_PowerAttackJump2H = (ActionList::Action)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
+        ActionList::NormalAttackSprint.type = ActionList::ActionType::Idle;
+        ActionList::NormalAttackSprint.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0xF0A3E);
+
+        ActionList::PowerAttackSprint1H.type = ActionList::ActionType::Idle;
+        ActionList::PowerAttackSprint1H.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
+
+        ActionList::PowerAttackSprint2H.type = ActionList::ActionType::Idle;
+        ActionList::PowerAttackSprint2H.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
 
         BFCO_NormalAttackSpecial.type = ActionList::ActionType::Idle;
         BFCO_NormalAttackSpecial.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008A7");
@@ -68,6 +74,22 @@ void init()
         BFCO_PowerAttackSpecial.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008AF");
         BFCO_PowerAttackSpecial.action = nullptr;
         BFCO_PowerAttackSpecial.event = "attackPowerStartDualWield";
+
+        BFCO_NormalAttackJump.type = ActionList::ActionType::Idle;
+        BFCO_NormalAttackJump.idle = (RE::TESIdleForm *)RE::TESForm::LookupByID(0xF0A3E);
+        BFCO_NormalAttackJump.action = nullptr;
+        BFCO_NormalAttackJump.event = "attackStartSprint";
+        BFCO_NormalAttackJump.idle->conditions.head->data.flags.isOR = 1;
+
+        BFCO_PowerAttackJump1H.type = ActionList::ActionType::Idle;
+        BFCO_PowerAttackJump1H.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DE");
+        BFCO_PowerAttackJump1H.action = nullptr;
+        BFCO_PowerAttackJump1H.event = "attackPowerStart_Sprint";
+
+        BFCO_PowerAttackJump2H.type = ActionList::ActionType::Idle;
+        BFCO_PowerAttackJump2H.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x008DF");
+        BFCO_PowerAttackJump2H.action = nullptr;
+        BFCO_PowerAttackJump2H.event = "attackPowerStart_2HMSprint";
 
         BFCO_NormalAttackSwim.type = ActionList::ActionType::Idle;
         BFCO_NormalAttackSwim.idle = (RE::TESIdleForm *)FormUtils::GetForm("SCSI-ACTbfco-Main.esp|0x00916");
@@ -87,10 +109,7 @@ void init()
     // MCO: Attack_DXP.esp
     MCO = ModSupport::ModExist(std::string("Attack_DXP.esp"));
     if (MCO)
-    {
         logger::trace("Detecting MCO installed, compatibility with MCO.");
-        // MCO_PowerAttackSprint = (ActionList::Action)TESForm::LookupByID(0xEC3CC);
-    }
 
     if (BFCO && MCO)
         logger::trace("Why you install BFCO and MCO at the same time?");

@@ -19,7 +19,7 @@ include(GNUInstallDirs)
 # MCO
 # set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/XL/mods/KLE")
 # BFCO
-set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/BFCO/mods/KLE")
+set(PLUGIN_OUTPUT "C:/Users/ACFOV/Documents/MO2/Skyrim/JueLunV5/mods/KLE")
 
 file(GLOB_RECURSE headers 
     "src/lib/*.h"

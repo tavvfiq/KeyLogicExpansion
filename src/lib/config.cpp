@@ -189,7 +189,7 @@ void createInI()
     ini.SetLongValue("Vanilla", NameToStr(altTogglePOV), 0);
 
     // BFCO
-    ini.SetLongValue("BFCO", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftCtrl);
+    ini.SetLongValue("BFCO", NameToStr(BFCO_SpecialAttackModifier), KeyUtils::KeyBoard::LeftAlt);
     ini.SetLongValue("BFCO", NameToStr(BFCO_ComboAttack), KeyUtils::KeyBoard::E);
 
     // Expand Input
@@ -265,20 +265,11 @@ void createInI()
     }
 
     // Modifier Input
-    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->strafeLeft.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->back.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->strafeRight.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->rightAttack.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->leftAttack.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->activate.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->readyWeapon.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->tweenMenu.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->togglePOV.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->jump.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->sprint.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->shout.c_str(), 0);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->sneak.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->run.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->toggleRun.c_str(), 0);
     ini.SetLongValue("Modifier", VarUtils::userEvent->autoMove.c_str(), 0);
@@ -399,18 +390,6 @@ void saveInI()
     }
 
     // Modifier Input
-    ini.SetLongValue("Modifier", VarUtils::userEvent->forward.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->forward)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->strafeLeft.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeLeft)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->back.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->back)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->strafeRight.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->strafeRight)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->rightAttack.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->rightAttack)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->leftAttack.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->leftAttack)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->activate.c_str(),
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->activate)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->readyWeapon.c_str(),
@@ -419,14 +398,8 @@ void saveInI()
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->tweenMenu)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->togglePOV.c_str(),
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->togglePOV)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->jump.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->jump)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->sprint.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->sprint)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->shout.c_str(),
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->shout)]);
-    ini.SetLongValue("Modifier", VarUtils::userEvent->sneak.c_str(),
-                     needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->sneak)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->run.c_str(),
                      needModifier[KeyUtils::GetVanillaKeyMap(VarUtils::userEvent->run)]);
     ini.SetLongValue("Modifier", VarUtils::userEvent->toggleRun.c_str(),

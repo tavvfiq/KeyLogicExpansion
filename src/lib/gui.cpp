@@ -256,6 +256,7 @@ void KeyBindSettings()
 
     SwitchButton("ShowCustomSettings", showCustom);
     SwitchButton("ShowStatusSettings", showStatus, "Whether Show PlayerStatus, Now only has Stances");
+    SwitchButton("ShowCurrentStance", showStances);
     ImGui::Spacing();
     if (ImGui::TreeNode("Features"))
     {
@@ -337,12 +338,14 @@ void KeyBindSettings()
                          "Vanilla LMB and RMB means you can cast spell or using staff, like Vanilla logic");
         ImGui::TreePop();
     }
-
-    if (ImGui::TreeNode("BFCO"))
+    if (Compatibility::BFCO)
     {
-        SelectButton("BFCO SpecialAttackModifier", Config::BFCO_SpecialAttackModifier);
-        SelectButton("BFCO ComboAttack", Config::BFCO_ComboAttack);
-        ImGui::TreePop();
+        if (ImGui::TreeNode("BFCO"))
+        {
+            SelectButton("BFCO SpecialAttackModifier", Config::BFCO_SpecialAttackModifier);
+            SelectButton("BFCO ComboAttack", Config::BFCO_ComboAttack);
+            ImGui::TreePop();
+        }
     }
 
     if (ImGui::TreeNode("Expand"))

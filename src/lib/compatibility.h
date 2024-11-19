@@ -4,10 +4,11 @@
 namespace Compatibility
 {
 extern bool BFCO;
-// extern ActionList::Action BFCO_PowerAttackJump1H;
-// extern ActionList::Action BFCO_PowerAttackJump2H;
 extern ActionList::Animation BFCO_NormalAttackSpecial;
 extern ActionList::Animation BFCO_PowerAttackSpecial;
+extern ActionList::Animation BFCO_NormalAttackJump;
+extern ActionList::Animation BFCO_PowerAttackJump1H;
+extern ActionList::Animation BFCO_PowerAttackJump2H;
 extern ActionList::Animation BFCO_NormalAttackSwim;
 extern ActionList::Animation BFCO_PowerAttackSwim;
 extern ActionList::Animation BFCO_ComboAttack;
