@@ -1,4 +1,5 @@
 #include "hook.h"
+#include "utils.h"
 
 namespace Hook
 {
@@ -52,7 +53,10 @@ Style::Styles DetectStyle()
     uint8_t leftMagic = 0;
     uint8_t rightMagic = 0;
     bool shield = false;
+    int gripMode = 0;
     RE::TESForm *lHand = VarUtils::player->GetActorRuntimeData().currentProcess->GetEquippedLeftHand();
+    VarUtils::player->GetGraphVariableInt("iDynamicGripMode", gripMode);
+
     if (lHand)
     {
         if (lHand->formType == RE::FormType::Armor)
@@ -66,8 +70,10 @@ Style::Styles DetectStyle()
             if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
                 lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow)
                 return Style::Styles::Bow;
-            else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
-                     lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe)
+            else if ((lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandSword ||
+                     lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kTwoHandAxe) && gripMode == 0)
+                return Style::Styles::TwoHand;
+            else if (gripMode == 1)
                 return Style::Styles::TwoHand;
             else if (lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kStaff)
                 leftMagic = 2;
@@ -75,6 +81,8 @@ Style::Styles DetectStyle()
                      lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
                      lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
                      lHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+                leftWeapen = 1;
+            else if (gripMode == 3)
                 leftWeapen = 1;
         }
     }
@@ -90,10 +98,13 @@ Style::Styles DetectStyle()
             else if (rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandSword ||
                      rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandDagger ||
                      rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandAxe ||
-                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace)
+                     rHand->As<RE::TESObjectWEAP>()->GetWeaponType() == RE::WEAPON_TYPE::kOneHandMace || gripMode == 2 || gripMode == 3)
                 rightWeapen = 1;
         }
     }
+
+    
+
     if (shield)
     {
         if (rightMagic == 1)
